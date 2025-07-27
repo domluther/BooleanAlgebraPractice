@@ -1,6 +1,7 @@
 let currentMode = 'nameThatGate';
 let expressionModeDifficultyLevel = 1;
 let currentGate = '';
+let gateReason = '';
 let currentExpression = '';
 let currentAcceptedAnswers = [];
 let score = 0;
@@ -37,7 +38,7 @@ function setGameMode(mode, button) {
 
 // Name That Gate functionality
 function generateNameThatGateQuestion() {
-    const gates = ['AND', 'OR', 'NOT', 'NONE'];
+    const gates = ['AND', 'OR', 'NOT', 'NONE', 'NONE'];
     currentGate = gates[Math.floor(Math.random() * gates.length)];
 
     // currentGate = 'NONE'
@@ -105,7 +106,7 @@ function drawNONEGate() {
             // NOT gate with inversion bubble before the triangle (backwards NOT)
             svg: `
                 <circle cx="55" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
-                <path d="M 60 30 L 60 90 L 108 60 Z" fill="none" stroke="#333" stroke-width="2"/>
+                <path d="M 61 30 L 61 90 L 108 60 Z" fill="none" stroke="#333" stroke-width="2"/>
                 <line x1="30" y1="60" x2="50" y2="60" stroke="#333" stroke-width="2"/>
                 <line x1="108" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
                 <text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
@@ -124,7 +125,7 @@ function drawNONEGate() {
                 <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
                 <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>
             `,
-            reason: "This AND gate is backwards. The curved side should be on the right."
+            reason: "It is a backwards AND gate. The curved side should be on the right."
         },
         {
             // NAND gate (AND with inversion bubble)
@@ -138,7 +139,7 @@ function drawNONEGate() {
                 <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
                 <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>
             `,
-            reason: "AND gates don't have a bubble. This is a NAND gate, used at A-Level."
+            reason: "The bubble makes it a NAND gate, used at A-Level."
         },
         {
             // XOR gate (OR with extra curved line at input)
@@ -152,7 +153,7 @@ function drawNONEGate() {
                 <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
                 <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>
             `,
-            reason: "OR gates have one curved line. This is an XOR gate, used at A-Level."
+            reason: "The extra curved line makes it an XOR gate, used at A-Level."
         }
     ];
     
@@ -160,14 +161,14 @@ function drawNONEGate() {
     const randomIndex = Math.floor(Math.random() * incorrectGates.length);
     const selectedGate = incorrectGates[randomIndex];
     
-    // Return both the SVG and the reason (you might want to handle the reason separately in your application)
     console.log("Incorrect gate reason:", selectedGate.reason);
-    
-    // return selectedGate.svg;
-    return {
-        svg: selectedGate.svg,
-        reason: selectedGate.reason
-    };
+    gateReason = selectedGate.reason;
+    return selectedGate.svg;
+    // Could be used to do this in a cleaner method without the global variable
+    // return {
+    //     svg: selectedGate.svg,
+    //     reason: selectedGate.reason
+    // };
 }
 function checkNameThatGateAnswer(answer) {
     if (answered) return;
@@ -186,7 +187,11 @@ function checkNameThatGateAnswer(answer) {
                 btn.classList.add('correct');
             }
         });
-        showFeedback('Correct! Well done!', 'correct');
+        let message = 'Correct! Well done!';
+        if (currentGate === 'NONE') {
+            message = `Correct! This is not a GCSE logic gate. ${gateReason}`;
+        }
+        showFeedback(message, 'correct');
     } else {
         nameThatGateButtons.forEach(btn => {
             if (btn.textContent === answer) {
@@ -195,7 +200,11 @@ function checkNameThatGateAnswer(answer) {
                 btn.classList.add('correct');
             }
         });
-        showFeedback(`Incorrect. The correct answer is ${currentGate}.`, 'incorrect');
+        let message = `Incorrect! The correct answer is ${currentGate}!`;
+        if (currentGate === 'NONE') {
+            message = `Incorrect! This is not a GCSE logic gate. ${gateReason}`;
+        }
+        showFeedback(message, 'incorrect');
     }
     
     updateScoreDisplay();
