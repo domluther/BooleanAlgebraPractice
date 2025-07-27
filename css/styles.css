@@ -1314,17 +1314,6 @@ body {
     text-align: center;
 }
 
-/* Word Difficulty Buttons */
-.word-difficulty-btn {
-    margin: 0 var(--spacing-xs);
-}
-
-.word-difficulty-btn.active {
-    background: var(--primary-gradient);
-    color: white;
-    border: 2px solid #667eea;
-}
-
 /* Debug Info */
 #wordDebugInfo {
     display: none;
@@ -1368,9 +1357,4 @@ body {
         font-size: 1em;
     }
 
-    .word-difficulty-btn {
-        margin: var(--spacing-xs);
-        padding: 8px 12px;
-        font-size: 0.9em;
-    }
 }
