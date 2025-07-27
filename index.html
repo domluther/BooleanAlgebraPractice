@@ -30,6 +30,7 @@
             <div class="mode-selector">
                 <button class="btn btn-select active" onclick="setGameMode('nameThatGate', this)">Name That Gate</button>
                 <button class="btn btn-select" onclick="setGameMode('writeExpression', this)">Write the Expression</button>
+                <button class="btn btn-select" onclick="setGameMode('wordExpression', this)">Word Expression</button>
             </div>
 
             <div class="game-area">
@@ -84,7 +85,45 @@
                     </div>
 
                     <div class="mark-btn-container">
-                        <button  id="submitExpressionBtn" class="btn btn-success" onclick="checkExpressionAnswer()">Submit Answer</button>
+                        <button id="submitExpressionBtn" class="btn btn-success" onclick="checkExpressionAnswer()">Submit Answer</button>
+                    </div>
+                </div>
+
+                <div id="wordExpressionMode" class="word-expression-mode">
+                    <div class="program-selection">
+                        <h3>Difficulty Level:</h3>
+                        <div class="selection-controls">
+                            <div class="control-group">
+                                <button class="btn btn-small difficulty-btn active" onclick="setWordExpressionModeDifficulty(1, this)">Level 1</button>
+                                <button class="btn btn-small difficulty-btn" onclick="setWordExpressionModeDifficulty(2, this)">Level 2</button>
+                                <button class="btn btn-small difficulty-btn" onclick="setWordExpressionModeDifficulty(3, this)">Level 3</button>
+                            </div>
+                            
+                            <div class="debug-toggle">
+                                <label class="debug-label">
+                                    <input type="checkbox" id="wordDebugMode" onchange="toggleDebugWordExpressionMode()" class="debug-checkbox">
+                                    Debug Mode (Show all accepted answers)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-area">
+                        <h2>Write the Boolean expression for this scenario:</h2>
+                        <div class="scenario-display" id="scenarioDisplay">
+                            <!-- Scenario will be generated here -->
+                        </div>
+                    </div>
+
+                    <input type="text" id="wordExpressionInput" class="expression-input" placeholder="Enter expression (e.g., Q = A AND B)" onkeypress="handleEnterKeyForWordExpressionMode(event)">
+                    
+                    <div id="wordDebugInfo" class="debug-info">
+                        <h4>Debug Mode - Accepted Answers</h4>
+                        <div id="wordAcceptedAnswers" class="accepted-answers"></div>
+                    </div>
+
+                    <div class="mark-btn-container">
+                        <button id="submitWordExpressionBtn" class="btn btn-success" onclick="checkWordExpressionAnswer()">Submit Answer</button>
                     </div>
                 </div>
 

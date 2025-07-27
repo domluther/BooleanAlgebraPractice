@@ -1233,3 +1233,144 @@ body {
     color: var(--text-muted);
     line-height: 1.3;
 }
+
+/* ===== WORD EXPRESSION MODE ===== */
+.word-expression-mode {
+    display: none;
+}
+
+/* Scenario Content Area */
+.scenario-content {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.scenario-content h3 {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    font-size: 1.3em;
+    text-align: center;
+}
+
+/* Scenario Description Box */
+.scenario-description {
+    background-color: var(--bg-light);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border-left: 4px solid #667eea; /* matches your primary accent */
+    margin-bottom: var(--spacing-xl);
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+/* Input Table */
+.input-table-container {
+    margin-top: var(--spacing-lg);
+}
+
+.input-table-container h4 {
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    font-size: 1.1em;
+}
+
+.input-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: var(--spacing-xl);
+    background-color: var(--bg-white);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.input-table th {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    padding: var(--spacing-md) var(--spacing-lg);
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.input-table td {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.input-table tr:nth-child(even) {
+    background-color: var(--bg-light);
+}
+
+.input-table tr:hover {
+    background-color: #edf2f7; /* subtle hover */
+}
+
+.input-table td:first-child {
+    font-weight: bold;
+    color: var(--text-primary);
+    width: 80px;
+    text-align: center;
+}
+
+/* Word Difficulty Buttons */
+.word-difficulty-btn {
+    margin: 0 var(--spacing-xs);
+}
+
+.word-difficulty-btn.active {
+    background: var(--primary-gradient);
+    color: white;
+    border: 2px solid #667eea;
+}
+
+/* Debug Info */
+#wordDebugInfo {
+    display: none;
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+    border-left: 4px solid #f39c12;
+}
+
+#wordDebugInfo h4 {
+    color: #856404;
+    margin-bottom: var(--spacing-md);
+    font-size: 1em;
+}
+
+#wordAcceptedAnswers div {
+    background-color: var(--bg-light);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin: var(--spacing-xs) 0;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid #f6ad55;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .input-table {
+        font-size: 0.9em;
+    }
+
+    .input-table th,
+    .input-table td {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+
+    .scenario-description {
+        padding: var(--spacing-md);
+        font-size: 1em;
+    }
+
+    .word-difficulty-btn {
+        margin: var(--spacing-xs);
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+}

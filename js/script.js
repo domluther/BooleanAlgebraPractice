@@ -1,38 +1,64 @@
 let currentMode = 'nameThatGate';
-let expressionModeDifficultyLevel = 1;
 let currentGate = '';
 let gateReason = '';
+
+let expressionModeDifficultyLevel = 1;
 let currentExpression = '';
 let currentAcceptedAnswers = [];
+let debugMode = false;
+
 let score = 0;
 let totalQuestions = 0;
 let answered = false;
-let debugMode = false;
+// Global variables for word expression mode
+let wordExpressionModeDifficultyLevel = 1;
+let wordDebugMode = false;
+let currentWordExpression = '';
+let currentWordAcceptedAnswers = [];
 
-function setGameMode(mode, button) {
+// Updated setGameMode function to handle the new word expression mode
+function setGameMode(mode, clickedButton) {
     currentMode = mode;
     
-    // Update button states - changed from 'mode-btn' to 'btn-select'
+    // Update button states
     document.querySelectorAll('.btn-select').forEach(btn => btn.classList.remove('active'));
-    button.classList.add('active');
+    clickedButton.classList.add('active');
     
-    // Show/hide appropriate sections
+    // Hide all game modes
+    document.getElementById('nameThatGateMode').style.display = 'none';
+    document.getElementById('writeExpressionMode').style.display = 'none';
+    document.getElementById('wordExpressionMode').style.display = 'none';
+    
+    // Hide debug info for all modes
+    document.getElementById('debugInfo').style.display = 'none';
+    document.getElementById('wordDebugInfo').style.display = 'none';
+    
+    // Show the selected mode
+    document.getElementById(mode + 'Mode').style.display = 'block';
+    
+    // Reset answered state and hide feedback/buttons
+    answered = false;
+    hideFeedback();
+    hideNextButton();
+    
+    // Initialize the selected mode
     if (mode === 'nameThatGate') {
-        document.getElementById('nameThatGateMode').style.display = 'block';
-        document.getElementById('writeExpressionMode').style.display = 'none';
-        document.getElementById('debugInfo').style.display = 'none';
         generateNameThatGateQuestion();
-    } else {
-        document.getElementById('nameThatGateMode').style.display = 'none';
-        document.getElementById('writeExpressionMode').style.display = 'block';
+    } else if (mode === 'writeExpression') {
+        showSubmitExpressionButton();
         generateExpressionQuestion();
         if (debugMode) {
             document.getElementById('debugInfo').style.display = 'block';
             updateDebugDisplayForExpressionMode();
         }
+    } else if (mode === 'wordExpression') {
+        showSubmitWordExpressionButton();
+        generateWordExpressionQuestion();
+        if (wordDebugMode) {
+            document.getElementById('wordDebugInfo').style.display = 'block';
+            updateDebugDisplayForWordExpressionMode();
+        }
     }
-    
-    hideFeedback();
 }
 
 
@@ -170,6 +196,7 @@ function drawNONEGate() {
     //     reason: selectedGate.reason
     // };
 }
+
 function checkNameThatGateAnswer(answer) {
     if (answered) return;
     
@@ -242,7 +269,7 @@ function setExpressionModeDifficulty(level, clickedButton) {
     expressionModeDifficultyLevel = level;
     
     // Update button states
-    document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('#writeExpressionMode .difficulty-btn').forEach(btn => btn.classList.remove('active'));
     clickedButton.classList.add('active');
     
     generateExpressionQuestion();
@@ -483,6 +510,7 @@ function generateExpressionVariations(expression) {
     }
 }
 
+
 // Normalises user answer and compares it against accepted answers
 function checkExpressionAnswer() {
     if (answered) return;
@@ -525,6 +553,272 @@ function checkExpressionAnswer() {
     showNextButton();
 }
 
+// Debug mode for word expression writing
+function toggleDebugWordExpressionMode() {
+    wordDebugMode = document.getElementById('wordDebugMode').checked;
+    const debugInfo = document.getElementById('wordDebugInfo');
+    
+    if (wordDebugMode && currentMode === 'wordExpression') {
+        debugInfo.style.display = 'block';
+        updateDebugDisplayForWordExpressionMode();
+    } else {
+        debugInfo.style.display = 'none';
+    }
+}
+
+function updateDebugDisplayForWordExpressionMode() {
+    if (wordDebugMode) {
+        const acceptedAnswersDiv = document.getElementById('wordAcceptedAnswers');
+        if (currentWordAcceptedAnswers && currentWordAcceptedAnswers.length > 0) {
+            acceptedAnswersDiv.innerHTML = currentWordAcceptedAnswers.map(answer => 
+                `<div>${answer}</div>`
+            ).join('');
+        } else {
+            acceptedAnswersDiv.innerHTML = '<div>No accepted answers generated</div>';
+        }
+    }
+}
+
+// Word Expression Mode functionality
+function setWordExpressionModeDifficulty(level, clickedButton) {
+    wordExpressionModeDifficultyLevel = level;
+    
+    // Update button states
+    document.querySelectorAll('#wordExpressionMode .difficulty-btn').forEach(btn => btn.classList.remove('active'));
+    clickedButton.classList.add('active');
+    
+    generateWordExpressionQuestion();
+    hideFeedback();
+    
+    if (wordDebugMode) {
+        updateDebugDisplayForWordExpressionMode();
+    }
+}
+
+function generateWordExpressionQuestion() {
+    const wordExpressionScenarios = {
+        1: [ // Level 1 - Simple AND/OR scenarios
+            {
+                title: "Door Access",
+                scenario: "A secure door will only unlock if the person has a valid ID badge AND knows the correct passcode.",
+                inputs: {
+                    A: "Person has a valid ID badge",
+                    B: "Person knows the correct passcode"
+                },
+                expression: "Q = A AND B"
+            },
+            {
+                title: "Alarm System",
+                scenario: "A burglar alarm will trigger if either a door is opened OR a window is opened.",
+                inputs: {
+                    A: "Door is opened",
+                    B: "Window is opened"
+                },
+                expression: "Q = A OR B"
+            },
+            {
+                title: "Computer Login",
+                scenario: "A computer will allow login if the user enters the correct username AND the correct password.",
+                inputs: {
+                    A: "Correct username entered",
+                    B: "Correct password entered"
+                },
+                expression: "Q = A AND B"
+            },
+            {
+                title: "Emergency Exit",
+                scenario: "An emergency exit will open if either the fire alarm is activated OR the manual override is pressed.",
+                inputs: {
+                    A: "Fire alarm is activated",
+                    B: "Manual override is pressed"
+                },
+                expression: "Q = A OR B"
+            }
+        ],
+        2: [ // Level 2 - More complex scenarios with 3 inputs
+            {
+                title: "Bank Vault Access",
+                scenario: "A bank vault will open only if all three conditions are met: the manager's key is turned, the correct code is entered, and biometric scan passes.",
+                inputs: {
+                    A: "Manager's key is turned",
+                    B: "Correct code is entered",
+                    C: "Biometric scan passes"
+                },
+                expression: "Q = A AND B AND C"
+            },
+            {
+                title: "Emergency Shutdown",
+                scenario: "A nuclear reactor will shut down if any of these conditions occur: temperature exceeds safe limit, pressure exceeds safe limit, or the emergency button is pressed.",
+                inputs: {
+                    A: "Temperature exceeds safe limit",
+                    B: "Pressure exceeds safe limit",
+                    C: "Emergency button is pressed"
+                },
+                expression: "Q = A OR B OR C"
+            },
+            {
+                title: "Car Engine Start",
+                scenario: "A car engine will start if the key is in the ignition AND either the brake pedal is pressed OR the car is in park mode.",
+                inputs: {
+                    A: "Key is in ignition",
+                    B: "Brake pedal is pressed",
+                    C: "Car is in park mode"
+                },
+                expression: "Q = A AND (B OR C)"
+            },
+            {
+                title: "Security Camera",
+                scenario: "A security camera will record if motion is detected AND either it's nighttime OR the manual recording switch is on.",
+                inputs: {
+                    A: "Motion is detected",
+                    B: "It's nighttime",
+                    C: "Manual recording switch is on"
+                },
+                expression: "Q = A AND (B OR C)"
+            }
+        ],
+        3: [ // Level 3 - Complex scenarios with NOT gates and mixed logic
+            {
+                title: "Server Access Control",
+                scenario: "A server will grant access if the user is authenticated AND either they are an admin OR (they are a regular user AND it's during business hours AND the system is not in maintenance mode).",
+                inputs: {
+                    A: "User is authenticated",
+                    B: "User is an admin",
+                    C: "User is a regular user",
+                    D: "It's during business hours",
+                    E: "System is in maintenance mode"
+                },
+                expression: "Q = A AND (B OR (C AND D AND NOT E))"
+            },
+            {
+                title: "Automated Sprinkler System",
+                scenario: "A sprinkler system will activate if fire is detected AND the system is not disabled AND either (it's an automatic system) OR (it's manual mode AND the override button is pressed).",
+                inputs: {
+                    A: "Fire is detected",
+                    B: "System is disabled",
+                    C: "It's an automatic system",
+                    D: "It's manual mode",
+                    E: "Override button is pressed"
+                },
+                expression: "Q = A AND NOT B AND (C OR (D AND E))"
+            },
+            {
+                title: "Smart Home Lighting",
+                scenario: "Smart lights will turn on if it's dark AND either (motion is detected AND the house is not in sleep mode) OR the manual switch is pressed.",
+                inputs: {
+                    A: "It's dark",
+                    B: "Motion is detected",
+                    C: "House is in sleep mode",
+                    D: "Manual switch is pressed"
+                },
+                expression: "Q = A AND ((B AND NOT C) OR D)"
+            }
+        ]
+    };
+
+    const scenarioDisplay = document.getElementById('scenarioDisplay');
+    const scenarios = wordExpressionScenarios[wordExpressionModeDifficultyLevel];
+    
+    // Pick a random scenario from the current difficulty level
+    const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+    
+    // Store the current expression and generate accepted answers
+    currentWordExpression = randomScenario.expression;
+    currentWordAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentWordExpression);
+    
+    // Generate the HTML for the scenario display
+    let inputTableRows = '';
+    for (const [input, description] of Object.entries(randomScenario.inputs)) {
+        inputTableRows += `
+            <tr>
+                <td><strong>${input}</strong></td>
+                <td>${description}</td>
+            </tr>
+        `;
+    }
+    
+    const scenarioHTML = `
+        <div class="scenario-content">
+            <h3>${randomScenario.title}</h3>
+            <p class="scenario-description">${randomScenario.scenario}</p>
+            
+            <div class="input-table-container">
+                <h4>Input Criteria (True / False)</h4>
+                <table class="input-table">
+                    <thead>
+                        <tr>
+                            <th>Input</th>
+                            <th>Criteria</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${inputTableRows}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    scenarioDisplay.innerHTML = scenarioHTML;
+    document.getElementById('wordExpressionInput').value = '';
+}
+
+function checkWordExpressionAnswer() {
+    if (answered) return;
+    
+    const userAnswer = document.getElementById('wordExpressionInput').value.trim().toUpperCase();
+    
+    answered = true;
+    totalQuestions++;
+
+    hideSubmitWordExpressionButton();
+
+    // Use the same normalization function as the regular expression mode
+    function normalizeExpression(expr) {
+        return expr
+            .replace(/\s+/g, ' ')           // Collapse multiple spaces to single space
+            .replace(/\s*\(\s*/g, '(')      // Remove spaces around opening parentheses
+            .replace(/\s*\)\s*/g, ')')      // Remove spaces around closing parentheses  
+            .replace(/\s*(AND|OR|NOT)\s*/g, ' $1 ')  // Ensure single space around operators
+            .replace(/\s+/g, ' ')           // Collapse any remaining multiple spaces
+            .trim();                        // Remove leading/trailing spaces
+    }
+
+    // Normalize the user answer for comparison
+    const normalizedUser = normalizeExpression(userAnswer);
+    
+    // Check if user answer matches any of the accepted answers
+    const isCorrect = currentWordAcceptedAnswers.some(acceptedAnswer => {
+        const normalizedAccepted = normalizeExpression(acceptedAnswer.toUpperCase());
+        return normalizedUser === normalizedAccepted;
+    });
+    
+    if (isCorrect) {
+        score++;
+        showFeedback('Correct! Excellent work!', 'correct');
+    } else {
+        showFeedback(`Incorrect. The correct answer is: ${currentWordExpression}`, 'incorrect');
+    }
+    
+    updateScoreDisplay();
+    showNextButton();
+}
+
+// Handle Enter key for word expression input
+function handleEnterKeyForWordExpressionMode(event) {
+    if (event.key === 'Enter') {
+        checkWordExpressionAnswer();
+    }
+}
+
+// Button visibility functions for word expression mode
+function showSubmitWordExpressionButton() {
+    document.getElementById('submitWordExpressionBtn').style.display = 'inline-block';
+}
+
+function hideSubmitWordExpressionButton() {
+    document.getElementById('submitWordExpressionBtn').style.display = 'none';
+}
 
 // Update UI
 function showFeedback(message, type) {
@@ -574,10 +868,18 @@ function nextQuestion() {
             updateDebugDisplayForExpressionMode();
         }
     }
-    else {
+    else if (currentMode === 'wordExpression') {
+        showSubmitWordExpressionButton();
+        generateWordExpressionQuestion();
+        if (wordDebugMode) {
+            updateDebugDisplayForWordExpressionMode();
+        }
+    } else {
         console.error('Unknown game mode:', currentMode);
     }
 }
+
+
 
 function handleEnterKeyForExpressionMode(event) {
     if (event.key === 'Enter') {
