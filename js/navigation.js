@@ -184,3 +184,9 @@ class SiteNavigation {
         return this.navMenuData.find(item => item.id === currentId) || null;
     }
 }
+
+// Initialize navigation when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const navigation = new SiteNavigation();
+    navigation.init();
+})
