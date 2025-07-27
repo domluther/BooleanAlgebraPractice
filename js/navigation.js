@@ -4,7 +4,7 @@
  * with auto-generated menu items
  */
 
-export class SiteNavigation {
+class SiteNavigation {
     constructor() {
         this.navToggle = null;
         this.navDropdown = null;
