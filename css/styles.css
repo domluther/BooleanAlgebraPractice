@@ -1491,7 +1491,17 @@ body {
     color: #6c757d;
 }
 
-/* Specific styling for intermediate and output selects */
+/* Specific styling for different select types */
+.input-select {
+    border-color: #3498db;
+    background-color: #ecf0f1;
+}
+
+.input-select:focus {
+    border-color: #2980b9;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
 .intermediate-select {
     border-color: #f39c12;
 }

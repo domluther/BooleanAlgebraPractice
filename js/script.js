@@ -25,6 +25,7 @@ let showIntermediateColumns = false;
 let currentTruthTableExpression = '';
 let currentTruthTableData = [];
 let truthTableInputs = [];
+let expertMode = false;
 
 
 // Updated setGameMode function to handle the new word expression mode
@@ -991,10 +992,37 @@ function toggleIntermediateColumns() {
         });
     }
 }
+function toggleExpertMode() {
+    expertMode = document.getElementById('expertMode').checked;
+    
+    // Regenerate the current question with expert mode settings
+    if (currentTruthTableExpression) {
+        const truthTableContainer = document.getElementById('truthTableContainer');
+        
+        // Re-parse the current expression
+        const parsedData = parseExpressionForTruthTable(currentTruthTableExpression);
+        const intermediateExpressions = parsedData.intermediateExpressions;
+        
+        // Generate fresh table - no state preservation when toggling expert mode
+        generateTruthTableHTML(truthTableContainer, truthTableInputs, intermediateExpressions);
+        
+        // Reset any visual feedback from previous attempts
+        document.querySelectorAll('.truth-table-select').forEach(select => {
+            select.classList.remove('correct', 'incorrect', 'unanswered', 'optional-unanswered');
+            select.disabled = false;
+        });
+        
+        // Reset answered state and show submit button
+        answered = false;
+        hideFeedback();
+        showSubmitTruthTableButton();
+    }
+}
 
 function generateTruthTableQuestion() {
     const expressionDisplay = document.getElementById('truthTableExpression');
     const truthTableContainer = document.getElementById('truthTableContainer');
+    const truthTableCircuitContainer = document.getElementById('truthTableCircuitDisplay');
     
     // Get expressions for current difficulty level
     const expressions = expressionDatabase[`level${truthTableModeDifficultyLevel}`];
@@ -1004,6 +1032,7 @@ function generateTruthTableQuestion() {
     
     // Display the expression
     expressionDisplay.innerHTML = `<div class="expression-text">${currentTruthTableExpression}</div>`;
+    circuitGenerator.generateCircuit(currentTruthTableExpression, truthTableCircuitContainer);
     
     // Parse the expression to get inputs and intermediate expressions
     const parsedData = parseExpressionForTruthTable(currentTruthTableExpression);
@@ -1140,17 +1169,30 @@ function generateTruthTableHTML(container, inputs, intermediateExpressions) {
     currentTruthTableData.forEach((row, rowIndex) => {
         tableHTML += '<tr>';
         
-        // Input columns (read-only)
+        // Input columns
         inputs.forEach(input => {
-            const value = row[input] ? 1 : 0;
-            tableHTML += `<td class="input-cell">${value}</td>`;
+            if (expertMode) {
+                // In expert mode, input columns are editable dropdowns
+                tableHTML += `<td class="input-cell">
+                    <select class="truth-table-select input-select expert-input" data-row="${rowIndex}" data-column="${input}">
+                        <option value="">?</option>
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                    </select>
+                </td>`;
+            } else {
+                // In normal mode, input columns are read-only
+                const value = row[input] ? 1 : 0;
+                tableHTML += `<td class="input-cell">${value}</td>`;
+            }
         });
         
-        // Intermediate columns (user input - optional)
+        // Intermediate columns (user input - optional in normal mode, required in expert mode)
         if (showIntermediateColumns && intermediateExpressions.length > 0) {
             intermediateExpressions.forEach((expr, index) => {
+                const selectClass = expertMode ? 'expert-intermediate' : '';
                 tableHTML += `<td class="intermediate-cell">
-                    <select class="truth-table-select intermediate-select" data-row="${rowIndex}" data-column="intermediate_${index}">
+                    <select class="truth-table-select intermediate-select ${selectClass}" data-row="${rowIndex}" data-column="intermediate_${index}">
                         <option value="">?</option>
                         <option value="0">0</option>
                         <option value="1">1</option>
@@ -1160,8 +1202,9 @@ function generateTruthTableHTML(container, inputs, intermediateExpressions) {
         }
         
         // Output column (user input - required)
+        const outputSelectClass = expertMode ? 'expert-output' : '';
         tableHTML += `<td class="output-cell">
-            <select class="truth-table-select output-select" data-row="${rowIndex}" data-column="Q">
+            <select class="truth-table-select output-select ${outputSelectClass}" data-row="${rowIndex}" data-column="Q">
                 <option value="">?</option>
                 <option value="0">0</option>
                 <option value="1">1</option>
@@ -1183,6 +1226,17 @@ function checkTruthTableAnswer() {
     
     hideSubmitTruthTableButton();
     
+    if (expertMode) {
+        checkExpertModeAnswer();
+    } else {
+        checkNormalModeAnswer();
+    }
+    
+    updateScoreDisplay();
+    showNextButton();
+}
+
+function checkNormalModeAnswer() {
     // Get all user inputs - both output and intermediate columns
     const outputSelects = document.querySelectorAll('.output-select');
     const intermediateSelects = document.querySelectorAll('.intermediate-select');
@@ -1260,9 +1314,177 @@ function checkTruthTableAnswer() {
     } else {
         showFeedback(`Output column: ${outputCorrect}/${outputTotal} correct. Review the highlighted answers.`, 'incorrect');
     }
+}
+
+function checkExpertModeAnswer() {
+    // In expert mode, all fields must be filled and the entire table must be correct
+    const allSelects = document.querySelectorAll('.truth-table-select');
+    const userRows = [];
+    const numRows = currentTruthTableData.length;
     
-    updateScoreDisplay();
-    showNextButton();
+    // Collect user answers row by row
+    for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
+        const userRow = {};
+        let allFieldsFilled = true;
+        
+        // Get input values
+        truthTableInputs.forEach(input => {
+            const select = document.querySelector(`[data-row="${rowIndex}"][data-column="${input}"]`);
+            if (select && select.value !== '') {
+                userRow[input] = select.value === '1';
+            } else {
+                allFieldsFilled = false;
+            }
+        });
+        
+        // Get intermediate values if they exist
+        if (showIntermediateColumns) {
+            const parsedData = parseExpressionForTruthTable(currentTruthTableExpression);
+            const intermediateExpressions = parsedData.intermediateExpressions;
+            
+            intermediateExpressions.forEach((expr, index) => {
+                const select = document.querySelector(`[data-row="${rowIndex}"][data-column="intermediate_${index}"]`);
+                if (select && select.value !== '') {
+                    userRow[`intermediate_${index}`] = select.value === '1';
+                } else {
+                    allFieldsFilled = false;
+                }
+            });
+        }
+        
+        // Get output value
+        const outputSelect = document.querySelector(`[data-row="${rowIndex}"][data-column="Q"]`);
+        if (outputSelect && outputSelect.value !== '') {
+            userRow.Q = outputSelect.value === '1';
+        } else {
+            allFieldsFilled = false;
+        }
+        
+        if (!allFieldsFilled) {
+            showFeedback('Expert Mode: All fields in the truth table must be filled.', 'incorrect');
+            answered = false;
+            showSubmitTruthTableButton();
+            
+            // Highlight unfilled fields
+            allSelects.forEach(select => {
+                if (select.value === '') {
+                    select.classList.add('unanswered');
+                } else {
+                    select.classList.remove('unanswered');
+                }
+            });
+            return;
+        }
+        
+        userRows.push({ rowIndex, data: userRow });
+    }
+    
+    // Use order-independent validation
+    const validationResult = validateExpertModeAnswers(userRows, currentTruthTableData);
+    
+    // Disable all selects
+    allSelects.forEach(select => {
+        select.disabled = true;
+    });
+    
+    // Apply visual feedback
+    allSelects.forEach(select => {
+        const rowIndex = parseInt(select.dataset.row);
+        const columnName = select.dataset.column;
+        
+        const matchedCorrectIndex = validationResult.rowMatches[rowIndex];
+        if (matchedCorrectIndex !== -1) {
+            // This user row matched a correct row
+            const correctRow = currentTruthTableData[matchedCorrectIndex];
+            let correctValue;
+            
+            if (columnName.startsWith('intermediate_')) {
+                correctValue = correctRow[columnName];
+            } else {
+                correctValue = correctRow[columnName];
+            }
+            
+            const userValue = select.value === '1';
+            if (userValue === correctValue) {
+                select.classList.add('correct');
+            } else {
+                select.classList.add('incorrect');
+            }
+        } else {
+            // This user row didn't match any correct row
+            select.classList.add('incorrect');
+        }
+    });
+    
+    if (validationResult.isCorrect) {
+        score++;
+        showFeedback('Expert Mode: Perfect! All rows are correct!', 'correct');
+    } else {
+        showFeedback(`Expert Mode: ${validationResult.correctRows}/${numRows} rows correct. Each row must match the inputs and outputs exactly.`, 'incorrect');
+    }
+}
+
+function validateExpertModeAnswers(userRows, correctData) {
+    const numRows = correctData.length;
+    const usedCorrectRows = new Set();
+    const rowMatches = new Array(numRows).fill(-1);
+    let correctRows = 0;
+    
+    // Try to match each user row to a unique correct row
+    for (let i = 0; i < userRows.length; i++) {
+        const userRow = userRows[i];
+        
+        // Find a matching correct row that hasn't been used yet
+        for (let j = 0; j < correctData.length; j++) {
+            if (usedCorrectRows.has(j)) continue;
+            
+            const correctRow = correctData[j];
+            
+            // Check if this user row matches this correct row
+            let matches = true;
+            
+            // Check input columns
+            for (const input of truthTableInputs) {
+                if (userRow.data[input] !== correctRow[input]) {
+                    matches = false;
+                    break;
+                }
+            }
+            
+            // Check intermediate columns if they exist
+            if (matches && showIntermediateColumns) {
+                const parsedData = parseExpressionForTruthTable(currentTruthTableExpression);
+                const intermediateExpressions = parsedData.intermediateExpressions;
+                
+                for (let idx = 0; idx < intermediateExpressions.length; idx++) {
+                    const columnName = `intermediate_${idx}`;
+                    if (userRow.data[columnName] !== correctRow[columnName]) {
+                        matches = false;
+                        break;
+                    }
+                }
+            }
+            
+            // Check output column
+            if (matches && userRow.data.Q !== correctRow.Q) {
+                matches = false;
+            }
+            
+            if (matches) {
+                // Found a match!
+                usedCorrectRows.add(j);
+                rowMatches[userRow.rowIndex] = j;
+                correctRows++;
+                break;
+            }
+        }
+    }
+    
+    return {
+        isCorrect: correctRows === numRows,
+        correctRows: correctRows,
+        rowMatches: rowMatches
+    };
 }
 
 // Button visibility functions for truth table mode
