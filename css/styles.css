@@ -12,6 +12,7 @@
     --bg-darker: #1a202c;
     --bg-light: #f7fafc;
     --bg-white: #ffffff;
+    --bg-light-teal: #F0FDFA;
     --border-color: #4a5568;
     --border-light: #e2e8f0;
     
@@ -613,18 +614,18 @@ body {
     flex-wrap: wrap;
 }
 
-/* Debug toggle styles */
-.debug-toggle {
+/* Help toggle styles */
+.help-toggle {
     margin-top: var(--spacing-md);
 }
 
-.debug-label {
+.help-label {
     font-size: 0.9rem;
     color: var(--text-muted);
     font-weight: normal;
 }
 
-.debug-checkbox {
+.help-checkbox {
     margin-right: var(--spacing-xs);
 }
 
@@ -653,7 +654,7 @@ body {
 }
 
 .logic-diagram-display {
-    background: var(--bg-white);
+    background: var(--bg-light-teal);
     border: 2px solid var(--border-light);
     border-radius: var(--radius-lg);
     margin: var(--spacing-lg) 0;
@@ -709,8 +710,8 @@ body {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* REFACTORED: A single debug style for all modes */
-.debug-info {
+/* A single help style for all modes */
+.help-info {
     display: none;
     background: #fff3cd;
     border: 1px solid #ffeaa7;
@@ -720,7 +721,7 @@ body {
     border-left: 4px solid #f39c12;
 }
 
-.debug-info h4 {
+.help-info h4 {
     margin-bottom: var(--spacing-md);
     color: #856404;
     font-size: 1em;
@@ -738,6 +739,7 @@ body {
 /* Button Container */
 .mark-btn-container {
     text-align: center;
+    padding: var(--spacing-xs);
 }
 
 .mark-btn-container .btn {
@@ -802,7 +804,7 @@ body {
     display: none;
 }
 
-/* ===== WORD EXPRESSION MODE (Specifics) ===== */
+/* ===== SCENARIO MODE (Specifics) ===== */
 .scenario-content {
     max-width: 100%;
     margin: 0 auto;
@@ -868,7 +870,7 @@ body {
     text-align: center;
 }
 
-#wordAcceptedAnswers div {
+#scenarioAcceptedAnswers div {
     background-color: var(--bg-light);
     padding: var(--spacing-sm) var(--spacing-md);
     margin: var(--spacing-xs) 0;
@@ -885,7 +887,6 @@ body {
 }
 
 .expression-text {
-    background: var(--bg-light);
     padding: var(--spacing-lg);
     border-radius: var(--radius-md);
     border-left: 4px solid #667eea;
@@ -895,6 +896,7 @@ body {
     color: var(--text-primary);
     display: inline-block;
     box-shadow: var(--shadow-sm);
+    background-color: var(--bg-light-teal);
 }
 
 .truth-table-container {

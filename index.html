@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boolean Algebra Practice - GCSE Computer Science</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <!-- Link to the new, refactored stylesheet -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -21,20 +20,19 @@
 
         <div class="content">
             <div class="mode-selector">
-                <!-- Note the updated classes for selectable buttons -->
                 <button class="btn btn-select active mode-active" onclick="setGameMode('nameThatGate', this)">Name That Gate</button>
-                <button class="btn btn-select" onclick="setGameMode('writeExpression', this)">Write the Expression</button>
-                <button class="btn btn-select" onclick="setGameMode('wordExpression', this)">Word Expression</button>
-                <button class="btn btn-select" onclick="setGameMode('truthTable', this)">Truth Table</button>
+                <button class="btn btn-select" onclick="setGameMode('writeExpression', this)">Expression Writing</button>
+                <button class="btn btn-select" onclick="setGameMode('truthTable', this)">Truth Tables</button>
+                <button class="btn btn-select" onclick="setGameMode('scenario', this)">Scenarios</button>
+                <button class="btn btn-select" onclick="setGameMode('drawCircuits', this)">Draw</button>
             </div>
 
-            <!-- The old 'game-area' is now a reusable 'panel' component -->
-            <div class="panel panel-accent-primary">
+            <div>
                 <div id="nameThatGateMode">
                     <div class="question-area">
                         <h2>Which GCSE logic gate is this?</h2>
-                        <div class="gate-display">
-                            <svg id="nameThatGateCanvas" class="gate-svg" viewBox="0 0 200 120"></svg>
+                        <div id="nameThatGateLogicDiagramDisplay" class="logic-diagram-display">
+                                <!-- Gate will be generated here by JS -->
                         </div>
                     </div>
                     
@@ -47,22 +45,20 @@
                 </div>
 
                 <div id="writeExpressionMode" class="game-mode-container">
-                    <!-- The old 'program-selection' is now a reusable 'panel' -->
-                    <div class="panel bg-white panel-accent-success">
+                    <div class="panel panel-accent-info">
                         <h3>Difficulty Level:</h3>
                         <div class="selection-controls">
                             <div class="control-group">
-                                <!-- Difficulty buttons now use the unified 'btn-select' style -->
                                 <button class="btn btn-small btn-select active difficulty-active" onclick="setExpressionModeDifficulty(1, this)">Level 1</button>
                                 <button class="btn btn-small btn-select" onclick="setExpressionModeDifficulty(2, this)">Level 2</button>
                                 <button class="btn btn-small btn-select" onclick="setExpressionModeDifficulty(3, this)">Level 3</button>
                                 <button class="btn btn-small btn-select" onclick="setExpressionModeDifficulty(4, this)">Level 4</button>
                             </div>
                             
-                            <div class="debug-toggle">
-                                <label class="debug-label">
-                                    <input type="checkbox" id="debugMode" onchange="toggleDebugExpressionMode()" class="debug-checkbox">
-                                    Debug Mode (Show all accepted answers)
+                            <div class="help-toggle">
+                                <label class="help-label">
+                                    <input type="checkbox" id="debugMode" onchange="toggleHelpExpressionMode()" class="help-checkbox">
+                                    Help Mode (Show all accepted answers)
                                 </label>
                             </div>
                         </div>
@@ -70,16 +66,15 @@
 
                     <div class="question-area">
                         <h2>Write the Boolean expression for this logic diagram:</h2>
-                        <div class="logic-diagram-display" id="logicDiagramDisplay">
+                        <div id="logicDiagramDisplay" class="logic-diagram-display" >
                             <!-- Circuit will be generated here -->
                         </div>
                     </div>
 
                     <input type="text" id="expressionInput" class="expression-input" placeholder="Enter expression (e.g., Q = A AND B)" onkeypress="handleEnterKeyForExpressionMode(event)">
                     
-                    <!-- The 'debug-info' class styles both debug boxes now -->
-                    <div id="debugInfo" class="debug-info">
-                        <h4>Debug Mode - Accepted Answers</h4>
+                    <div id="helpInfo" class="help-info">
+                        <h4>Help Mode - Accepted Answers</h4>
                         <div id="acceptedAnswers" class="accepted-answers"></div>
                     </div>
 
@@ -88,48 +83,8 @@
                     </div>
                 </div>
 
-                <div id="wordExpressionMode" class="game-mode-container">
-                    <div class="panel bg-white panel-accent-success">
-                        <h3>Difficulty Level:</h3>
-                        <div class="selection-controls">
-                            <div class="control-group">
-                                <button class="btn btn-small btn-select active difficulty-active" onclick="setWordExpressionModeDifficulty(1, this)">Level 1</button>
-                                <button class="btn btn-small btn-select" onclick="setWordExpressionModeDifficulty(2, this)">Level 2</button>
-                                <button class="btn btn-small btn-select" onclick="setWordExpressionModeDifficulty(3, this)">Level 3</button>
-                            </div>
-                            
-                            <div class="debug-toggle">
-                                <label class="debug-label">
-                                    <input type="checkbox" id="wordDebugMode" onchange="toggleDebugWordExpressionMode()" class="debug-checkbox">
-                                    Debug Mode (Show all accepted answers)
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="question-area">
-                        <h2>Write the Boolean expression for this scenario:</h2>
-                        <div class="panel bg-white panel-accent-primary">
-                            <div class="scenario-display" id="scenarioDisplay">
-                                <!-- Scenario will be generated here by JS. -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <input type="text" id="wordExpressionInput" class="expression-input" placeholder="Enter expression (e.g., Q = A AND B)" onkeypress="handleEnterKeyForWordExpressionMode(event)">
-                    
-                    <div id="wordDebugInfo" class="debug-info">
-                        <h4>Debug Mode - Accepted Answers</h4>
-                        <div id="wordAcceptedAnswers" class="accepted-answers"></div>
-                    </div>
-
-                    <div class="mark-btn-container">
-                        <button id="submitWordExpressionBtn" class="btn btn-success" onclick="checkWordExpressionAnswer()">Submit Answer</button>
-                    </div>
-                </div>
-
                 <div id="truthTableMode" class="game-mode-container">
-                    <div class="panel bg-white panel-accent-success">
+                    <div class="panel panel-accent-info">
                         <h3>Difficulty Level:</h3>
                         <div class="selection-controls">
                             <div class="control-group">
@@ -138,13 +93,13 @@
                                 <button class="btn btn-small btn-select" onclick="setTruthTableModeDifficulty(3, this)">Level 3</button>
                             </div>
                             
-                            <div class="debug-toggle">
-                                <label class="debug-label">
-                                    <input type="checkbox" id="showIntermediateColumns" onchange="toggleIntermediateColumns()" class="debug-checkbox">
+                            <div class="help-toggle">
+                                <label class="help-label">
+                                    <input type="checkbox" id="showIntermediateColumns" onchange="toggleIntermediateColumns()" class="help-checkbox">
                                     Show Intermediate Columns
                                 </label>
-                                <label class="debug-label">
-                                    <input type="checkbox" id="expertMode" onchange="toggleExpertMode()" class="debug-checkbox">
+                                <label class="help-label">
+                                    <input type="checkbox" id="expertMode" onchange="toggleExpertMode()" class="help-checkbox">
                                     Expert Mode (Fill entire table)
                                 </label>
                             </div>
@@ -153,19 +108,62 @@
 
                     <div class="question-area">
                         <h2>Complete the truth table for this expression:</h2>
-                        <div class="logic-diagram-display" id="truthTableLogicDiagramDisplay">
-                            <!-- Circuit will be generated here -->
-                        </div>
-                        <div class="expression-display" id="truthTableExpression">
-                            <!-- Expression will be displayed here -->
-                        </div>
-                        <div class="truth-table-container" id="truthTableContainer">
-                            <!-- Truth table will be generated here -->
+                        <div class ="panel panel-accent-primary">
+                            
+                            <div id="truthTableLogicDiagramDisplay" class="logic-diagram-display">
+                                <!-- Circuit will be generated here -->
+                            </div>
+                            <div id="truthTableExpression" class="bg-white expression-display">
+                                <!-- Expression will be displayed here -->
+                            </div>
+                            <div id="truthTableContainer" class="truth-table-container">
+                                <!-- Truth table will be generated here -->
+                            </div>
                         </div>
                     </div>
 
                     <div class="mark-btn-container">
                         <button id="submitTruthTableBtn" class="btn btn-success" onclick="checkTruthTableAnswer()">Submit Answer</button>
+                    </div>
+                </div>
+
+                <div id="scenarioMode" class="game-mode-container">
+                    <div class="panel panel-accent-info">
+                        <h3>Difficulty Level:</h3>
+                        <div class="selection-controls">
+                            <div class="control-group">
+                                <button class="btn btn-small btn-select active difficulty-active" onclick="setScenarioModeDifficulty(1, this)">Level 1</button>
+                                <button class="btn btn-small btn-select" onclick="setScenarioModeDifficulty(2, this)">Level 2</button>
+                                <button class="btn btn-small btn-select" onclick="setScenarioModeDifficulty(3, this)">Level 3</button>
+                            </div>
+                            
+                            <div class="help-toggle">
+                                <label class="help-label">
+                                    <input type="checkbox" id="scenarioDebugMode" onchange="toggleHelpScenarioMode()" class="help-checkbox">
+                                    Help Mode (Show all accepted answers)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-area">
+                        <h2>Write the Boolean expression for this scenario:</h2>
+                        <div class="panel panel-accent-primary">
+                            <div class="scenario-display" id="scenarioDisplay">
+                                <!-- Scenario will be generated here by JS. -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="text" id="scenarioInput" class="expression-input" placeholder="Enter expression (e.g., Q = A AND B)" onkeypress="handleEnterKeyForScenarioMode(event)">
+                    
+                    <div id="scenarioHelpInfo" class="help-info">
+                        <h4>Help Mode - Accepted Answers</h4>
+                        <div id="scenarioAcceptedAnswers" class="accepted-answers"></div>
+                    </div>
+
+                    <div class="mark-btn-container">
+                        <button id="submitScenarioBtn" class="btn btn-success" onclick="checkScenarioAnswer()">Submit Answer</button>
                     </div>
                 </div>
 

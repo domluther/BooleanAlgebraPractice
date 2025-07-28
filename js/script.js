@@ -11,13 +11,13 @@ let gateReason = '';
 let expressionModeDifficultyLevel = 1;
 let currentExpression = '';
 let currentAcceptedAnswers = [];
-let debugMode = false;
+let expressionHelpMode = false;
 
-// Global variables for word expression mode
-let wordExpressionModeDifficultyLevel = 1;
-let wordDebugMode = false;
-let currentWordExpression = '';
-let currentWordAcceptedAnswers = [];
+// Global variables for scenario mode
+let scenarioModeDifficultyLevel = 1;
+let scenarioHelpMode = false;
+let currentScenario = '';
+let currentScenarioAcceptedAnswers = [];
 
 // Global variables for truth table mode
 let truthTableModeDifficultyLevel = 1;
@@ -42,9 +42,9 @@ function setGameMode(mode, clickedButton) {
     document.getElementById('nameThatGateMode').style.display = 'none';
     document.querySelectorAll('.game-mode-container').forEach(el => el.style.display = 'none');
 
-    // Hide debug info for all modes
-    document.getElementById('debugInfo').style.display = 'none';
-    document.getElementById('wordDebugInfo').style.display = 'none';
+    // Hide help info for all modes
+    document.getElementById('helpInfo').style.display = 'none';
+    document.getElementById('scenarioHelpInfo').style.display = 'none';
     
     // Show the selected mode
     if (mode === 'nameThatGate') {
@@ -64,16 +64,16 @@ function setGameMode(mode, clickedButton) {
     } else if (mode === 'writeExpression') {
         showSubmitExpressionButton();
         generateExpressionQuestion();
-        if (debugMode) {
-            document.getElementById('debugInfo').style.display = 'block';
-            updateDebugDisplayForExpressionMode();
+        if (expressionHelpMode) {
+            document.getElementById('helpInfo').style.display = 'block';
+            updateHelpDisplayForExpressionMode();
         }
-    } else if (mode === 'wordExpression') {
-        showSubmitWordExpressionButton();
-        generateWordExpressionQuestion();
-        if (wordDebugMode) {
-            document.getElementById('wordDebugInfo').style.display = 'block';
-            updateDebugDisplayForWordExpressionMode();
+    } else if (mode === 'scenario') {
+        showSubmitScenarioButton();
+        generateScenarioQuestion();
+        if (scenarioHelpMode) {
+            document.getElementById('scenarioHelpInfo').style.display = 'block';
+            updateHelpDisplayForScenarioMode();
         }
     } else if (mode === 'truthTable') {
         showSubmitTruthTableButton();
@@ -87,7 +87,7 @@ function generateNameThatGateQuestion() {
     const gates = ['AND', 'OR', 'NOT', 'NONE', 'NONE'];
     currentGate = gates[Math.floor(Math.random() * gates.length)];
 
-    const svgCanvas = document.getElementById('nameThatGateCanvas');
+    const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
     if (!svgCanvas) {
         console.error("SVG canvas element not found.");
         return;
@@ -177,7 +177,12 @@ function drawNONEGate() {
     const selectedGate = incorrectGates[randomIndex];
     
     gateReason = selectedGate.reason;
-    return selectedGate.svg;
+    
+    const completeGateSVG = `
+    <svg width="200" height="120" viewBox="0 0 200 120">
+        ${selectedGate.svg}
+    </svg>`
+    return completeGateSVG;
 }
 
 function checkNameThatGateAnswer(answer) {
@@ -309,21 +314,21 @@ const expressionDatabase = {
 };
 
 
-// Debug mode for expression writing
-function toggleDebugExpressionMode() {
-    debugMode = document.getElementById('debugMode').checked;
-    const debugInfo = document.getElementById('debugInfo');
-    
-    if (debugMode && currentMode === 'writeExpression') {
-        debugInfo.style.display = 'block';
-        updateDebugDisplayForExpressionMode();
+// Help mode for expression writing
+function toggleHelpExpressionMode() {
+    expressionHelpMode = document.getElementById('debugMode').checked;
+    const helpInfo = document.getElementById('helpInfo');
+
+    if (expressionHelpMode && currentMode === 'writeExpression') {
+        helpInfo.style.display = 'block';
+        updateHelpDisplayForExpressionMode();
     } else {
-        debugInfo.style.display = 'none';
+        helpInfo.style.display = 'none';
     }
 }
 
-function updateDebugDisplayForExpressionMode() {
-    if (debugMode) {
+function updateHelpDisplayForExpressionMode() {
+    if (expressionHelpMode) {
         const acceptedAnswersDiv = document.getElementById('acceptedAnswers');
         if (currentAcceptedAnswers && currentAcceptedAnswers.length > 0) {
             acceptedAnswersDiv.innerHTML = currentAcceptedAnswers.map(answer => 
@@ -347,8 +352,8 @@ function setExpressionModeDifficulty(level, clickedButton) {
     generateExpressionQuestion();
     hideFeedback();
     
-    if (debugMode) {
-        updateDebugDisplayForExpressionMode();
+    if (expressionHelpMode) {
+        updateHelpDisplayForExpressionMode();
     }
 
     // Show submit button and hide next button when changing difficulty
@@ -367,8 +372,8 @@ function generateExpressionQuestion() {
     
     currentAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentExpression);
 
-    if (debugMode) {
-        updateDebugDisplayForExpressionMode();
+    if (expressionHelpMode) {
+        updateHelpDisplayForExpressionMode();
     }
 
     document.getElementById('expressionInput').value = '';
@@ -625,24 +630,24 @@ function checkExpressionAnswer() {
     showNextButton();
 }
 
-// Debug mode for word expression writing
-function toggleDebugWordExpressionMode() {
-    wordDebugMode = document.getElementById('wordDebugMode').checked;
-    const debugInfo = document.getElementById('wordDebugInfo');
+// Help mode for scenario mode
+function toggleHelpScenarioMode() {
+    scenarioHelpMode = document.getElementById('scenarioDebugMode').checked;
+    const helpInfo = document.getElementById('scenarioHelpInfo');
     
-    if (wordDebugMode && currentMode === 'wordExpression') {
-        debugInfo.style.display = 'block';
-        updateDebugDisplayForWordExpressionMode();
+    if (scenarioHelpMode && currentMode === 'scenario') {
+        helpInfo.style.display = 'block';
+        updateHelpDisplayForScenarioMode();
     } else {
-        debugInfo.style.display = 'none';
+        helpInfo.style.display = 'none';
     }
 }
 
-function updateDebugDisplayForWordExpressionMode() {
-    if (wordDebugMode) {
-        const acceptedAnswersDiv = document.getElementById('wordAcceptedAnswers');
-        if (currentWordAcceptedAnswers && currentWordAcceptedAnswers.length > 0) {
-            acceptedAnswersDiv.innerHTML = currentWordAcceptedAnswers.map(answer => 
+function updateHelpDisplayForScenarioMode() {
+    if (scenarioHelpMode) {
+        const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
+        if (currentScenarioAcceptedAnswers && currentScenarioAcceptedAnswers.length > 0) {
+            acceptedAnswersDiv.innerHTML = currentScenarioAcceptedAnswers.map(answer => 
                 `<div>${answer}</div>`
             ).join('');
         } else {
@@ -651,30 +656,30 @@ function updateDebugDisplayForWordExpressionMode() {
     }
 }
 
-// Word Expression Mode functionality
-function setWordExpressionModeDifficulty(level, clickedButton) {
-    wordExpressionModeDifficultyLevel = level;
+// Scenario Mode functionality
+function setScenarioModeDifficulty(level, clickedButton) {
+    scenarioModeDifficultyLevel = level;
     
     // UPDATED: Changed selector from .difficulty-btn to .btn-select
-    document.querySelectorAll('#wordExpressionMode .btn-select').forEach(btn => {
+    document.querySelectorAll('#scenarioMode .btn-select').forEach(btn => {
         btn.classList.remove('active', 'difficulty-active');
     });
     clickedButton.classList.add('active', 'difficulty-active');
     
-    generateWordExpressionQuestion();
+    generateScenarioQuestion();
     hideFeedback();
     
-    if (wordDebugMode) {
-        updateDebugDisplayForWordExpressionMode();
+    if (scenarioHelpMode) {
+        updateHelpDisplayForScenarioMode();
     }
         // Show submit button and hide next button when changing difficulty
     hideNextButton();
-    showSubmitWordExpressionButton();
+    showSubmitScenarioButton();
     answered = false;
 }
 
-function generateWordExpressionQuestion() {
-    const wordExpressionScenarios = {
+function generateScenarioQuestion() {
+    const scenarioScenarios = {
         1: [ // Level 1 - Simple AND/OR scenarios
             {
                 title: "Going out",
@@ -878,15 +883,15 @@ function generateWordExpressionQuestion() {
     };
 
     const scenarioDisplay = document.getElementById('scenarioDisplay');
-    const scenarios = wordExpressionScenarios[wordExpressionModeDifficultyLevel];
+    const scenarios = scenarioScenarios[scenarioModeDifficultyLevel];
     
     // Pick a random scenario from the current difficulty level
     const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
     
     // Store the current expression and generate accepted answers
-    currentWordExpression = randomScenario.expression;
-    currentWordAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentWordExpression);
-    
+    currentScenario = randomScenario.expression;
+    currentScenarioAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentScenario);
+
     // Generate the HTML for the scenario display
     let inputTableRows = '';
     for (const [input, description] of Object.entries(randomScenario.inputs)) {
@@ -902,7 +907,7 @@ function generateWordExpressionQuestion() {
     const scenarioHTML = `
         <div class="scenario-content">
             <h3>${randomScenario.title}</h3>
-            <div class="panel panel-accent-info">
+            <div class="panel bg-white panel-accent-info">
                 ${randomScenario.scenario.replace(/\n/g, '<br>')}
             </div>
             
@@ -923,18 +928,18 @@ function generateWordExpressionQuestion() {
     `;
     
     scenarioDisplay.innerHTML = scenarioHTML;
-    document.getElementById('wordExpressionInput').value = '';
+    document.getElementById('scenarioInput').value = '';
 }
 
-function checkWordExpressionAnswer() {
+function checkScenarioAnswer() {
     if (answered) return;
     
-    const userAnswer = document.getElementById('wordExpressionInput').value.trim().toUpperCase();
+    const userAnswer = document.getElementById('scenarioInput').value.trim().toUpperCase();
     
     answered = true;
     totalQuestions++;
 
-    hideSubmitWordExpressionButton();
+    hideSubmitScenarioButton();
 
     // Use the same normalization function as the regular expression mode
     function normalizeExpression(expr) {
@@ -951,7 +956,7 @@ function checkWordExpressionAnswer() {
     const normalizedUser = normalizeExpression(userAnswer);
     
     // Check if user answer matches any of the accepted answers
-    const isCorrect = currentWordAcceptedAnswers.some(acceptedAnswer => {
+    const isCorrect = currentScenarioAcceptedAnswers.some(acceptedAnswer => {
         const normalizedAccepted = normalizeExpression(acceptedAnswer.toUpperCase());
         return normalizedUser === normalizedAccepted;
     });
@@ -960,31 +965,31 @@ function checkWordExpressionAnswer() {
         score++;
         showFeedback('Correct! Excellent work!', 'correct');
     } else {
-        showFeedback(`Incorrect. The correct answer is: ${currentWordExpression}`, 'incorrect');
+        showFeedback(`Incorrect. The correct answer is: ${currentScenario}`, 'incorrect');
     }
     
     updateScoreDisplay();
     showNextButton();
 }
 
-// Handle Enter key for word expression input
-function handleEnterKeyForWordExpressionMode(event) {
+// Handle Enter key for scenario mode input
+function handleEnterKeyForScenarioMode(event) {
     if (event.key === 'Enter') {
         if (!answered) {
-            checkWordExpressionAnswer();
+            checkScenarioAnswer();
         } else {
             nextQuestion();
         }
     }
 }
 
-// Button visibility functions for word expression mode
-function showSubmitWordExpressionButton() {
-    document.getElementById('submitWordExpressionBtn').style.display = 'inline-block';
+// Button visibility functions for scenario mode
+function showSubmitScenarioButton() {
+    document.getElementById('submitScenarioBtn').style.display = 'inline-block';
 }
 
-function hideSubmitWordExpressionButton() {
-    document.getElementById('submitWordExpressionBtn').style.display = 'none';
+function hideSubmitScenarioButton() {
+    document.getElementById('submitScenarioBtn').style.display = 'none';
 }
 
 // Truth Table Mode functionality
@@ -1600,15 +1605,15 @@ function nextQuestion() {
     } else if (currentMode === 'writeExpression') {
         showSubmitExpressionButton();
         generateExpressionQuestion();
-        if (debugMode) {
-            updateDebugDisplayForExpressionMode();
+        if (expressionHelpMode) {
+            updateHelpDisplayForExpressionMode();
         }
     }
-    else if (currentMode === 'wordExpression') {
-        showSubmitWordExpressionButton();
-        generateWordExpressionQuestion();
-        if (wordDebugMode) {
-            updateDebugDisplayForWordExpressionMode();
+    else if (currentMode === 'scenario') {
+        showSubmitScenarioButton();
+        generateScenarioQuestion();
+        if (scenarioHelpMode) {
+            updateHelpDisplayForScenarioMode();
         }
     } else if (currentMode === 'truthTable') {
         showSubmitTruthTableButton();
