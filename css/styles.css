@@ -1011,3 +1011,454 @@ body {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
 }
+
+
+.circuit-builder-container {
+    margin-top: 20px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    background: #f8f9fa;
+    overflow: hidden;
+}
+
+.circuit-workspace {
+    display: flex;
+    height: 500px;
+}
+
+.toolbox-panel {
+    width: 180px;
+    background: #fff;
+    border-right: 2px solid #e9ecef;
+    padding: 15px;
+}
+
+.toolbox-panel h4 {
+    margin: 0 0 15px 0;
+    color: #495057;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gate-toolbox {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md)
+}
+
+.gate-tool {
+    align-items: center;
+    cursor: grab;
+    border-radius: 6px;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.gate-tool:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.gate-tool:active {
+    cursor: grabbing;
+}
+
+.gate-icon {
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 6px;
+    color: white;
+    position: relative;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gate-label {
+  margin-top: 8px;
+  font-size: 14px;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Logic Gate Symbols */
+.and-icon {
+    position: relative;
+    width: 60px;
+    height: 40px;
+    background: #ff6b6b;
+    border-radius: 0 50% 50% 0;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-family: sans-serif;
+    border: 2px solid #ee5a52;
+}
+
+
+.or-icon {
+    position: relative;
+    width: 60px;
+    height: 40px;
+    background: #4ecdc4;
+    clip-path: polygon(
+        0% 0%, 15% 0%, 50% 0%, 100% 50%, 
+        50% 100%, 15% 100%, 0% 100%, 
+        10% 50%
+    );
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-family: sans-serif;
+    border: 2px solid #44a08d;
+}
+
+
+.not-icon {
+    position: relative;
+    width: 0;
+    height: 0;
+    border-left: 40px solid #feca57;
+    border-top: 20px solid transparent;
+    border-bottom: 20px solid transparent;
+    margin-right: 12px; /* space for the circle */
+}
+
+.not-icon::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background: #ff9ff3;
+    border-radius: 50%;
+    border: 2px solid #feca57;
+}
+
+
+.circuit-canvas-container {
+    flex: 1;
+    position: relative;
+    background: #fff;
+}
+
+/* Circuit canvas container */
+.circuit-canvas {
+    position: relative;
+    min-height: 450px;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Terminals - Updated for dynamic generation */
+.input-terminal, .output-terminal {
+    position: absolute;
+    width: 50px;
+    height: 35px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    user-select: none;
+    z-index: 10; /* Ensure terminals appear above other elements */
+}
+
+.input-terminal {
+    background: #d4edda;
+    border: 2px solid #28a745;
+    color: #155724;
+    /* Left position will be set dynamically by JavaScript */
+}
+
+.output-terminal {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    color: #856404;
+    /* Right position will be set dynamically by JavaScript */
+}
+
+/* Terminals - Updated for dynamic generation */
+.input-terminal, .output-terminal {
+    position: absolute;
+    width: 50px;
+    height: 35px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    user-select: none;
+    z-index: 10; /* Ensure terminals appear above other elements */
+}
+
+.input-terminal {
+    background: #d4edda;
+    border: 2px solid #28a745;
+    color: #155724;
+    /* Left position will be set dynamically by JavaScript */
+}
+
+.output-terminal {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    color: #856404;
+    /* Right position will be set dynamically by JavaScript */
+}
+
+/* Connection points on terminals */
+.connection-point {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.connection-point:hover {
+    background: #007bff;
+    border-color: #007bff;
+    transform: scale(1.2);
+}
+
+.connection-point.active {
+    background: #28a745;
+    border-color: #28a745;
+    animation: pulse 1s infinite;
+}
+
+.input-point {
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.output-point {
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Pulse animation for active connections */
+@keyframes pulse {
+    0% {
+        transform: translateY(-50%) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-50%) scale(1.3);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateY(-50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Gates */
+.circuit-gate {
+    position: absolute;
+    cursor: move;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    user-select: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: box-shadow 0.2s;
+    font-size: 10px;
+    z-index: 5;
+}
+
+.circuit-gate:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.circuit-gate.selected {
+    border: 3px solid #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+/* .circuit-gate.and-gate { 
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    width: 70px;
+    height: 50px;
+    border-radius: 0 25px 25px 0;
+    position: relative;
+}
+
+.circuit-gate.and-gate::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 25px;
+    background: inherit;
+    border-radius: 6px 0 0 6px;
+}
+
+.circuit-gate.or-gate { 
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+    width: 70px;
+    height: 50px;
+    border-radius: 0 50% 50% 0;
+    position: relative;
+}
+
+.circuit-gate.or-gate::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: inherit;
+    border-radius: 0 50% 50% 0;
+    transform: scale(0.6);
+    transform-origin: left center;
+}
+
+.circuit-gate.not-gate { 
+    width: 50px;
+    height: 40px;
+    background: none;
+    border-left: 35px solid #feca57;
+    border-top: 20px solid transparent;
+    border-bottom: 20px solid transparent;
+    border-radius: 0;
+    position: relative;
+}
+
+.circuit-gate.not-gate::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #feca57;
+    border: 2px solid #ff9ff3;
+} */
+
+/* Gate Connection Points */
+.gate-input-point, .gate-output-point {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 2px solid #333;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gate-input-point:hover, .gate-output-point:hover,
+.gate-input-point.active, .gate-output-point.active {
+    border-color: #007bff;
+    background: #007bff;
+    transform: scale(1.2);
+}
+
+.gate-input-point {
+    left: -5px;
+}
+
+.gate-output-point {
+    right: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.gate-input-point.input-0 { top: 30%; transform: translateY(-50%); }
+.gate-input-point.input-1 { top: 70%; transform: translateY(-50%); }
+.gate-input-point.single-input { top: 50%; transform: translateY(-50%); }
+
+/* Wire layers */
+.wire-layer, .temp-wire-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.wire-layer path {
+    stroke: #007bff;
+    stroke-width: 3;
+    fill: none;
+    cursor: pointer;
+    pointer-events: stroke;
+}
+
+.wire-layer path:hover {
+    stroke: #dc3545;
+    stroke-width: 4;
+}
+
+
+.circuit-controls {
+    padding: 15px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .circuit-workspace {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .toolbox-panel {
+        width: 100%;
+        border-right: none;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .gate-toolbox {
+        flex-direction: row;
+        justify-content: center;
+    }
+    
+    .circuit-canvas-container {
+        height: 400px;
+    }
+    
+    .input-terminal, .output-terminal {
+        width: 40px;
+        height: 30px;
+        font-size: 12px;
+    }
+    
+    .connection-point {
+        width: 10px;
+        height: 10px;
+    }
+}
