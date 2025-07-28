@@ -28,26 +28,30 @@ let truthTableInputs = [];
 let expertMode = false;
 
 
-// Updated setGameMode function to handle the new word expression mode
+
 function setGameMode(mode, clickedButton) {
     currentMode = mode;
     
     // Update button states
-    document.querySelectorAll('.btn-select').forEach(btn => btn.classList.remove('active'));
-    clickedButton.classList.add('active');
+    document.querySelectorAll('.mode-selector .btn-select').forEach(btn => {
+        btn.classList.remove('active', 'mode-active');
+    });
+    clickedButton.classList.add('active', 'mode-active');
     
     // Hide all game modes
     document.getElementById('nameThatGateMode').style.display = 'none';
-    document.getElementById('writeExpressionMode').style.display = 'none';
-    document.getElementById('wordExpressionMode').style.display = 'none';
-    document.getElementById('truthTableMode').style.display = 'none';
+    document.querySelectorAll('.game-mode-container').forEach(el => el.style.display = 'none');
 
     // Hide debug info for all modes
     document.getElementById('debugInfo').style.display = 'none';
     document.getElementById('wordDebugInfo').style.display = 'none';
     
     // Show the selected mode
-    document.getElementById(mode + 'Mode').style.display = 'block';
+    if (mode === 'nameThatGate') {
+        document.getElementById('nameThatGateMode').style.display = 'block';
+    } else {
+        document.getElementById(mode + 'Mode').style.display = 'block';
+    }
     
     // Reset answered state and hide feedback/buttons
     answered = false;
@@ -104,7 +108,7 @@ function generateNameThatGateQuestion() {
             break;
     }
     
-    // Reset option buttons - changed from 'option-btn' to 'btn'
+    // Reset option buttons
     document.querySelectorAll('.options .btn').forEach(btn => {
         btn.classList.remove('correct', 'incorrect');
     });
@@ -174,24 +178,17 @@ function drawNONEGate() {
     
     gateReason = selectedGate.reason;
     return selectedGate.svg;
-    // Could be used to do this in a cleaner method without the global variable
-    // return {
-    //     svg: selectedGate.svg,
-    //     reason: selectedGate.reason
-    // };
 }
 
 function checkNameThatGateAnswer(answer) {
     if (answered) return;
     
     answered = true;
-    // TODO - Scoring manager 
     totalQuestions++;
 
     const nameThatGateButtons = document.querySelectorAll('#nameThatGateMode .options .btn');
     
     if (answer === currentGate) {
-        // TODO - Scoring manager 
         score++;
         nameThatGateButtons.forEach(btn => {
             if (btn.textContent === answer) {
@@ -222,6 +219,7 @@ function checkNameThatGateAnswer(answer) {
     showNextButton();
 }
 
+//  Expression mode content
 const expressionDatabase = {
     level1: [
         "Q = A AND B",
@@ -299,14 +297,14 @@ const expressionDatabase = {
         'Q = ((A OR (NOT B)) AND C)'
     ],
     level4: [
-    'Q = ((A AND B) OR (C AND D)) OR E', // A + B wonky lines
-    'Q = (A AND (B OR C)) AND (D OR E)', // D + E wonky lines
-    'Q = ((A OR B) AND (C AND D)) OR E', // A + B wonky lines
-    'Q = (A OR (B AND C)) OR (D AND E)', // D + E wonky lines - move AND down?
+    'Q = ((A AND B) OR (C AND D)) OR E',
+    'Q = (A AND (B OR C)) AND (D OR E)',
+    'Q = ((A OR B) AND (C AND D)) OR E',
+    'Q = (A OR (B AND C)) OR (D AND E)',
     'Q = (NOT (A AND B)) OR (C AND D)',
     'Q = (A AND B) AND (NOT (C OR D))',
     'Q = ((NOT A) OR B) AND (C OR (NOT D))',
-    'Q = (A AND ((NOT B) OR C)) OR (D AND E)' // A overlaps NOT gate in SVG, D + E wonky lines
+    'Q = (A AND ((NOT B) OR C)) OR (D AND E)'
     ]
 };
 
@@ -341,9 +339,10 @@ function updateDebugDisplayForExpressionMode() {
 function setExpressionModeDifficulty(level, clickedButton) {
     expressionModeDifficultyLevel = level;
     
-    // Update button states
-    document.querySelectorAll('#writeExpressionMode .difficulty-btn').forEach(btn => btn.classList.remove('active'));
-    clickedButton.classList.add('active');
+    document.querySelectorAll('#writeExpressionMode .btn-select').forEach(btn => {
+        btn.classList.remove('active', 'difficulty-active');
+    });
+    clickedButton.classList.add('active', 'difficulty-active');
     
     generateExpressionQuestion();
     hideFeedback();
@@ -656,9 +655,11 @@ function updateDebugDisplayForWordExpressionMode() {
 function setWordExpressionModeDifficulty(level, clickedButton) {
     wordExpressionModeDifficultyLevel = level;
     
-    // Update button states
-    document.querySelectorAll('#wordExpressionMode .difficulty-btn').forEach(btn => btn.classList.remove('active'));
-    clickedButton.classList.add('active');
+    // UPDATED: Changed selector from .difficulty-btn to .btn-select
+    document.querySelectorAll('#wordExpressionMode .btn-select').forEach(btn => {
+        btn.classList.remove('active', 'difficulty-active');
+    });
+    clickedButton.classList.add('active', 'difficulty-active');
     
     generateWordExpressionQuestion();
     hideFeedback();
@@ -814,18 +815,20 @@ function generateWordExpressionQuestion() {
         `;
     }
     
+    // UPDATED: Replaced <p class="scenario-description"> with a div using the .panel class
     const scenarioHTML = `
         <div class="scenario-content">
             <h3>${randomScenario.title}</h3>
-            <p class="scenario-description">${randomScenario.scenario}</p>
+            <div class="panel panel-accent-primary" style="text-align: left; font-size: 1.1em; line-height: 1.6; color: var(--text-secondary);">
+                ${randomScenario.scenario}
+            </div>
             
             <div class="input-table-container">
-                <h4>Input Criteria (True / False)</h4>
                 <table class="input-table">
                     <thead>
                         <tr>
                             <th>Input</th>
-                            <th>Criteria</th>
+                            <th>Criteria (True / False)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -884,7 +887,11 @@ function checkWordExpressionAnswer() {
 // Handle Enter key for word expression input
 function handleEnterKeyForWordExpressionMode(event) {
     if (event.key === 'Enter') {
-        checkWordExpressionAnswer();
+        if (!answered) {
+            checkWordExpressionAnswer();
+        } else {
+            nextQuestion();
+        }
     }
 }
 
@@ -901,9 +908,11 @@ function hideSubmitWordExpressionButton() {
 function setTruthTableModeDifficulty(level, clickedButton) {
     truthTableModeDifficultyLevel = level;
     
-    // Update button states
-    document.querySelectorAll('#truthTableMode .difficulty-btn').forEach(btn => btn.classList.remove('active'));
-    clickedButton.classList.add('active');
+    // UPDATED: Changed selector from .difficulty-btn to .btn-select
+    document.querySelectorAll('#truthTableMode .btn-select').forEach(btn => {
+        btn.classList.remove('active', 'difficulty-active');
+    });
+    clickedButton.classList.add('active', 'difficulty-active');
     
     generateTruthTableQuestion();
     hideFeedback();
@@ -1973,6 +1982,12 @@ const circuitGenerator = new CircuitGenerator();
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    generateNameThatGateQuestion();
+    // Set the initial active button correctly
+    const initialModeButton = document.querySelector('.mode-selector .btn-select');
+    if (initialModeButton) {
+        setGameMode('nameThatGate', initialModeButton);
+    } else {
+        generateNameThatGateQuestion();
+    }
     updateScoreDisplay();
 });
