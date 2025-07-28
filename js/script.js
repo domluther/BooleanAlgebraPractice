@@ -390,12 +390,12 @@ function setExpressionModeDifficulty(level, clickedButton) {
 }
 
 function generateExpressionQuestion() {
-    const circuitDisplay = document.getElementById('circuitDisplay');
+    const logicDiagramDisplay = document.getElementById('logicDiagramDisplay');
     const levelKey = `level${expressionModeDifficultyLevel}`;
     const expressions = expressionDatabase[levelKey];
 
     currentExpression = expressions[Math.floor(Math.random() * expressions.length)];
-    circuitGenerator.generateCircuit(currentExpression, circuitDisplay);
+    circuitGenerator.generateCircuit(currentExpression, logicDiagramDisplay);
     
     currentAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentExpression);
 
@@ -1026,8 +1026,8 @@ function toggleExpertMode() {
 function generateTruthTableQuestion() {
     const expressionDisplay = document.getElementById('truthTableExpression');
     const truthTableContainer = document.getElementById('truthTableContainer');
-    const truthTableCircuitContainer = document.getElementById('truthTableCircuitDisplay');
-    
+    const truthTableCircuitContainer = document.getElementById('truthTableLogicDiagramDisplay');
+
     // Get expressions for current difficulty level
     const expressions = expressionDatabase[`level${truthTableModeDifficultyLevel}`];
     

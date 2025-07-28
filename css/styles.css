@@ -643,7 +643,7 @@
     display: block;
 }
 
-.circuit-display {
+.logic-diagram-display {
     background: var(--bg-white);
     border: 2px solid var(--border-light);
     border-radius: var(--radius-lg);
@@ -729,7 +729,7 @@
 /* Button Container */
 .mark-btn-container {
     text-align: center;
-    margin-top: var(--spacing-lg);
+    /* margin-top: var(--spacing-lg); */
 }
 
 .mark-btn-container .btn {
@@ -738,7 +738,8 @@
 
 /* Feedback System */
 .feedback {
-    margin-top: var(--spacing-lg);
+    /* margin-top: var(--spacing-lg); */
+    margin: var(--spacing-lg) 0;
     padding: var(--spacing-lg);
     border-radius: var(--radius-md);
     font-size: 16px;
@@ -841,7 +842,7 @@
         height: 90px;
     }
     
-    .circuit-display {
+    .logic-diagram-display {
         padding: var(--spacing-lg);
         min-height: 150px;
     }
@@ -1527,15 +1528,6 @@ body {
     100% { opacity: 1; }
 }
 
-/* Truth difficulty buttons */
-.truth-difficulty-btn {
-    margin: 0 5px;
-}
-
-.truth-difficulty-btn.active {
-    background-color: #3498db;
-    color: white;
-}
 
 /* Hover effects for table rows */
 .truth-table tbody tr:hover {
