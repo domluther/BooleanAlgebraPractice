@@ -647,7 +647,7 @@
     background: var(--bg-white);
     border: 2px solid var(--border-light);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-xl);
+    /* padding: var(--spacing-xl);  disabled for now*/
     margin: var(--spacing-lg) 0;
     min-height: 200px;
     display: flex;

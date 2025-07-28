@@ -203,7 +203,6 @@ function drawNONEGate() {
     const randomIndex = Math.floor(Math.random() * incorrectGates.length);
     const selectedGate = incorrectGates[randomIndex];
     
-    console.log("Incorrect gate reason:", selectedGate.reason);
     gateReason = selectedGate.reason;
     return selectedGate.svg;
     // Could be used to do this in a cleaner method without the global variable
@@ -259,6 +258,7 @@ const expressionDatabase = {
         "Q = A AND B",
         "Q = A OR B", 
         "Q = NOT A",
+        "Q = NOT B",
     ],
     level2: [
         "Q = (A AND B) AND C",
@@ -328,6 +328,16 @@ const expressionDatabase = {
         'Q = NOT ((A AND B) AND C)',
         'Q = ((A AND (NOT B)) OR C)',
         'Q = ((A OR (NOT B)) AND C)'
+    ],
+    level4: [
+    'Q = ((A AND B) OR (C AND D)) OR E', // A + B wonky lines
+    'Q = (A AND (B OR C)) AND (D OR E)', // D + E wonky lines
+    'Q = ((A OR B) AND (C AND D)) OR E', // A + B wonky lines
+    'Q = (A OR (B AND C)) OR (D AND E)', // D + E wonky lines - move AND down?
+    'Q = (NOT (A AND B)) OR (C AND D)',
+    'Q = (A AND B) AND (NOT (C OR D))',
+    'Q = ((NOT A) OR B) AND (C OR (NOT D))',
+    'Q = (A AND ((NOT B) OR C)) OR (D AND E)' // A overlaps NOT gate in SVG, D + E wonky lines
     ]
 };
 
@@ -379,28 +389,23 @@ function setExpressionModeDifficulty(level, clickedButton) {
     answered = false;
 }
 
-// TODO Can be simplified massively now there is the expressionDatabase
 function generateExpressionQuestion() {
     const circuitDisplay = document.getElementById('circuitDisplay');
+    const levelKey = `level${expressionModeDifficultyLevel}`;
+    const expressions = expressionDatabase[levelKey];
+
+    currentExpression = expressions[Math.floor(Math.random() * expressions.length)];
+    circuitGenerator.generateCircuit(currentExpression, circuitDisplay);
     
-    switch(expressionModeDifficultyLevel) {
-        case 1:
-            // Hardcoded SVGs for level 1
-            generateLevel1ExpressionModeCircuit(circuitDisplay);
-            break;
-        case 2:
-            generateLevel2ExpressionModeCircuit(circuitDisplay);
-            break;
-        case 3:
-            generateLevel3ExpressionModeCircuit(circuitDisplay);
-            break;
-        case 4:
-            generateLevel4ExpressionModeCircuit(circuitDisplay);
-            break;
+    currentAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentExpression);
+
+    if (debugMode) {
+        updateDebugDisplayForExpressionMode();
     }
-    
+
     document.getElementById('expressionInput').value = '';
 }
+
 
 function generateAllAcceptedExpressionModeAnswers(baseExpression) {
     const answers = new Set([baseExpression]);
@@ -421,7 +426,6 @@ function generateAllAcceptedExpressionModeAnswers(baseExpression) {
     
     // Convert to array and sort for consistent display
     const result = [...answers].sort();
-    console.log('Generated accepted answers for:', baseExpression, result);
     return result;
 }
 
@@ -1081,13 +1085,7 @@ function parseExpressionForTruthTable(expression) {
     const inputs = [...new Set(tokens.filter(token => 
         token.length === 1 && token.match(/[A-Z]/)
     ))].sort();
-    
-    console.log('Parsing expression:', expression);
-    console.log('Right side:', rightSide);
-    console.log('Clean expression:', cleanExpression);
-    console.log('Tokens:', tokens);
-    console.log('Final inputs:', inputs);
-    
+        
     // For intermediate expressions, we'll identify sub-expressions in parentheses
     const intermediateExpressions = [];
     
@@ -1717,6 +1715,21 @@ class CircuitGenerator {
         return svg;
     }
 
+    // Check if this is a simple single-gate circuit
+    isSingleGateCircuit(node) {
+        if (!node) return false;
+        
+        // Single gate: AND/OR with only variable children, or NOT with variable child
+        if (node.type === 'AND' || node.type === 'OR') {
+            return (node.left && node.left.type === 'VAR') && 
+                   (node.right && node.right.type === 'VAR');
+        } else if (node.type === 'NOT') {
+            return node.operand && node.operand.type === 'VAR';
+        }
+        
+        return false;
+    }
+
     layoutNodes(node, x = null, y = null, level = 0, parentGateInputY = null) {
         if (!node) return null;
 
@@ -1761,25 +1774,23 @@ class CircuitGenerator {
             nodeLayout.operand = this.layoutNodes(node.operand, x - 90, y, level + 1, y);
         } else { // AND or OR
             nodeLayout.width = 80;
-            nodeLayout.height = 60; // Increased from 50 to give more vertical space
+            nodeLayout.height = 60;
             
-            // Increase spacing to match the larger gate height
-            const baseSpacing = Math.max(40, 55 - (level * 5)); // Increased spacing
+            const baseSpacing = Math.max(40, 55 - (level * 5));
             const spacing = Math.min(baseSpacing, (maxY - minY) / 4);
             
             const leftY = Math.max(minY, Math.min(maxY, y - spacing));
             const rightY = Math.max(minY, Math.min(maxY, y + spacing));
             
-            // Use larger input offsets to match the bigger gate
-            nodeLayout.left = this.layoutNodes(node.left, x - 100, leftY, level + 1, y - 15); // Increased from 12
-            nodeLayout.right = this.layoutNodes(node.right, x - 100, rightY, level + 1, y + 15); // Increased from 12
+            nodeLayout.left = this.layoutNodes(node.left, x - 100, leftY, level + 1, y - 15);
+            nodeLayout.right = this.layoutNodes(node.right, x - 100, rightY, level + 1, y + 15);
         }
 
         return nodeLayout;
     }
 
     adjustVariablePosition(varName, proposedY) {
-        const minSeparation = 30; // Minimum vertical separation between variables
+        const minSeparation = 30;
         
         // Check if this variable already has a position assigned
         if (this.variablePositions.has(varName)) {
@@ -1789,29 +1800,28 @@ class CircuitGenerator {
         let adjustedY = proposedY;
         let conflictFound = true;
         let attempts = 0;
-        const maxAttempts = 10; // Prevent infinite loops
+        const maxAttempts = 10;
         
-        // Keep adjusting until we find a position that doesn't conflict
+        const minY = 40;
+        const maxY = 210;
+        
         while (conflictFound && attempts < maxAttempts) {
             conflictFound = false;
             attempts++;
             
             for (const [existingVar, existingY] of this.variablePositions) {
                 if (Math.abs(adjustedY - existingY) < minSeparation) {
-                    // Try both directions - up and down
                     const moveUp = existingY - minSeparation;
                     const moveDown = existingY + minSeparation;
                     
-                    // Choose the direction that keeps us closer to the original proposed position
-                    if (Math.abs(moveUp - proposedY) < Math.abs(moveDown - proposedY) && moveUp >= 40) {
+                    if (Math.abs(moveUp - proposedY) < Math.abs(moveDown - proposedY) && moveUp >= minY) {
                         adjustedY = moveUp;
-                    } else if (moveDown <= 210) {
+                    } else if (moveDown <= maxY) {
                         adjustedY = moveDown;
-                    } else if (moveUp >= 40) {
+                    } else if (moveUp >= minY) {
                         adjustedY = moveUp;
                     } else {
-                        // If both directions are out of bounds, use the proposed position anyway
-                        adjustedY = Math.max(40, Math.min(210, proposedY));
+                        adjustedY = Math.max(minY, Math.min(maxY, proposedY));
                     }
                     
                     conflictFound = true;
@@ -1820,10 +1830,7 @@ class CircuitGenerator {
             }
         }
         
-        // Ensure we stay within bounds
-        adjustedY = Math.max(40, Math.min(210, adjustedY));
-        
-        // Store the final position
+        adjustedY = Math.max(minY, Math.min(maxY, adjustedY));
         this.variablePositions.set(varName, adjustedY);
         
         return adjustedY;
@@ -1837,6 +1844,14 @@ class CircuitGenerator {
     }
 
     renderSVG(layout, container) {
+        // Check for simple hardcoded cases first
+        const simpleResult = this.renderSimpleCircuit(layout);
+        if (simpleResult) {
+            const svg = `<svg width="200" height="120" viewBox="0 0 200 120">${simpleResult}</svg>`;
+            container.innerHTML = svg;
+            return svg;
+        }
+        
         // Calculate dynamic width based on circuit complexity
         const depth = this.getCircuitDepth(layout);
         const width = Math.max(350, depth * 100 + 100);
@@ -1865,6 +1880,53 @@ class CircuitGenerator {
         return svg;
     }
 
+    renderSimpleCircuit(layout) {
+        if (!layout || !this.isSingleGateCircuit(layout)) {
+            return null;
+        }
+        
+        if (layout.type === 'AND' && layout.left && layout.right && 
+            layout.left.type === 'VAR' && layout.right.type === 'VAR') {
+            // Hardcoded AND gate
+            const varA = layout.left.name;
+            const varB = layout.right.name;
+            return `<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="#333" stroke-width="2"/>
+        <line x1="30" y1="50" x2="60" y2="50" stroke="#333" stroke-width="2"/>
+        <line x1="30" y1="70" x2="60" y2="70" stroke="#333" stroke-width="2"/>
+        <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
+        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
+        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
+        }
+        
+        if (layout.type === 'OR' && layout.left && layout.right && 
+            layout.left.type === 'VAR' && layout.right.type === 'VAR') {
+            // Hardcoded OR gate
+            const varA = layout.left.name;
+            const varB = layout.right.name;
+            return `<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="#333" stroke-width="2"/>
+        <line x1="30" y1="50" x2="65" y2="50" stroke="#333" stroke-width="2"/>
+        <line x1="30" y1="70" x2="65" y2="70" stroke="#333" stroke-width="2"/>
+        <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
+        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
+        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
+        }
+        
+        if (layout.type === 'NOT' && layout.operand && layout.operand.type === 'VAR') {
+            // Hardcoded NOT gate
+            const varA = layout.operand.name;
+            return `<path d="M 60 30 L 60 90 L 108 60 Z" fill="none" stroke="#333" stroke-width="2"/>
+        <circle cx="115" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
+        <line x1="30" y1="60" x2="60" y2="60" stroke="#333" stroke-width="2"/>
+        <line x1="120" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
+        <text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
+        }
+        
+        return null;
+    }
+
     collectVariables(node, variables) {
         if (!node) return;
         if (node.type === 'VAR') {
@@ -1883,12 +1945,10 @@ class CircuitGenerator {
         let svg = '';
         
         if (node.type === 'AND') {
-            // Increased gate height - adjust the path coordinates
             svg += `<path d="M ${node.x - 40} ${node.y - 30} L ${node.x - 40} ${node.y + 30} L ${node.x - 15} ${node.y + 30} A 30 30 0 0 0 ${node.x - 15} ${node.y - 30} Z" fill="none" stroke="#333" stroke-width="2"/>`;
             svg += this.renderGates(node.left);
             svg += this.renderGates(node.right);
         } else if (node.type === 'OR') {
-            // Increased gate height - adjust the path coordinates  
             svg += `<path d="M ${node.x - 40} ${node.y - 30} Q ${node.x - 15} ${node.y - 30} ${node.x + 10} ${node.y} Q ${node.x - 15} ${node.y + 30} ${node.x - 40} ${node.y + 30} Q ${node.x - 25} ${node.y} ${node.x - 40} ${node.y - 30}" fill="none" stroke="#333" stroke-width="2"/>`;
             svg += this.renderGates(node.left);
             svg += this.renderGates(node.right);
@@ -1962,9 +2022,9 @@ class CircuitGenerator {
         } else if (node.type === 'NOT') {
             return { x: node.x + 30, y: node.y };
         } else if (node.type === 'OR') {
-            return { x: node.x + 10, y: node.y }; // Moved 5 pixels right from +10
+            return { x: node.x + 10, y: node.y };
         } else {
-            return { x: node.x + 15, y: node.y }; // Moved 5 pixels right from +10
+            return { x: node.x + 15, y: node.y };
         }
     }
 }
