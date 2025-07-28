@@ -1576,33 +1576,6 @@ function handleEnterKeyForExpressionMode(event) {
     }
 }
 
-// Hardcoded - prettier and faster than using circuit generator
-function generateLevel1ExpressionModeCircuit(container) {
-    const gates = ['AND', 'OR', 'NOT'];
-    const gate = gates[Math.floor(Math.random() * gates.length)];
-    
-    let svg = '<svg width="200" height="120" viewBox="0 0 200 120">';
-    
-    if (gate === 'AND') {
-        currentExpression = 'Q = A AND B';
-        svg += drawANDGate();
-    } else if (gate === 'OR') {
-        currentExpression = 'Q = A OR B';
-        svg += drawORGate();
-    } else {
-        currentExpression = 'Q = NOT A';
-        svg += drawNOTGate();
-    }
-    
-    svg += '</svg>';
-    container.innerHTML = svg;
-        
-    currentAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentExpression);
-    if (debugMode) {
-        updateDebugDisplayForExpressionMode();
-    }
-}
-
 // Generates SVG for expressions
 class CircuitGenerator {
     constructor() {
@@ -2031,51 +2004,8 @@ class CircuitGenerator {
 
 const circuitGenerator = new CircuitGenerator();
 
-// TODO Very much can be simplified 
-function generateLevel2ExpressionModeCircuit(container) {
-    currentExpression = expressionDatabase.level2[Math.floor(Math.random() * expressionDatabase.level2.length)];
-    circuitGenerator.generateCircuit(currentExpression, container);
-    
-    currentAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentExpression);
-    if (debugMode) {
-        updateDebugDisplayForExpressionMode();
-    }
-}
-
-function generateLevel3ExpressionModeCircuit(container) {
-    currentExpression = expressionDatabase.level3[Math.floor(Math.random() * expressionDatabase.level3.length)];
-    circuitGenerator.generateCircuit(currentExpression, container);
-    
-    currentAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentExpression);
-    if (debugMode) {
-        updateDebugDisplayForExpressionMode();
-    }
-}
-
-// Challenge mode - less important that circuits are wonky
-function generateLevel4ExpressionModeCircuit(container) {
-    const level4Expressions = [
-        'Q = ((A AND B) OR (C AND D)) OR E', // A + B wonky lines
-        'Q = (A AND (B OR C)) AND (D OR E)', // D + E wonky lines
-        'Q = ((A OR B) AND (C AND D)) OR E', // A + B wonky lines
-        'Q = (A OR (B AND C)) OR (D AND E)', // D + E wonky lines - move AND down?
-        'Q = (NOT (A AND B)) OR (C AND D)',
-        'Q = (A AND B) AND (NOT (C OR D))',
-        'Q = ((NOT A) OR B) AND (C OR (NOT D))',
-        'Q = (A AND ((NOT B) OR C)) OR (D AND E)' // A overlaps NOT gate in SVG, D + E wonky lines
-    ];
-    
-    currentExpression = level4Expressions[Math.floor(Math.random() * level4Expressions.length)];
-    circuitGenerator.generateCircuit(currentExpression, container);
-    
-    currentAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentExpression);
-    if (debugMode) {
-        updateDebugDisplayForExpressionMode();
-    }
-}
-
 // Initialize the game when the page loads
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     generateNameThatGateQuestion();
     updateScoreDisplay();
 });
