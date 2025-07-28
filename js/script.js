@@ -677,8 +677,24 @@ function generateWordExpressionQuestion() {
     const wordExpressionScenarios = {
         1: [ // Level 1 - Simple AND/OR scenarios
             {
+                title: "Going out",
+                scenario: "You can go out (Q) if you have done your homework.",
+                inputs: {
+                    A: "Homework is done"
+                },
+                expression: "Q = A"
+            },
+                        {
+                title: "Going out again",
+                scenario: "You can go out (Q) if you did not get a detention at school.",
+                inputs: {
+                    A: "Got a detention"
+                },
+                expression: "Q = NOT A"
+            },
+            {
                 title: "Door Access",
-                scenario: "A secure door will only unlock if the person has a valid ID badge AND knows the correct passcode.",
+                scenario: "A secure door will only unlock (Q) if the person has a valid ID badge AND knows the correct passcode.",
                 inputs: {
                     A: "Person has a valid ID badge",
                     B: "Person knows the correct passcode"
@@ -687,7 +703,7 @@ function generateWordExpressionQuestion() {
             },
             {
                 title: "Alarm System",
-                scenario: "A burglar alarm will trigger if either a door is opened OR a window is opened.",
+                scenario: "A burglar alarm will trigger (Q) if either a door OR window is opened.",
                 inputs: {
                     A: "Door is opened",
                     B: "Window is opened"
@@ -696,7 +712,7 @@ function generateWordExpressionQuestion() {
             },
             {
                 title: "Computer Login",
-                scenario: "A computer will allow login if the user enters the correct username AND the correct password.",
+                scenario: "A computer will let the user login (Q) if they enter the correct username AND the correct password.",
                 inputs: {
                     A: "Correct username entered",
                     B: "Correct password entered"
@@ -705,7 +721,7 @@ function generateWordExpressionQuestion() {
             },
             {
                 title: "Emergency Exit",
-                scenario: "An emergency exit will open if either the fire alarm is activated OR the manual override is pressed.",
+                scenario: "An emergency exit will open (Q) if either the fire alarm is activated OR the manual override is pressed.",
                 inputs: {
                     A: "Fire alarm is activated",
                     B: "Manual override is pressed"
@@ -716,7 +732,7 @@ function generateWordExpressionQuestion() {
         2: [ // Level 2 - More complex scenarios with 3 inputs
             {
                 title: "Bank Vault Access",
-                scenario: "A bank vault will open only if all three conditions are met: the manager's key is turned, the correct code is entered, and biometric scan passes.",
+                scenario: "A bank stores its money in a vault to keep it safe. The vault will open (Q) only if all three conditions are met: the manager's key is turned, the correct code is entered, and biometric scan passes.",
                 inputs: {
                     A: "Manager's key is turned",
                     B: "Correct code is entered",
@@ -726,7 +742,7 @@ function generateWordExpressionQuestion() {
             },
             {
                 title: "Emergency Shutdown",
-                scenario: "A nuclear reactor will shut down if any of these conditions occur: temperature exceeds safe limit, pressure exceeds safe limit, or the emergency button is pressed.",
+                scenario: "A nuclear reactor will shut down (Q) if the temperature or pressure exceed a safe limit. It can also be triggered by an emergency button being pressed.",
                 inputs: {
                     A: "Temperature exceeds safe limit",
                     B: "Pressure exceeds safe limit",
@@ -736,61 +752,128 @@ function generateWordExpressionQuestion() {
             },
             {
                 title: "Car Engine Start",
-                scenario: "A car engine will start if the key is in the ignition AND either the brake pedal is pressed OR the car is in park mode.",
+                scenario: "A car engine will start (Q) if the key is in the ignition while the brake pedal is pressed or the start button is pressed.",
                 inputs: {
                     A: "Key is in ignition",
                     B: "Brake pedal is pressed",
-                    C: "Car is in park mode"
+                    C: "Start button is pressed"
                 },
                 expression: "Q = A AND (B OR C)"
             },
             {
                 title: "Security Camera",
-                scenario: "A security camera will record if motion is detected AND either it's nighttime OR the manual recording switch is on.",
+                scenario: "A security camera will record (Q) if motion is detected at night or the manual recording switch is on.",
                 inputs: {
                     A: "Motion is detected",
                     B: "It's nighttime",
                     C: "Manual recording switch is on"
                 },
-                expression: "Q = A AND (B OR C)"
+                expression: "Q = (A AND B) OR C"
+            },
+            {
+                title: "Gym Access",
+                scenario: "A gym grants access to discounted memberships (Q) only if one of the following applies: The person is under 21 and has a university ID, or they are aged 65 or older and show proof of residency.",
+                inputs: {
+                    A: "Under 21",
+                    B: "Has university ID",
+                    C: "65 or older",
+                    D: "Has proof of residency"
+                },
+                expression: "Q = (A AND B) OR (C AND D)"
+            },
+            {
+                title: "Library Bonus",
+                scenario: "A library gives out a free bookmark (Q) when a special token is shown while borrowing either a fiction book or a non-fiction book.",
+                inputs: {
+                    T: "Token is shown",
+                    F: "Fiction book borrowed",
+                    N: "Non-fiction book borrowed"
+                },
+                expression: "Q = T AND (F OR N)"
             }
         ],
-        3: [ // Level 3 - Complex scenarios with NOT gates and mixed logic
+        3: [ // Level 3 - More wordy scenarios
             {
                 title: "Server Access Control",
-                scenario: "A server will grant access if the user is authenticated AND either they are an admin OR (they are a regular user AND it's during business hours AND the system is not in maintenance mode).",
+                scenario: "A server will let a user login (Q) if they are authenticated. Admins can login whenever but regular users can only login during business hours.",
                 inputs: {
                     A: "User is authenticated",
                     B: "User is an admin",
                     C: "User is a regular user",
                     D: "It's during business hours",
-                    E: "System is in maintenance mode"
                 },
-                expression: "Q = A AND (B OR (C AND D AND NOT E))"
+                expression: "Q = A AND (B OR (C AND D))"
             },
             {
-                title: "Automated Sprinkler System",
-                scenario: "A sprinkler system will activate if fire is detected AND the system is not disabled AND either (it's an automatic system) OR (it's manual mode AND the override button is pressed).",
+                title: "Smart doorbell",
+                scenario: `Smart doorbells allow people to answer their door remotely. This means the user can talk to their visitors while they are not at home, or if they are unable to answer the door in person for any other reason, such as a disability.
+
+                Smart doorbells include a camera in addition to a doorbell. If the camera detects movement, or if the doorbell is pressed, then a notification is sent to the user's smartphone (X). An app can then be used to view the camera and to listen to or speak with the visitor.`,
                 inputs: {
-                    A: "Fire is detected",
-                    B: "System is disabled",
-                    C: "It's an automatic system",
-                    D: "It's manual mode",
-                    E: "Override button is pressed"
+                    D: "Doorbell is pressed",
+                    M: "Movement is detected by the camera",
                 },
-                expression: "Q = A AND NOT B AND (C OR (D AND E))"
+                expression: "X = M OR D"
             },
             {
-                title: "Smart Home Lighting",
-                scenario: "Smart lights will turn on if it's dark AND either (motion is detected AND the house is not in sleep mode) OR the manual switch is pressed.",
+                title: "Private Collector's Trap",
+                scenario: `A private collector has received a valuable gemstone which they wish to put on display. Due to its value, the collector has proposed a trap to prevent thieves from stealing the gemstone or escaping after attempting to steal it.
+
+                The gemstone rests on top of a pressure plate on a pedestal, surrounded by a glass case. If the glass is broken and the gemstone's weight is removed from the pressure plate, the trap is set off. A steel barrier is then lowered (L), blocking the only entrance to the room and trapping any thieves.`,
                 inputs: {
-                    A: "It's dark",
-                    B: "Motion is detected",
-                    C: "House is in sleep mode",
-                    D: "Manual switch is pressed"
+                    B: "Glass case is broken",
+                    W: "Weight is applied",
                 },
-                expression: "Q = A AND ((B AND NOT C) OR D)"
+                expression: "L = B AND (NOT W)"
+            },
+            {
+                title: "Bank Vault Lock",
+                scenario: `Bank vaults use many different types of locks to prevent theft and unauthorised access. One bank improves its security by controlling the combination lock with an electronic system, allowing the combination lock to be enabled and disabled electronically. While disabled, the vault will not open even if the correct combination is used.
+                
+                The combination lock is enabled (L) when two switches, located in separate rooms, are pressed. Additionally, to prevent access outside of the bank's opening hours even if the combination has been stolen, a time lock is used. This means that the combination lock is only enabled while the time lock is off as well.`,
+                inputs: {
+                    A: "Switch 1 is pressed",
+                    B: "Switch 2 is pressed",
+                    T: "Time lock is on"
+                },
+                expression: "L = (A AND B) AND (NOT T)"
+            },
+            {
+                title: "Synchronised Defibrillator",
+                scenario: `Defibrillators are life-saving devices which apply an electric shock to a patient to return their heartbeat to normal. In some cases, this shock must be applied at a specific time (i.e. the shock must be synchronised with the patient's heartbeat).
+
+                When this is the case, the paddles are placed on the patient's chest and their heartbeat is monitored. Once a timing function has determined the correct moment to apply the shock, the user pushes a button on each paddle. The shock is then automatically applied (S) at the appropriate time to correct the patient's heartbeat.`,
+                inputs: {
+                    A: "Button on paddle 1 is not pressed",
+                    B: "Button on paddle 2 is not pressed",
+                    T: "Timing function is ready"
+                },
+                expression: "S = NOT (A AND B) AND T"
+            },
+            {
+                title: "Flood Predictor",
+                scenario: `Flooding can be predicted ahead of time, allowing those who may be affected to set up defences or to evacuate. A simple prediction uses the amount of rainfall, as well as other conditions such as river stage (the water level in the river) and soil moisture, to determine whether a flood is likely to occur.
+                
+                If the river stage is high, it may be close to overflowing, while if the soil moisture is high, it is unable to hold more water. High rainfall at the same time as either of these would then cause flooding (F). A prediction should therefore be made in these conditions.`,
+                inputs: {
+                    M: "Soil moisture is high",
+                    R: "High rainfall",
+                    S: "River stage is high"
+                },
+                expression: "F = R AND (M OR S)"
+            },
+            {
+                title: "Eco-Friendly Reward",
+                scenario: "Shoppers receive a free reusable bag (Q) if their entire purchase is environmentally friendly. They must choose a reusable item (like a bamboo toothbrush or a metal straw), select organic food, and avoid plastic packaging.",
+                inputs: {
+                    B: "Chosen bamboo toothbrush",
+                    F: "Chosen organic fruit",
+                    P: "Used plastic packaging",
+                    S: "Chosen metal straw",
+                },
+                expression: "Q = (B OR S) AND F AND (NOT P)"
             }
+
         ]
     };
 
@@ -815,12 +898,12 @@ function generateWordExpressionQuestion() {
         `;
     }
     
-    // UPDATED: Replaced <p class="scenario-description"> with a div using the .panel class
+    // Replace newlines in scenario text with <br> for HTML display
     const scenarioHTML = `
         <div class="scenario-content">
             <h3>${randomScenario.title}</h3>
-            <div class="panel panel-accent-primary" style="text-align: left; font-size: 1.1em; line-height: 1.6; color: var(--text-secondary);">
-                ${randomScenario.scenario}
+            <div class="panel panel-accent-info">
+                ${randomScenario.scenario.replace(/\n/g, '<br>')}
             </div>
             
             <div class="input-table-container">

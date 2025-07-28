@@ -812,9 +812,12 @@ body {
     color: var(--text-primary);
     margin-bottom: var(--spacing-lg);
     font-size: 1.3em;
-    text-align: center;
+    text-align: left;
 }
 
+.scenario-content .panel {
+    text-align: left;
+}
 /* Input Table */
 .input-table-container {
     margin-top: var(--spacing-lg);
