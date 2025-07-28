@@ -43,7 +43,7 @@ function setGameMode(mode, clickedButton) {
     document.querySelectorAll('.game-mode-container').forEach(el => el.style.display = 'none');
 
     // Hide help info for all modes
-    document.getElementById('helpInfo').style.display = 'none';
+    document.getElementById('expressionHelpInfo').style.display = 'none';
     document.getElementById('scenarioHelpInfo').style.display = 'none';
     
     // Show the selected mode
@@ -65,7 +65,7 @@ function setGameMode(mode, clickedButton) {
         showSubmitExpressionButton();
         generateExpressionQuestion();
         if (expressionHelpMode) {
-            document.getElementById('helpInfo').style.display = 'block';
+            document.getElementById('expressionHelpInfo').style.display = 'block';
             updateHelpDisplayForExpressionMode();
         }
     } else if (mode === 'scenario') {
@@ -317,13 +317,13 @@ const expressionDatabase = {
 // Help mode for expression writing
 function toggleHelpExpressionMode() {
     expressionHelpMode = document.getElementById('debugMode').checked;
-    const helpInfo = document.getElementById('helpInfo');
+    const expressionHelpInfo = document.getElementById('expressionHelpInfo');
 
     if (expressionHelpMode && currentMode === 'writeExpression') {
-        helpInfo.style.display = 'block';
+        expressionHelpInfo.style.display = 'block';
         updateHelpDisplayForExpressionMode();
     } else {
-        helpInfo.style.display = 'none';
+        expressionHelpInfo.style.display = 'none';
     }
 }
 
@@ -633,13 +633,13 @@ function checkExpressionAnswer() {
 // Help mode for scenario mode
 function toggleHelpScenarioMode() {
     scenarioHelpMode = document.getElementById('scenarioDebugMode').checked;
-    const helpInfo = document.getElementById('scenarioHelpInfo');
+    const expressionHelpInfo = document.getElementById('scenarioHelpInfo');
     
     if (scenarioHelpMode && currentMode === 'scenario') {
-        helpInfo.style.display = 'block';
+        expressionHelpInfo.style.display = 'block';
         updateHelpDisplayForScenarioMode();
     } else {
-        helpInfo.style.display = 'none';
+        expressionHelpInfo.style.display = 'none';
     }
 }
 

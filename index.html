@@ -23,8 +23,8 @@
                 <button class="btn btn-select active mode-active" onclick="setGameMode('nameThatGate', this)">Name That Gate</button>
                 <button class="btn btn-select" onclick="setGameMode('writeExpression', this)">Expression Writing</button>
                 <button class="btn btn-select" onclick="setGameMode('truthTable', this)">Truth Tables</button>
+                <button class="btn btn-select" onclick="setGameMode('drawCircuit', this)">Draw</button>
                 <button class="btn btn-select" onclick="setGameMode('scenario', this)">Scenarios</button>
-                <button class="btn btn-select" onclick="setGameMode('drawCircuits', this)">Draw</button>
             </div>
 
             <div>
@@ -73,7 +73,7 @@
 
                     <input type="text" id="expressionInput" class="expression-input" placeholder="Enter expression (e.g., Q = A AND B)" onkeypress="handleEnterKeyForExpressionMode(event)">
                     
-                    <div id="helpInfo" class="help-info">
+                    <div id="expressionHelpInfo" class="help-info">
                         <h4>Help Mode - Accepted Answers</h4>
                         <div id="acceptedAnswers" class="accepted-answers"></div>
                     </div>
@@ -126,6 +126,49 @@
                         <button id="submitTruthTableBtn" class="btn btn-success" onclick="checkTruthTableAnswer()">Submit Answer</button>
                     </div>
                 </div>
+
+                <div id="drawCircuitMode" class="game-mode-container">
+                    <div class="panel panel-accent-info">
+                        <h3>Difficulty Level:</h3>
+                        <div class="selection-controls">
+                            <div class="control-group">
+                                <button class="btn btn-small btn-select active difficulty-active" onclick="setDrawCircuitModeDifficulty(1, this)">Level 1</button>
+                                <button class="btn btn-small btn-select" onclick="setDrawCircuitModeDifficulty(2, this)">Level 2</button>
+                                <button class="btn btn-small btn-select" onclick="setDrawCircuitModeDifficulty(3, this)">Level 3</button>
+                            </div>
+                            
+                            <div class="help-toggle">
+                                <label class="help-label">
+                                    <input type="checkbox" id="showCircuitExpression" onchange="toggleCircuitExpression()" class="help-checkbox">
+                                    Show expression so far
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-area">
+                        <h2>Draw the circuit for this expression:</h2>
+                        <div class ="panel panel-accent-primary">
+                            
+                            <div id="drawCircuitExpression" class="bg-white expression-display">
+                                <!-- Expression will be displayed here -->
+                            </div>
+
+                            <!-- UI to draw the circuit - a panel and then elements on the side to select and place gates -->
+
+                        </div>
+                    </div>
+
+                    <div id="circuitHelpInfo" class="help-info">
+                        <h4>Help Mode - Current circuit</h4>
+                        <div id="circuitExpression" class="accepted-answers"></div>
+                    </div>
+
+                    <div class="mark-btn-container">
+                        <button id="submitCircuitBtn" class="btn btn-success" onclick="checkCircuitAnswer()">Submit Answer</button>
+                    </div>
+                </div>
+
 
                 <div id="scenarioMode" class="game-mode-container">
                     <div class="panel panel-accent-info">
