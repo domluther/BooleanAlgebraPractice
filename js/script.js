@@ -16,7 +16,7 @@ let nameThatGateReason = '';
 // Global variables for expression writing mode
 let currentExpression = '';
 let currentAcceptedAnswers = [];
-let circuitHelpMode = false;
+let expressionHelpMode = false;
 
 // Global variables for truth table mode
 let showIntermediateColumns = false;
@@ -38,6 +38,7 @@ let draggingOffset = { x: 0, y: 0 };
 let wireStartNode = null;
 let targetExpression = "";
 let parsedTargetExpression = {};
+let circuitHelpMode = false;
 
 // Global variables for scenario mode
 let scenarioHelpMode = false;
@@ -61,7 +62,8 @@ function setGameMode(mode, clickedButton) {
     // Hide help info for all modes
     document.getElementById('expressionHelpInfo').style.display = 'none';
     document.getElementById('scenarioHelpInfo').style.display = 'none';
-    
+    document.getElementById('circuitHelpInfo').style.display = 'none';
+
     // Show the selected mode
     const activeContainer = document.getElementById(mode + 'Mode');
     if (activeContainer) {
@@ -82,7 +84,7 @@ function setGameMode(mode, clickedButton) {
     } else if (mode === 'writeExpression') {
         showSubmitButton();
         generateExpressionQuestion();
-        if (circuitHelpMode) {
+        if (expressionHelpMode) {
             document.getElementById('expressionHelpInfo').style.display = 'block';
             updateHelpDisplayForExpressionMode();
         }
@@ -98,6 +100,9 @@ function setGameMode(mode, clickedButton) {
         generateTruthTableQuestion();
     } else if (mode === 'drawCircuit') {
         initDrawCircuitMode();
+        if (circuitHelpMode) {
+            document.getElementById('circuitHelpInfo').style.display = 'block';
+        }
     }
 }
 
@@ -375,10 +380,10 @@ const expressionDatabase = {
 
 // Help mode for expression writing
 function toggleHelpExpressionMode() {
-    circuitHelpMode = document.getElementById('debugMode').checked;
+    expressionHelpMode = document.getElementById('debugMode').checked;
     const expressionHelpInfo = document.getElementById('expressionHelpInfo');
 
-    if (circuitHelpMode && currentMode === 'writeExpression') {
+    if (expressionHelpMode && currentMode === 'writeExpression') {
         expressionHelpInfo.style.display = 'block';
         updateHelpDisplayForExpressionMode();
     } else {
@@ -387,7 +392,7 @@ function toggleHelpExpressionMode() {
 }
 
 function updateHelpDisplayForExpressionMode() {
-    if (circuitHelpMode) {
+    if (expressionHelpMode) {
         const acceptedAnswersDiv = document.getElementById('acceptedAnswers');
         if (currentAcceptedAnswers && currentAcceptedAnswers.length > 0) {
             acceptedAnswersDiv.innerHTML = currentAcceptedAnswers.map(answer => 
@@ -411,7 +416,7 @@ function setExpressionModeDifficulty(level, clickedButton) {
     generateExpressionQuestion();
     hideFeedback();
     
-    if (circuitHelpMode) {
+    if (expressionHelpMode) {
         updateHelpDisplayForExpressionMode();
     }
 
@@ -431,7 +436,7 @@ function generateExpressionQuestion() {
     
     currentAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentExpression);
 
-    if (circuitHelpMode) {
+    if (expressionHelpMode) {
         updateHelpDisplayForExpressionMode();
     }
 
@@ -1637,7 +1642,7 @@ function nextQuestion() {
     } else if (currentMode === 'writeExpression') {
         showSubmitButton();
         generateExpressionQuestion();
-        if (circuitHelpMode) {
+        if (expressionHelpMode) {
             updateHelpDisplayForExpressionMode();
         }
     }
@@ -2599,7 +2604,8 @@ function generateDrawCircuitQuestion() {
     const expressions = expressionDatabase[levelKey];
 
     targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
-    document.getElementById('targetExpression').textContent = targetExpression;
+    document.getElementById('circuitTargetExpression').innerHTML = `<div class="expression-text">${targetExpression}</div>`;
+
     parsedTargetExpression = parseExpression(targetExpression);
 
     setupCanvas()
@@ -2614,7 +2620,6 @@ function toggleHelpCircuitMode() {
 
     if (circuitHelpMode && currentMode === 'drawCircuit') {
         circuitHelpInfo.style.display = 'block';
-        updateHelpDisplayForExpressionMode();
     } else {
         circuitHelpInfo.style.display = 'none';
     }

@@ -143,28 +143,25 @@
                         <h2>Draw the circuit for this expression:</h2>
                         <div class ="panel panel-accent-primary">
                             
-                            <div id="targetExpression" class="bg-white expression-display">
+                            <div id="circuitTargetExpression" class="bg-white expression-display">
                                 <!-- Expression will be displayed here -->
                             </div>
 
                             <!-- UI to draw the circuit - a panel and then elements on the side to select and place gates -->
-                            <div class="circuit-builder-container">
-
+                            <div id="drawCircuitContainer">
+                                <div id="circuitToolbox">
+                                    <h3>Toolbox</h3>
+                                    <div class="gate" draggable="true" id="drag-AND">AND</div>
+                                    <div class="gate" draggable="true" id="drag-OR">OR</div>
+                                    <div class="gate" draggable="true" id="drag-NOT">NOT</div>
+                                    <button id="resetCircuitBtn" class="btn" style="width: 100%; margin-top: 20px; background-color: #dc3545;">Reset</button>
+                                </div>
+                                <div id="canvasContainer">
+                                    <canvas id="circuitCanvas" width="750" height="500"></canvas>
+                                </div>
+                            </div>
                             </div>
 
-                        </div>
-                    </div>
-
-                    <div id="drawCircuitContainer">
-                        <div id="circuitToolbox">
-                            <h3>Toolbox</h3>
-                            <div class="gate" draggable="true" id="drag-AND">AND</div>
-                            <div class="gate" draggable="true" id="drag-OR">OR</div>
-                            <div class="gate" draggable="true" id="drag-NOT">NOT</div>
-                            <button id="resetCircuitBtn" class="btn" style="width: 100%; margin-top: 20px; background-color: #dc3545;">Reset</button>
-                        </div>
-                        <div id="canvasContainer">
-                            <canvas id="circuitCanvas" width="750" height="500"></canvas>
                         </div>
                     </div>
 
@@ -172,6 +169,8 @@
                         <h4>Help Mode - Current circuit</h4>
                         <div id="interpretedExpression" class="accepted-answers">Q = ?</div>
                     </div>
+
+
 
                 </div>
 
