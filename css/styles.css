@@ -642,17 +642,6 @@ body {
     font-size: 1.4em;
 }
 
-.gate-display {
-    margin: var(--spacing-lg) 0;
-}
-
-.gate-svg {
-    width: 200px;
-    height: 120px;
-    margin: 0 auto;
-    display: block;
-}
-
 .logic-diagram-display {
     background: var(--bg-light-teal);
     border: 2px solid var(--border-light);
@@ -1040,32 +1029,49 @@ body {
     font-size: 1.1em;
 }
 
-/* Draggable gate styles in the toolbox */
 .gate {
-    background: var(--bg-white);
-    border: 2px solid var(--border-light);
-    color: var(--text-primary);
-    padding: var(--spacing-md);
-    text-align: center;
-    margin-bottom: var(--spacing-sm);
-    cursor: grab;
-    border-radius: var(--radius-md);
-    user-select: none; /* Prevents text selection when dragging */
-    font-weight: 600;
-    transition: all var(--transition-fast);
-    box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0;
+  margin-bottom: var(--spacing-sm);
+  cursor: grab;
+  border-radius: var(--radius-md);
+  user-select: none;
+  font-weight: 600;
+  transition: transform var(--transition-fast);
+  background: transparent;
+  box-shadow: none;
 }
 
 .gate:hover {
-    border-color: #667eea;
-    color: #667eea;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  color: #667eea;
 }
 
 .gate:active {
-    cursor: grabbing;
-    background: #e2e8f0;
+  cursor: grabbing;
+}
+
+.gate-icon {
+  width: 100%;
+  aspect-ratio: 1.5; /* optional, keep consistent proportions */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gate-svg {
+  width: 90%;     /* Make it take up most of the button */
+  height: auto;
+  pointer-events: none;
+  display: block;
+}
+
+.gate-label {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  pointer-events: none;
 }
 
 /* The container for the drawing canvas */

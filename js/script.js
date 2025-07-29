@@ -2227,7 +2227,14 @@ function addCircuitModeEventListeners() {
     const toolboxGates = document.querySelectorAll('.gate[draggable="true"]');
     toolboxGates.forEach(gate => {
         gate.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', e.target.id);
+            const targetGate = e.currentTarget;
+            e.dataTransfer.setData('text/plain', targetGate.id);
+
+            // Optional: Use the SVG image as the drag image
+            const svg = targetGate.querySelector('img');
+            if (svg) {
+                e.dataTransfer.setDragImage(svg, svg.width / 2, svg.height / 2);
+            }
         });
     });
 

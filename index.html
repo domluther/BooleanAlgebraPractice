@@ -151,9 +151,24 @@
                             <div id="drawCircuitContainer">
                                 <div id="circuitToolbox">
                                         <h3>Toolbox</h3>
-                                        <div class="gate" draggable="true" id="drag-AND">AND</div>
-                                        <div class="gate" draggable="true" id="drag-OR">OR</div>
-                                        <div class="gate" draggable="true" id="drag-NOT">NOT</div>
+                                        <div class="gate" draggable="true" id="drag-AND">
+                                            <div class="gate-icon">
+                                                <img src="svg/and.svg" alt="AND Gate" class="gate-svg">
+                                            </div>
+                                            <div class="gate-label">AND</div>
+                                        </div>                                    
+                                        <div class="gate" draggable="true" id="drag-OR">
+                                            <div class="gate-icon">
+                                                <img src="svg/or.svg" alt="OR Gate" class="gate-svg">
+                                            </div>
+                                            <div class="gate-label">OR</div>
+                                        </div>
+                                        <div class="gate" draggable="true" id="drag-NOT">
+                                            <div class="gate-icon">
+                                                <img src="svg/not.svg" alt="NOT Gate" class="gate-svg">
+                                            </div>
+                                            <div class="gate-label">NOT</div>
+                                        </div>
                                         <button id="removeSelectedBtn" class="btn" style="width: 100%; margin-top: 10px; background-color: #e67e22;">Remove Selected</button>
                                         <button id="resetCircuitBtn" class="btn" style="width: 100%; margin-top: 10px; background-color: #dc3545;">Reset</button>
                                     </div>
