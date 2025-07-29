@@ -2131,7 +2131,7 @@ function initDrawCircuitMode() {
 
     generateDrawCircuitQuestion();
 
-    addEventListeners();
+    addCircuitModeEventListeners();
     draw();
 }
 
@@ -2140,6 +2140,8 @@ function setupCanvas() {
     wires = [];
     nextId = 0;
     wireStartNode = null;
+    selectedGate = null;
+    selectedWire = null;
 
     // Hide feedback from previous question
     document.getElementById('feedback').style.display = 'none';
@@ -2221,7 +2223,7 @@ function addTerminals(){
 
 }
 
-function addEventListeners() {
+function addCircuitModeEventListeners() {
     const toolboxGates = document.querySelectorAll('.gate[draggable="true"]');
     toolboxGates.forEach(gate => {
         gate.addEventListener('dragstart', (e) => {
@@ -2247,17 +2249,40 @@ function addEventListeners() {
     canvas.addEventListener('mousedown', (e) => {
         if (answered) return;
         const pos = getMousePos(e);
-        const clickedNode = getClickedNode(pos);
-
-        if (clickedNode) {
-            wireStartNode = clickedNode;
+        
+        // Try to snap to a nearby node first
+        const snappedNode = getClickedNode(pos) || getNearbyNode(pos);
+        
+        if (snappedNode) {
+            wireStartNode = snappedNode;
+            clearSelections();
         } else {
-            draggingGate = getClickedGate(pos);
-            if (draggingGate) {
-                // Prevent browser's default drag behavior for canvas items
-                e.preventDefault(); 
-                draggingOffset.x = pos.x - draggingGate.x;
-                draggingOffset.y = pos.y - draggingGate.y;
+            // Check if clicking on a wire first
+            const clickedWire = getClickedWire(pos);
+            if (clickedWire) {
+                clearSelections();
+                selectedWire = clickedWire;
+                draw();
+                return;
+            }
+
+            // Check if clicking on a gate
+            const clickedGate = getClickedGate(pos);
+            if (clickedGate) {
+                // If shift key is held, start dragging; otherwise, select
+                if (e.shiftKey) {
+                    draggingGate = clickedGate;
+                    draggingOffset.x = pos.x - clickedGate.x;
+                    draggingOffset.y = pos.y - clickedGate.y;
+                    e.preventDefault();
+                } else {
+                    clearSelections();
+                    selectedGate = clickedGate;
+                    draw();
+                }
+            } else {
+                clearSelections();
+                draw();
             }
         }
     });
@@ -2270,21 +2295,42 @@ function addEventListeners() {
             updateGateNodes(draggingGate);
             draw();
         } else if (wireStartNode) {
-            draw(); 
             const pos = getMousePos(e);
+            const nearbyNode = getNearbyNode(pos);
+            
+            draw(); 
+            
+            // Draw the wire being created
             ctx.beginPath();
             ctx.moveTo(wireStartNode.x, wireStartNode.y);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.strokeStyle = '#3498db';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            
+            if (nearbyNode && nearbyNode !== wireStartNode && nearbyNode.type !== wireStartNode.type) {
+                // Snap to nearby compatible node
+                ctx.lineTo(nearbyNode.x, nearbyNode.y);
+                ctx.strokeStyle = '#27ae60'; // Green when snapping
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Draw snap indicator around the target node (separate path)
+                ctx.beginPath();
+                ctx.arc(nearbyNode.x, nearbyNode.y, 10, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#27ae60';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            } else {
+                // Normal wire preview
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = '#3498db';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
         }
     });
 
     canvas.addEventListener('mouseup', (e) => {
         if (wireStartNode) {
             const pos = getMousePos(e);
-            const endNode = getClickedNode(pos);
+            const endNode = getClickedNode(pos) || getNearbyNode(pos);
             if (endNode && endNode !== wireStartNode && endNode.type !== wireStartNode.type) {
                 addWire(wireStartNode, endNode);
             }
@@ -2299,6 +2345,11 @@ function addEventListeners() {
         answered = false;
         setupCanvas();
         draw();
+    });
+
+    // Add event listener for remove selected button
+    document.getElementById('removeSelectedBtn').addEventListener('click', () => {
+        removeSelected();
     });
 }
 
@@ -2324,6 +2375,7 @@ function addGate(type, x, y) {
     }
     
     gates.push(newGate);
+    clearSelections();
     draw();
 }
 
@@ -2346,23 +2398,41 @@ function draw() {
     if(!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2;
+    // Draw wires
     wires.forEach(wire => {
         ctx.beginPath();
         ctx.moveTo(wire.from.x, wire.from.y);
         ctx.lineTo(wire.to.x, wire.to.y);
+        
+        // Highlight selected wire
+        if (selectedWire === wire) {
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 4;
+        } else {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+        }
+        
         ctx.stroke();
     });
 
+    // Draw gates
     gates.forEach(gate => {
-        ctx.fillStyle = '#f0f0f0';
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1;
+        // Highlight selected gate
+        if (selectedGate === gate) {
+            ctx.fillStyle = '#3498db';
+            ctx.strokeStyle = '#2980b9';
+            ctx.lineWidth = 3;
+        } else {
+            ctx.fillStyle = '#f0f0f0';
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+        }
+        
         ctx.fillRect(gate.x, gate.y, gate.width, gate.height);
         ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
         
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = selectedGate === gate ? '#fff' : '#000';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.font = '16px Arial';
@@ -2371,9 +2441,11 @@ function draw() {
         drawNodesForGate(gate);
     });
     
+    // Draw input/output terminals
     [...inputs, output].forEach(io => {
         ctx.fillStyle = '#d1e7dd';
         ctx.strokeStyle = '#0f5132';
+        ctx.lineWidth = 1;
         ctx.fillRect(io.x, io.y, io.width, io.height);
         ctx.strokeRect(io.x, io.y, io.width, io.height);
         
@@ -2403,6 +2475,111 @@ function drawNode(node) {
     ctx.stroke();
 }
 
+// --- SELECTION AND REMOVAL FUNCTIONS ---
+
+function clearSelections() {
+    selectedGate = null;
+    selectedWire = null;
+}
+
+function getClickedWire(pos) {
+    const tolerance = 5; // Distance tolerance for clicking on a wire
+    
+    for (const wire of wires) {
+        const dist = distanceToLine(pos, wire.from, wire.to);
+        if (dist <= tolerance) {
+            return wire;
+        }
+    }
+    return null;
+}
+
+function distanceToLine(point, lineStart, lineEnd) {
+    const A = point.x - lineStart.x;
+    const B = point.y - lineStart.y;
+    const C = lineEnd.x - lineStart.x;
+    const D = lineEnd.y - lineStart.y;
+
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    
+    if (lenSq === 0) {
+        // Line is a point
+        return Math.sqrt(A * A + B * B);
+    }
+    
+    let param = dot / lenSq;
+    
+    let xx, yy;
+    
+    if (param < 0) {
+        xx = lineStart.x;
+        yy = lineStart.y;
+    } else if (param > 1) {
+        xx = lineEnd.x;
+        yy = lineEnd.y;
+    } else {
+        xx = lineStart.x + param * C;
+        yy = lineStart.y + param * D;
+    }
+    
+    const dx = point.x - xx;
+    const dy = point.y - yy;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function removeSelected() {
+    if (selectedGate) {
+        removeGate(selectedGate);
+        selectedGate = null;
+    } else if (selectedWire) {
+        removeWire(selectedWire);
+        selectedWire = null;
+    }
+    draw();
+    updateInterpretedExpression();
+}
+
+function removeGate(gateToRemove) {
+    // Remove all wires connected to this gate
+    wires = wires.filter(wire => {
+        const isConnectedToGate = wire.from.gateId === gateToRemove.id || wire.to.gateId === gateToRemove.id;
+        
+        if (isConnectedToGate) {
+            // Clear connection references
+            if (wire.from.connectedTo && wire.from.gateId === gateToRemove.id) {
+                const connectedNode = findNodeByConnectionInfo(wire.from.connectedTo);
+                if (connectedNode) connectedNode.connectedTo = null;
+            }
+            if (wire.to.connectedTo && wire.to.gateId === gateToRemove.id) {
+                const connectedNode = findNodeByConnectionInfo(wire.to.connectedTo);
+                if (connectedNode) connectedNode.connectedTo = null;
+            }
+            
+            // Clear the gate's node connections
+            gateToRemove.inputNodes.forEach(node => node.connectedTo = null);
+            gateToRemove.outputNode.connectedTo = null;
+        }
+        
+        return !isConnectedToGate;
+    });
+    
+    // Remove the gate itself
+    gates = gates.filter(gate => gate.id !== gateToRemove.id);
+}
+
+function removeWire(wireToRemove) {
+    // Clear connection references
+    if (wireToRemove.from.connectedTo) {
+        wireToRemove.from.connectedTo = null;
+    }
+    if (wireToRemove.to.connectedTo) {
+        wireToRemove.to.connectedTo = null;
+    }
+    
+    // Remove the wire
+    wires = wires.filter(wire => wire !== wireToRemove);
+}
 
 // --- ANSWER CHECKING LOGIC ---
 
@@ -2518,6 +2695,27 @@ function getClickedNode(pos) {
         if (dist < 6) return node;
     }
     return null;
+}
+
+function getNearbyNode(pos) {
+    const snapDistance = 20; // Distance within which to snap
+    const allNodes = [];
+    gates.forEach(g => allNodes.push(...g.inputNodes, g.outputNode));
+    inputs.forEach(i => allNodes.push(i.outputNode));
+    allNodes.push(output.inputNode);
+
+    let closestNode = null;
+    let closestDistance = snapDistance;
+
+    for (const node of allNodes) {
+        const dist = Math.sqrt((pos.x - node.x) ** 2 + (pos.y - node.y) ** 2);
+        if (dist < closestDistance) {
+            closestNode = node;
+            closestDistance = dist;
+        }
+    }
+    
+    return closestNode;
 }
 
 function updateGateNodes(gate) {
