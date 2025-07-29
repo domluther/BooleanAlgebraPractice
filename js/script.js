@@ -6,35 +6,53 @@ const modeSettings = {
 	nameThatGate: {
 		label: 'Name That Gate',
 		levels: 0,
-        currentDifficulty: 0,
+		initialize: () => {
+			generateNameThatGateQuestion();
+			hideSubmitButton();
+		}
 	},
 	writeExpression: {
 		label: 'Expression Writing',
 		levels: 4,
-        currentDifficulty: 1,
+		currentDifficulty: 1,
 		generateQuestion: generateExpressionQuestion,
-		updateHelp: () => expressionHelpMode && updateHelpDisplayForExpressionMode()
+		updateHelp: () => updateHelpDisplayForExpressionMode(),
+		initialize: generateExpressionQuestion,
+		help: {
+			updateFunction: updateHelpDisplayForExpressionMode,
+			enabled: false
+		}
 	},
 	truthTable: {
 		label: 'Truth Tables',
 		levels: 3,
-        currentDifficulty: 1,
+		currentDifficulty: 1,
 		generateQuestion: generateTruthTableQuestion,
-		updateHelp: () => {} // No help update for truth table mode
+		updateHelp: () => {},
+		initialize: generateTruthTableQuestion
 	},
 	drawCircuit: {
 		label: 'Draw Circuit',
 		levels: 4,
-        currentDifficulty: 1,
+		currentDifficulty: 1,
 		generateQuestion: generateDrawCircuitQuestion,
-		updateHelp: () => {} // No help update for draw circuit mode
+		updateHelp: () => {},
+		initialize: initDrawCircuitMode,
+		help: {
+			enabled: false
+		}
 	},
 	scenario: {
 		label: 'Scenarios',
 		levels: 3,
-        currentDifficulty: 1,
+		currentDifficulty: 1,
 		generateQuestion: generateScenarioQuestion,
-		updateHelp: () => scenarioHelpMode && updateHelpDisplayForScenarioMode()
+		updateHelp: () => updateHelpDisplayForScenarioMode(),
+		initialize: generateScenarioQuestion,
+		help: {
+			updateFunction: updateHelpDisplayForScenarioMode,
+			enabled: false
+		}
 	}
 };
 
@@ -45,7 +63,7 @@ let nameThatGateReason = '';
 // Global variables for expression writing mode
 let currentExpression = '';
 let currentAcceptedAnswers = [];
-let expressionHelpMode = false;
+
 
 // Global variables for truth table mode
 let showIntermediateColumns = false;
@@ -69,10 +87,8 @@ let draggingOffset = {
 let wireStartNode = null;
 let targetExpression = "";
 let parsedTargetExpression = {};
-let circuitHelpMode = false;
 
 // Global variables for scenario mode
-let scenarioHelpMode = false;
 let currentScenario = '';
 let currentScenarioAcceptedAnswers = [];
 const gateImages = {};
@@ -745,35 +761,53 @@ function hideSubmitButton() {
 	document.getElementById('submitBtn').style.display = 'none';
 }
 
-function toggleHelpMode(){
-    if (currentMode === 'writeExpression') {
-        toggleHelpExpressionMode();
-    } else if (currentMode === 'scenario') {
-        toggleHelpScenarioMode();
-    } else if (currentMode === 'drawCircuit') {
-        toggleHelpCircuitMode();
-    }
+function toggleHelpMode() {
+	const modeConfig = modeSettings[currentMode];
+	
+	if (!modeConfig?.help) {
+		return; // No help configuration for this mode
+	}
+	
+	// Generate IDs based on the gameMode
+	const checkboxId = `${currentMode}DebugMode`;
+	const helpInfoId = `${currentMode}HelpInfo`;
+	const modeVariable = `${currentMode}HelpMode`;
+	
+	const { updateFunction } = modeConfig.help;
+	// Update the mode variable based on checkbox state
+	modeConfig.help.enabled = document.getElementById(checkboxId).checked;
+	const helpInfoElement = document.getElementById(helpInfoId);
+
+	if (modeConfig.help.enabled) {
+		helpInfoElement.style.display = 'block';
+		// Call update function if it exists
+		if (updateFunction) {
+			updateFunction();
+		}
+	} else {
+		helpInfoElement.style.display = 'none';
+	}
 }
 
 function resetUIState() {
 	hideNextButton();
+    hideFeedback();
 	showSubmitButton();
 	answered = false;
 }
 
 function nextQuestion() {
     resetUIState();
-
 	if (currentMode === 'nameThatGate') {
 		generateNameThatGateQuestion();
 	} else if (currentMode === 'writeExpression') {
 		generateExpressionQuestion();
-		if (expressionHelpMode) {
+		if (modeSettings.writeExpression.help.enabled) {
 			updateHelpDisplayForExpressionMode();
 		}
 	} else if (currentMode === 'scenario') {
 		generateScenarioQuestion();
-		if (scenarioHelpMode) {
+		if (modeSettings.scenario.help.enabled) {
 			updateHelpDisplayForScenarioMode();
 		}
 	} else if (currentMode === 'truthTable') {
@@ -792,6 +826,13 @@ function nextQuestion() {
 }
 
 function setGameMode(mode, clickedButton) {
+	const modeConfig = modeSettings[mode];
+	
+	if (!modeConfig) {
+		console.error(`Unknown mode: ${mode}`);
+		return;
+	}
+	
 	currentMode = mode;
 
 	// Update button states
@@ -803,10 +844,8 @@ function setGameMode(mode, clickedButton) {
 	// Hide all game modes
 	document.querySelectorAll('.game-mode-container').forEach(el => el.style.display = 'none');
 
-	// Hide help info for all modes
-	document.getElementById('expressionHelpInfo').style.display = 'none';
-	document.getElementById('scenarioHelpInfo').style.display = 'none';
-	document.getElementById('circuitHelpInfo').style.display = 'none';
+	// Hide all help info
+	hideAllHelpInfo();
 
 	generateDifficultyDropdown(mode);
 
@@ -817,32 +856,35 @@ function setGameMode(mode, clickedButton) {
 	}
 
 	// Reset answered state and hide feedback/buttons
-    resetUIState();
+	resetUIState();
 
 	// Initialize the selected mode
-	if (mode === 'nameThatGate') {
-		generateNameThatGateQuestion();
-		hideSubmitButton()
-	} else if (mode === 'writeExpression') {
-		generateExpressionQuestion();
-		if (expressionHelpMode) {
-			document.getElementById('expressionHelpInfo').style.display = 'block';
-			updateHelpDisplayForExpressionMode();
-		}
-	} else if (mode === 'scenario') {
-		generateScenarioQuestion();
-		if (scenarioHelpMode) {
-			document.getElementById('scenarioHelpInfo').style.display = 'block';
-			updateHelpDisplayForScenarioMode();
-		}
-	} else if (mode === 'truthTable') {
-		generateTruthTableQuestion();
-	} else if (mode === 'drawCircuit') {
-		initDrawCircuitMode();
-		if (circuitHelpMode) {
-			document.getElementById('circuitHelpInfo').style.display = 'block';
+	if (modeConfig.initialize) {
+		modeConfig.initialize();
+	}
+	
+	// Show help if enabled
+	if (modeConfig.help?.enabled) {
+		const helpElement = document.getElementById(`${mode}HelpInfo`);
+		if (helpElement) {
+			helpElement.style.display = 'block';
+			// Call update function if it exists
+			if (modeConfig.help.updateFunction) {
+				modeConfig.help.updateFunction();
+			}
 		}
 	}
+}
+
+function hideAllHelpInfo() {
+	Object.keys(modeSettings).forEach(mode => {
+		if (modeSettings[mode].help) {
+			const helpElement = document.getElementById(`${mode}HelpInfo`);
+			if (helpElement) {
+				helpElement.style.display = 'none';
+			}
+		}
+	});
 }
 
 function setDifficultyLevel(level, clickedButton) {
@@ -1263,21 +1305,8 @@ function checkNameThatGateAnswer(answer) {
 }
 
 // Expression Writing Mode functionality
-// Help mode for expression writing
-function toggleHelpExpressionMode() {
-	expressionHelpMode = document.getElementById('expressionDebugMode').checked;
-	const expressionHelpInfo = document.getElementById('expressionHelpInfo');
-
-	if (expressionHelpMode && currentMode === 'writeExpression') {
-		expressionHelpInfo.style.display = 'block';
-		updateHelpDisplayForExpressionMode();
-	} else {
-		expressionHelpInfo.style.display = 'none';
-	}
-}
-
 function updateHelpDisplayForExpressionMode() {
-	if (expressionHelpMode) {
+	if (modeSettings.writeExpression.help.enabled) {
 		const acceptedAnswersDiv = document.getElementById('expressionAcceptedAnswers');
 		if (currentAcceptedAnswers && currentAcceptedAnswers.length > 0) {
 			acceptedAnswersDiv.innerHTML = currentAcceptedAnswers.map(answer =>
@@ -1299,7 +1328,7 @@ function generateExpressionQuestion() {
 
 	currentAcceptedAnswers = generateAllAcceptedAnswers(currentExpression);
 
-	if (expressionHelpMode) {
+	if (modeSettings.writeExpression.help.enabled) {
 		updateHelpDisplayForExpressionMode();
 	}
 
@@ -1349,21 +1378,8 @@ function checkExpressionAnswer() {
 }
 
 // Scenario Mode functionality
-// Help mode for scenario mode
-function toggleHelpScenarioMode() {
-	scenarioHelpMode = document.getElementById('scenarioDebugMode').checked;
-	const expressionHelpInfo = document.getElementById('scenarioHelpInfo');
-
-	if (scenarioHelpMode && currentMode === 'scenario') {
-		expressionHelpInfo.style.display = 'block';
-		updateHelpDisplayForScenarioMode();
-	} else {
-		expressionHelpInfo.style.display = 'none';
-	}
-}
-
 function updateHelpDisplayForScenarioMode() {
-	if (scenarioHelpMode) {
+	if (modeSettings.scenario.help.enabled) {
 		const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
 		if (currentScenarioAcceptedAnswers && currentScenarioAcceptedAnswers.length > 0) {
 			acceptedAnswersDiv.innerHTML = currentScenarioAcceptedAnswers.map(answer =>
@@ -2544,7 +2560,7 @@ function addCircuitModeEventListeners() {
 	document.getElementById('resetCircuitBtn').addEventListener('click', () => {
 		console.log('🔄 RESET BUTTON CLICKED');
 		if (answered) return;
-		answered = false;
+		resetUIState();
 		disableRemoveSelectedButton();
 		setupCanvas();
 		draw();
@@ -3155,18 +3171,6 @@ function generateDrawCircuitQuestion() {
 	setupCanvas()
 	draw();
 
-}
-
-// Help mode for circuit drawing
-function toggleHelpCircuitMode() {
-	circuitHelpMode = document.getElementById('showCircuitExpression').checked;
-	const circuitHelpInfo = document.getElementById('circuitHelpInfo');
-
-	if (circuitHelpMode && currentMode === 'drawCircuit') {
-		circuitHelpInfo.style.display = 'block';
-	} else {
-		circuitHelpInfo.style.display = 'none';
-	}
 }
 
 // Initialize the game when the page loads
