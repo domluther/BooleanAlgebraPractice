@@ -10,8 +10,8 @@ let difficultyLevels = {
 };
 
 // Global variables for name that gate mode
-let currentGate = '';
-let gateReason = '';
+let nameThatGateCurrentGate = '';
+let nameThatGateReason = '';
 
 // Global variables for expression writing mode
 let currentExpression = '';
@@ -101,6 +101,19 @@ function setGameMode(mode, clickedButton) {
     }
 }
 
+function setDifficultyLevel(level, clickedButton) {
+    // Update difficulty levels based on mode
+    if (currentMode === 'writeExpression') {
+        setExpressionModeDifficulty(level, clickedButton);
+    } else if (currentMode === 'scenario') {
+        setScenarioModeDifficulty(level, clickedButton);
+    } else if (currentMode === 'truthTable') {
+        setTruthTableModeDifficulty(level, clickedButton);
+    } else if (currentMode === 'drawCircuit') {
+        setDrawCircuitModeDifficulty(level, clickedButton);
+    }
+}
+
 function checkAnswer(answer='') {
     if (answered) return;
 
@@ -131,7 +144,7 @@ function hideSubmitButton() {
 // Name That Gate functionality
 function generateNameThatGateQuestion() {
     const gates = ['AND', 'OR', 'NOT', 'NONE', 'NONE'];
-    currentGate = gates[Math.floor(Math.random() * gates.length)];
+    nameThatGateCurrentGate = gates[Math.floor(Math.random() * gates.length)];
 
     const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
     if (!svgCanvas) {
@@ -139,7 +152,7 @@ function generateNameThatGateQuestion() {
         return;
     }
 
-    switch(currentGate) {
+    switch(nameThatGateCurrentGate) {
         case 'AND':
             circuitGenerator.generateCircuit('Q = A AND B', svgCanvas);
             break;
@@ -222,7 +235,7 @@ function drawNONEGate() {
     const randomIndex = Math.floor(Math.random() * incorrectGates.length);
     const selectedGate = incorrectGates[randomIndex];
     
-    gateReason = selectedGate.reason;
+    nameThatGateReason = selectedGate.reason;
     
     const completeGateSVG = `
     <svg width="200" height="120" viewBox="0 0 200 120">
@@ -239,7 +252,7 @@ function checkNameThatGateAnswer(answer) {
 
     const nameThatGateButtons = document.querySelectorAll('#nameThatGateMode .options .btn');
     
-    if (answer === currentGate) {
+    if (answer === nameThatGateCurrentGate) {
         score++;
         nameThatGateButtons.forEach(btn => {
             if (btn.textContent === answer) {
@@ -247,21 +260,21 @@ function checkNameThatGateAnswer(answer) {
             }
         });
         let message = 'Correct! Well done!';
-        if (currentGate === 'NONE') {
-            message = `Correct! This is not a GCSE logic gate. ${gateReason}`;
+        if (nameThatGateCurrentGate === 'NONE') {
+            message = `Correct! This is not a GCSE logic gate. ${nameThatGateReason}`;
         }
         showFeedback(message, 'correct');
     } else {
         nameThatGateButtons.forEach(btn => {
             if (btn.textContent === answer) {
                 btn.classList.add('incorrect');
-            } else if (btn.textContent === currentGate) {
+            } else if (btn.textContent === nameThatGateCurrentGate) {
                 btn.classList.add('correct');
             }
         });
-        let message = `Incorrect! The correct answer is ${currentGate}!`;
-        if (currentGate === 'NONE') {
-            message = `Incorrect! This is not a GCSE logic gate. ${gateReason}`;
+        let message = `Incorrect! The correct answer is ${nameThatGateCurrentGate}!`;
+        if (nameThatGateCurrentGate === 'NONE') {
+            message = `Incorrect! This is not a GCSE logic gate. ${nameThatGateReason}`;
         }
         showFeedback(message, 'incorrect');
     }
