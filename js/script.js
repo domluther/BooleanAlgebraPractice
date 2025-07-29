@@ -2108,15 +2108,8 @@ function initDrawCircuitMode() {
     }
     ctx = canvas.getContext('2d');
 
-    // Pick a random expression from appropriate difficulty level
-    const levelKey = `level${drawCircuitModeDifficultyLevel}`;
-    const expressions = expressionDatabase[levelKey];
+    generateDrawCircuitQuestion();
 
-    targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
-    document.getElementById('targetExpression').textContent = targetExpression;
-    parsedTargetExpression = parseExpression(targetExpression);
-
-    setupCanvas();
     addEventListeners();
     draw();
 }
@@ -2131,15 +2124,9 @@ function setupCanvas() {
     document.getElementById('feedback').style.display = 'none';
     document.getElementById('nextBtn').style.display = 'none';
 
-    // Determine required inputs from expression
-    const requiredInputs = new Set();
-    if (targetExpression.includes('A')) requiredInputs.add('A');
-    if (targetExpression.includes('B')) requiredInputs.add('B');
-    if (targetExpression.includes('C')) requiredInputs.add('C');
-    
     inputs = [];
     let yPos = 100;
-    for (const inputName of requiredInputs) {
+    for (const inputName of parsedTargetExpression.inputs) {
         inputs.push({
             id: `input-${inputName}`,
             name: inputName,
@@ -2432,6 +2419,7 @@ function parseExpression(expression) {
     const variables = tokens.filter(token => !booleanOperators.has(token));
     const uniqueVariables = [...new Set(variables)].sort();
 
+    console.log(uniqueVariables)
     return {
         output: outputVar,
         inputs: uniqueVariables
@@ -2524,4 +2512,36 @@ function buildExpression(node) {
     if (sourceGate.type === 'NOT') return `NOT ${inputsExpr[0]}`;
     
     return `${inputsExpr[0]} ${sourceGate.type} ${inputsExpr[1]}`;
+}
+
+function setDrawCircuitModeDifficulty(level, clickedButton) {
+    drawCircuitModeDifficultyLevel = level;
+
+    // UPDATED: Changed selector from .difficulty-btn to .btn-select
+    document.querySelectorAll('#drawCircuitMode .btn-select').forEach(btn => {
+        btn.classList.remove('active', 'difficulty-active');
+    });
+    clickedButton.classList.add('active', 'difficulty-active');
+
+    generateDrawCircuitQuestion();
+    hideFeedback();
+
+    // Show submit button and hide next button when changing difficulty
+    hideNextButton();
+    showSubmitButton();
+    answered = false;
+}
+
+function generateDrawCircuitQuestion() {
+    // Generate a random expression based on the selected difficulty level
+    const levelKey = `level${drawCircuitModeDifficultyLevel}`;
+    const expressions = expressionDatabase[levelKey];
+
+    targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
+    document.getElementById('targetExpression').textContent = targetExpression;
+    parsedTargetExpression = parseExpression(targetExpression);
+
+    setupCanvas()
+    draw();
+
 }
