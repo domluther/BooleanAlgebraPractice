@@ -42,7 +42,7 @@
 							<div class="help-toggle options-section">
 								<span class="options-label">Options:</span>
 								<label class="help-label">
-									<input type="checkbox" id="debugMode" onchange="toggleHelpExpressionMode()" class="help-checkbox"> 🆘 Show accepted answers </label>
+									<input type="checkbox" id="expressionDebugMode" onchange="toggleHelpMode()" class="help-checkbox"> 🆘 Show accepted answers </label>
 							</div>
 						</div>
 					</div>
@@ -55,7 +55,7 @@
 					<input type="text" id="expressionInput" class="expression-input" placeholder="Enter expression (e.g., Q = A AND B)">
 					<div id="expressionHelpInfo" class="help-info">
 						<h4>Help Mode - Accepted Answers</h4>
-						<div id="acceptedAnswers" class="accepted-answers"></div>
+						<div id="expressionAcceptedAnswers" class="accepted-answers"></div>
 					</div>
 				</div>
 				<div id="truthTableMode" class="game-mode-container">
@@ -99,7 +99,7 @@
 							<div class="help-toggle options-section">
 								<span class="options-label">Options:</span>
 								<label class="help-label">
-									<input type="checkbox" id="showCircuitExpression" onchange="toggleHelpCircuitMode()" class="help-checkbox"> Show expression so far </label>
+									<input type="checkbox" id="showCircuitExpression" onchange="toggleHelpMode()" class="help-checkbox"> Show expression so far </label>
 							</div>
 						</div>
 					</div>
@@ -154,7 +154,7 @@
 							<div class="help-toggle options-section">
 								<span class="options-label">Options:</span>
 								<label class="help-label">
-									<input type="checkbox" id="scenarioDebugMode" onchange="toggleHelpScenarioMode()" class="help-checkbox"> 🆘 Show accepted answers </label>
+									<input type="checkbox" id="scenarioDebugMode" onchange="toggleHelpMode()" class="help-checkbox"> 🆘 Show accepted answers </label>
 							</div>
 						</div>
 					</div>
@@ -174,7 +174,7 @@
 				</div>
 				<div id="feedback" class="feedback"></div>
 				<div class="mark-btn-container">
-					<button id="submitBtn" class="btn btn-success" onclick="checkAnswer()">✅ Mark My Answer</button>
+					<button id="submitBtn" class="btn btn-success" onclick="submitAnswer()">✅ Mark My Answer</button>
 					<button id="nextBtn" class="btn btn-nav" onclick="nextQuestion()">Next Question</button>
 				</div>
 				<div class="score">
