@@ -128,6 +128,23 @@ function generateDifficultyDropdown(gameMode) {
     container.appendChild(select);
 }
 
+function handleEnterKey(event) {
+    if (event.key === 'Enter') {
+        if (answered) {
+            nextQuestion();
+            return;
+        }
+        else {
+            if (currentMode === 'nameThatGate') {
+                console.log('Enter key pressed in nameThatGate mode – no action taken.');
+                return;
+        }
+            else {
+                    checkAnswer();
+        }
+            }
+    }
+}
 
 function setGameMode(mode, clickedButton) {
     currentMode = mode;
@@ -258,6 +275,20 @@ function generateNameThatGateQuestion() {
     // Reset option buttons
     document.querySelectorAll('.options .btn').forEach(btn => {
         btn.classList.remove('correct', 'incorrect');
+    });
+}
+
+function generateNameThatGateOptions() {
+    const optionsContainer = document.querySelector('#nameThatGateMode .options');
+    optionsContainer.innerHTML = '';
+
+    const gates = ['AND', 'OR', 'NOT', 'NONE'];
+    gates.forEach(gate => {
+        const button = document.createElement('button');
+        button.classList.add('btn', 'option');
+        button.textContent = gate;
+        button.onclick = () => checkAnswer(gate);
+        optionsContainer.appendChild(button);
     });
 }
 
@@ -1119,17 +1150,6 @@ function checkScenarioAnswer() {
     showNextButton();
 }
 
-// Handle Enter key for scenario mode input
-function handleEnterKeyForScenarioMode(event) {
-    if (event.key === 'Enter') {
-        if (!answered) {
-            checkScenarioAnswer();
-        } else {
-            nextQuestion();
-        }
-    }
-}
-
 // Truth Table Mode functionality
 function setTruthTableModeDifficulty(level, clickedButton) {
     difficultyLevels.truthTable = level;
@@ -1751,16 +1771,6 @@ function nextQuestion() {
     }
 }
 
-function handleEnterKeyForExpressionMode(event) {
-    if (event.key === 'Enter') {
-        if (!answered) {
-            checkExpressionAnswer();
-        } else {
-            nextQuestion();
-        }
-    }
-}
-
 // Generates SVG for expressions
 class CircuitGenerator {
     constructor() {
@@ -2191,7 +2201,10 @@ const circuitGenerator = new CircuitGenerator();
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('keydown', handleEnterKey);
+
     generateModeSelectorButtons();
+    generateNameThatGateOptions()
     // Set the initial active button correctly
     const initialModeButton = document.querySelector('.mode-selector .btn-select');
     if (initialModeButton) {
