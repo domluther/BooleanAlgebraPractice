@@ -44,7 +44,7 @@ let circuitHelpMode = false;
 let scenarioHelpMode = false;
 let currentScenario = '';
 let currentScenarioAcceptedAnswers = [];
-
+const gateImages = {};
 
 
 function setGameMode(mode, clickedButton) {
@@ -2114,6 +2114,9 @@ document.addEventListener('DOMContentLoaded', () => {
         generateNameThatGateQuestion();
     }
     updateScoreDisplay();
+    
+    preloadGateImages()
+
 });
 
 
@@ -2366,6 +2369,8 @@ function addCircuitModeEventListeners() {
 
 
 function addGate(type, x, y) {
+    console.log(gateImages)
+
     const gateWidth = 80;
     const gateHeight = 50;
     const newGate = {
@@ -2375,6 +2380,7 @@ function addGate(type, x, y) {
         y: y - gateHeight / 2,
         width: gateWidth,
         height: gateHeight,
+        image: gateImages[type],
         inputNodes: [],
         outputNode: { x: x + gateWidth/2, y: y, gateId: nextId-1, type: 'output', connectedTo: null }
     };
@@ -2431,24 +2437,31 @@ function draw() {
     // Draw gates
     gates.forEach(gate => {
         // Highlight selected gate
-        if (selectedGate === gate) {
-            ctx.fillStyle = '#3498db';
-            ctx.strokeStyle = '#2980b9';
-            ctx.lineWidth = 3;
+        console.log('Drawing gate:', gate);
+        if (gate.image && gate.image.complete) {
+            ctx.drawImage(gate.image, gate.x, gate.y, gate.width, gate.height);
+            
+            // Optional: highlight border if selected
+            if (selectedGate === gate) {
+                ctx.strokeStyle = '#3498db';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
+            }
         } else {
-            ctx.fillStyle = '#f0f0f0';
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 1;
+            // Fallback while image is loading
+            ctx.fillStyle = selectedGate === gate ? '#3498db' : '#f0f0f0';
+            ctx.strokeStyle = selectedGate === gate ? '#2980b9' : '#333';
+            ctx.lineWidth = selectedGate === gate ? 3 : 1;
+            ctx.fillRect(gate.x, gate.y, gate.width, gate.height);
+            ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
+            
+            ctx.fillStyle = selectedGate === gate ? '#fff' : '#000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = '16px Arial';
+            ctx.fillText(gate.type, gate.x + gate.width / 2, gate.y + gate.height / 2);
         }
-        
-        ctx.fillRect(gate.x, gate.y, gate.width, gate.height);
-        ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
-        
-        ctx.fillStyle = selectedGate === gate ? '#fff' : '#000';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.font = '16px Arial';
-        ctx.fillText(gate.type, gate.x + gate.width / 2, gate.y + gate.height / 2);
+
 
         drawNodesForGate(gate);
     });
@@ -2469,6 +2482,15 @@ function draw() {
 
         if (io.outputNode) drawNode(io.outputNode);
         if (io.inputNode) drawNode(io.inputNode);
+    });
+}
+
+// Stores PNG images for the canvas
+function preloadGateImages() {
+    ['AND', 'OR', 'NOT'].forEach(type => {
+        const img = new Image();
+        img.src = `/img/png/${type.toLowerCase()}.png`;
+        gateImages[type] = img;
     });
 }
 
