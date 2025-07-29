@@ -1033,20 +1033,26 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.5rem 0;
+  padding: 0.75rem 0.25rem; /* Combines earlier padding values */
   margin-bottom: var(--spacing-sm);
   cursor: grab;
+  border: none;
+  background: transparent;
   border-radius: var(--radius-md);
   user-select: none;
   font-weight: 600;
-  transition: transform var(--transition-fast);
-  background: transparent;
+  transition: transform var(--transition-fast), color var(--transition-fast);
   box-shadow: none;
 }
+
 
 .gate:hover {
   transform: translateY(-2px);
   color: #667eea;
+}
+
+.gate:hover .gate-svg {
+  filter: brightness(0.7);
 }
 
 .gate:active {
