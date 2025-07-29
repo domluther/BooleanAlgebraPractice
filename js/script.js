@@ -46,6 +46,69 @@ let currentScenario = '';
 let currentScenarioAcceptedAnswers = [];
 const gateImages = {};
 
+function generateModeSelectorButtons() {
+    const modes = [{
+        gameMode: 'nameThatGate',
+        label: 'Name That Gate'
+    }, {
+        gameMode: 'writeExpression',
+        label: 'Expression Writing'
+    }, {
+        gameMode: 'truthTable',
+        label: 'Truth Tables'
+    }, {
+        gameMode: 'drawCircuit',
+        label: 'Draw Circuit'
+    }, {
+        gameMode: 'scenario',
+        label: 'Scenarios'
+    }];
+    const container = document.getElementById('modeSelector');
+
+    modes.forEach(mode => {
+        const button = document.createElement('button');
+        button.className = 'btn btn-select';
+        button.onclick = () => setGameMode(mode.gameMode, button);
+        button.innerText = mode.label;
+        container.appendChild(button);
+    });
+}
+
+function generateDifficultyButtons(gameMode) {
+
+    if (gameMode === 'nameThatGate') return; // No difficulty levels for this mode
+
+    const modes = [{
+        gameMode: 'writeExpression',
+        levels: 4
+    },
+    {
+        gameMode: 'truthTable',
+        levels: 3
+    },
+    {
+        gameMode: 'drawCircuit',
+        levels: 4
+    },
+    {
+        gameMode: 'scenario',
+        levels: 3
+    }];
+
+    const currentDifficulty = difficultyLevels[gameMode] || 1;
+
+    const container = document.querySelector(`#${gameMode}Mode .difficulty-buttons`);
+    container.innerHTML = ''; // Clear previous buttons
+
+    const levels = Array.from({ length: modes.find(m => m.gameMode === gameMode).levels }, (_, i) => i + 1);
+    levels.forEach(level => {
+        const button = document.createElement('button');
+        button.className = `btn btn-small btn-select ${currentDifficulty === level ? 'active difficulty-active' : ''}`;
+        button.innerText = `Level ${level}`;
+        button.onclick = () => setDifficultyLevel(level, button);
+        container.appendChild(button);
+    });
+}
 
 function setGameMode(mode, clickedButton) {
     currentMode = mode;
@@ -63,6 +126,8 @@ function setGameMode(mode, clickedButton) {
     document.getElementById('expressionHelpInfo').style.display = 'none';
     document.getElementById('scenarioHelpInfo').style.display = 'none';
     document.getElementById('circuitHelpInfo').style.display = 'none';
+
+    generateDifficultyButtons(mode);
 
     // Show the selected mode
     const activeContainer = document.getElementById(mode + 'Mode');
@@ -2106,6 +2171,7 @@ const circuitGenerator = new CircuitGenerator();
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
+    generateModeSelectorButtons();
     // Set the initial active button correctly
     const initialModeButton = document.querySelector('.mode-selector .btn-select');
     if (initialModeButton) {

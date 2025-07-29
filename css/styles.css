@@ -359,12 +359,12 @@ body {
 
 /* Modifier for the main mode buttons' active color */
 .btn-select.active.mode-active {
-    background: #4CAF50; /* Original .btn-select.active color */
+    background: #4CAF50;
 }
 
 /* Modifier for the difficulty level buttons' active color */
 .btn-select.active.difficulty-active {
-    background: #2196F3; /* Original .difficulty-btn.active color */
+    background: #2196F3;
 }
 
 .btn-nav {
@@ -606,7 +606,7 @@ body {
     flex-wrap: wrap;
 }
 
-.selection-controls .control-group {
+.selection-controls .difficulty-buttons {
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
@@ -951,7 +951,7 @@ body {
     .header h1 { font-size: 1.8em; }
     .panel { padding: var(--spacing-lg); }
     .selection-controls { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
-    .control-group { width: 100%; justify-content: center; }
+    .difficulty-buttons { width: 100%; justify-content: center; }
     .gate-svg { width: 150px; height: 90px; }
     .logic-diagram-display { padding: var(--spacing-lg); min-height: 150px; }
     .expression-input { font-size: 1rem; padding: var(--spacing-sm); }
@@ -979,7 +979,7 @@ body {
     .content { padding: var(--spacing-md); }
     .panel { padding: var(--spacing-md); }
     .mode-selector { gap: var(--spacing-sm); }
-    .control-group { gap: var(--spacing-xs); }
+    .difficulty-buttons { gap: var(--spacing-xs); }
     .btn { font-size: 12px; padding: 8px 16px; }
     .btn-small { font-size: 11px; padding: 4px 8px; }
     .expression-input { max-width: 100%; font-size: 0.9rem; }
