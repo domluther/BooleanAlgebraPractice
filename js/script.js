@@ -27,9 +27,18 @@ let currentTruthTableData = [];
 let truthTableInputs = [];
 let expertMode = false;
 
-// Global variables for draw circuit mode
-let drawCircuitMode = null;
-
+// DRAW CIRCUIT MODE GLOBALS ---
+let canvas, ctx;
+let gates = [];
+let wires = [];
+let inputs = [];
+let output;
+let nextId = 0;
+let draggingGate = null;
+let draggingOffset = { x: 0, y: 0 };
+let wireStartNode = null;
+let targetExpression = "";
+let parsedTargetExpression = {};
 
 
 function setGameMode(mode, clickedButton) {
@@ -42,7 +51,6 @@ function setGameMode(mode, clickedButton) {
     clickedButton.classList.add('active', 'mode-active');
     
     // Hide all game modes
-    document.getElementById('nameThatGateMode').style.display = 'none';
     document.querySelectorAll('.game-mode-container').forEach(el => el.style.display = 'none');
 
     // Hide help info for all modes
@@ -50,45 +58,71 @@ function setGameMode(mode, clickedButton) {
     document.getElementById('scenarioHelpInfo').style.display = 'none';
     
     // Show the selected mode
-    if (mode === 'nameThatGate') {
-        document.getElementById('nameThatGateMode').style.display = 'block';
-    } else {
-        document.getElementById(mode + 'Mode').style.display = 'block';
+    const activeContainer = document.getElementById(mode + 'Mode');
+    if (activeContainer) {
+        activeContainer.style.display = 'block';
     }
+
     
     // Reset answered state and hide feedback/buttons
     answered = false;
     hideFeedback();
     hideNextButton();
+    showSubmitButton();
+
     
     // Initialize the selected mode
     if (mode === 'nameThatGate') {
         generateNameThatGateQuestion();
     } else if (mode === 'writeExpression') {
-        showSubmitExpressionButton();
+        showSubmitButton();
         generateExpressionQuestion();
         if (expressionHelpMode) {
             document.getElementById('expressionHelpInfo').style.display = 'block';
             updateHelpDisplayForExpressionMode();
         }
     } else if (mode === 'scenario') {
-        showSubmitScenarioButton();
+        showSubmitButton();
         generateScenarioQuestion();
         if (scenarioHelpMode) {
             document.getElementById('scenarioHelpInfo').style.display = 'block';
             updateHelpDisplayForScenarioMode();
         }
     } else if (mode === 'truthTable') {
-        showSubmitTruthTableButton();
+        showSubmitButton();
         generateTruthTableQuestion();
     }
     else if (mode === 'drawCircuit') {
-        drawCircuitMode = new DrawCircuitMode();
-        showSubmitTruthTableButton();
-        generateNewCircuitExpression();
+        initDrawCircuitMode();
     }
 }
 
+function checkAnswer(answer='') {
+    if (answered) return;
+
+    if (currentMode === 'drawCircuit') {
+        checkCircuitAnswer();
+    }
+    else if (currentMode === 'nameThatGate') {
+        checkNameThatGateAnswer(answer);
+    }
+    else if (currentMode === 'writeExpression') {
+        checkExpressionAnswer();
+    }
+    else if (currentMode === 'scenario') {
+        checkScenarioAnswer();
+    }
+    else if (currentMode === 'truthTable') {
+        checkTruthTableAnswer();
+    }
+}
+
+function showSubmitButton() {
+    document.getElementById('submitBtn').style.display = 'block';
+}
+function hideSubmitButton() {
+    document.getElementById('submitBtn').style.display = 'none';
+}
 
 // Name That Gate functionality
 function generateNameThatGateQuestion() {
@@ -366,7 +400,7 @@ function setExpressionModeDifficulty(level, clickedButton) {
 
     // Show submit button and hide next button when changing difficulty
     hideNextButton();
-    showSubmitExpressionButton();
+    showSubmitButton();
     answered = false;
 }
 
@@ -605,7 +639,7 @@ function checkExpressionAnswer() {
     answered = true;
     totalQuestions++;
 
-    hideSubmitExpressionButton();
+    hideSubmitButton();
 
     // More comprehensive normalization function
     function normalizeExpression(expr) {
@@ -682,7 +716,7 @@ function setScenarioModeDifficulty(level, clickedButton) {
     }
         // Show submit button and hide next button when changing difficulty
     hideNextButton();
-    showSubmitScenarioButton();
+    showSubmitButton();
     answered = false;
 }
 
@@ -947,7 +981,7 @@ function checkScenarioAnswer() {
     answered = true;
     totalQuestions++;
 
-    hideSubmitScenarioButton();
+    hideSubmitButton();
 
     // Use the same normalization function as the regular expression mode
     function normalizeExpression(expr) {
@@ -991,15 +1025,6 @@ function handleEnterKeyForScenarioMode(event) {
     }
 }
 
-// Button visibility functions for scenario mode
-function showSubmitScenarioButton() {
-    document.getElementById('submitScenarioBtn').style.display = 'inline-block';
-}
-
-function hideSubmitScenarioButton() {
-    document.getElementById('submitScenarioBtn').style.display = 'none';
-}
-
 // Truth Table Mode functionality
 function setTruthTableModeDifficulty(level, clickedButton) {
     truthTableModeDifficultyLevel = level;
@@ -1015,7 +1040,7 @@ function setTruthTableModeDifficulty(level, clickedButton) {
 
     // Show submit button and hide next button when changing difficulty
     hideNextButton();
-    showSubmitTruthTableButton();
+    showSubmitButton();
     answered = false;
 }
 
@@ -1093,7 +1118,7 @@ function toggleExpertMode() {
         // Reset answered state and show submit button
         answered = false;
         hideFeedback();
-        showSubmitTruthTableButton();
+        showSubmitButton();
     }
 }
 
@@ -1296,7 +1321,7 @@ function checkTruthTableAnswer() {
     answered = true;
     totalQuestions++;
     
-    hideSubmitTruthTableButton();
+    hideSubmitButton();
     
     if (expertMode) {
         checkExpertModeAnswer();
@@ -1369,8 +1394,8 @@ function checkNormalModeAnswer() {
     if (!allOutputAnswered) {
         showFeedback('Please answer all rows in the output column (Q).', 'incorrect');
         answered = false;
-        showSubmitTruthTableButton();
-        
+        showSubmitButton();
+
         // Re-enable all selects
         document.querySelectorAll('.truth-table-select').forEach(select => {
             select.disabled = false;
@@ -1435,7 +1460,7 @@ function checkExpertModeAnswer() {
         if (!allFieldsFilled) {
             showFeedback('Expert Mode: All fields in the truth table must be filled.', 'incorrect');
             answered = false;
-            showSubmitTruthTableButton();
+            showSubmitButton();
             
             // Highlight unfilled fields
             allSelects.forEach(select => {
@@ -1559,16 +1584,6 @@ function validateExpertModeAnswers(userRows, correctData) {
     };
 }
 
-// Button visibility functions for truth table mode
-function showSubmitTruthTableButton() {
-    document.getElementById('submitTruthTableBtn').style.display = 'inline-block';
-}
-
-function hideSubmitTruthTableButton() {
-    document.getElementById('submitTruthTableBtn').style.display = 'none';
-}
-
-
 // Update UI
 function showFeedback(message, type) {
     const feedbackDiv = document.getElementById('feedback');
@@ -1590,14 +1605,6 @@ function hideNextButton() {
     document.getElementById('nextBtn').style.display = 'none';
 }
 
-function showSubmitExpressionButton() {
-    document.getElementById('submitExpressionBtn').style.display = 'inline-block';
-}
-
-function hideSubmitExpressionButton() {
-    document.getElementById('submitExpressionBtn').style.display = 'none';
-}
-
 function updateScoreDisplay() {
     document.getElementById('scoreDisplay').textContent = `${score}/${totalQuestions}`;
 }
@@ -1611,20 +1618,20 @@ function nextQuestion() {
     if (currentMode === 'nameThatGate') {
         generateNameThatGateQuestion();
     } else if (currentMode === 'writeExpression') {
-        showSubmitExpressionButton();
+        showSubmitButton();
         generateExpressionQuestion();
         if (expressionHelpMode) {
             updateHelpDisplayForExpressionMode();
         }
     }
     else if (currentMode === 'scenario') {
-        showSubmitScenarioButton();
+        showSubmitButton();
         generateScenarioQuestion();
         if (scenarioHelpMode) {
             updateHelpDisplayForScenarioMode();
         }
     } else if (currentMode === 'truthTable') {
-        showSubmitTruthTableButton();
+        showSubmitButton();
         generateTruthTableQuestion();
         
         // Reset all select elements
@@ -1633,7 +1640,10 @@ function nextQuestion() {
             select.disabled = false;
             select.classList.remove('correct', 'incorrect', 'unanswered');
         });
-    }  else {
+    }  
+    else if (currentMode === 'drawCircuit') {
+        initDrawCircuitMode();
+    } else {
         console.error('Unknown game mode:', currentMode);
     }
 }
@@ -2076,791 +2086,6 @@ class CircuitGenerator {
 
 const circuitGenerator = new CircuitGenerator();
 
-// Draw Circuit Mode Implementation with Dynamic Terminal Generation
-class DrawCircuitMode {
-    constructor() {
-        this.gates = [];
-        this.wires = [];
-        this.selectedGate = null;
-        this.activeConnection = null;
-        this.nextGateId = 1;
-        this.nextWireId = 1;
-        this.isDragging = false;
-        this.dragOffset = { x: 0, y: 0 };
-        this.currentExpression = "Q = A AND B";
-        this.inputVariables = [];
-        this.outputVariable = '';
-        
-        // Expression database organized by difficulty
-        this.expressionDatabase = expressionDatabase;
-
-        this.currentDifficulty = 1;
-        this.setupEventListeners();
-    }
-
-    setupEventListeners() {
-        const canvas = document.getElementById('circuitCanvas');
-        
-        // Drag and drop from toolbox
-        document.querySelectorAll('.gate-tool').forEach(tool => {
-            tool.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', e.target.dataset.gateType);
-            });
-        });
-
-        // Canvas drop handling
-        canvas.addEventListener('dragover', (e) => e.preventDefault());
-        canvas.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const gateType = e.dataTransfer.getData('text/plain');
-            if (gateType) {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left - 35; // Center the gate
-                const y = e.clientY - rect.top - 25;
-                this.addGate(gateType, x, y);
-            }
-        });
-
-        // Mouse events
-        canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
-        canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
-        
-        // Prevent context menu
-        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-
-        // Keyboard events
-        document.addEventListener('keydown', (e) => {
-            if ((e.key === 'Delete' || e.key === 'Backspace') && this.selectedGate) {
-                this.deleteSelectedGate();
-            }
-        });
-    }
-
-    setDifficulty(level) {
-        this.currentDifficulty = level;
-        this.generateNewExpression();
-    }
-
-    parseExpression(expression) {
-        // Extract output variable (left side of =)
-        const parts = expression.split('=');
-        if (parts.length !== 2) return { output: 'Q', inputs: ['A', 'B'] };
-
-        const outputVar = parts[0].trim();
-        const rightSide = parts[1].trim();
-
-        // Tokenise and remove known Boolean operators
-        const tokens = rightSide.split(/[^A-Z]/).filter(Boolean);
-        const booleanOperators = new Set(['NOT', 'AND', 'OR', 'NAND', 'NOR', 'XOR']);
-        
-        const variables = tokens.filter(token => !booleanOperators.has(token));
-        const uniqueVariables = [...new Set(variables)].sort();
-
-        return {
-            output: outputVar,
-            inputs: uniqueVariables
-        };
-    }
-
-
-    generateTerminals() {
-        const canvas = document.getElementById('circuitCanvas');
-        
-        // Remove existing terminals
-        canvas.querySelectorAll('.input-terminal, .output-terminal').forEach(terminal => {
-            terminal.remove();
-        });
-        
-        console.log(this.inputVariables, this.outputVariable);
-        // Generate input terminals
-        this.inputVariables.forEach((variable, index) => {
-            const terminal = document.createElement('div');
-            terminal.className = 'input-terminal';
-            terminal.id = `input${variable}`;
-            terminal.style.left = '20px';
-            terminal.style.top = `${80 + (index * 50)}px`;
-            
-            const span = document.createElement('span');
-            span.textContent = variable;
-            terminal.appendChild(span);
-            
-            const connectionPoint = document.createElement('div');
-            connectionPoint.className = 'connection-point input-point';
-            connectionPoint.dataset.terminal = variable;
-            terminal.appendChild(connectionPoint);
-            
-            canvas.appendChild(terminal);
-        });
-        
-        // Generate output terminal
-        const outputTerminal = document.createElement('div');
-        outputTerminal.className = 'output-terminal';
-        outputTerminal.id = `output${this.outputVariable}`;
-        outputTerminal.style.right = '20px';
-        // Center the output terminal vertically based on number of inputs
-        const centerY = 80 + ((this.inputVariables.length - 1) * 50) / 2;
-        outputTerminal.style.top = `${centerY}px`;
-        
-        const span = document.createElement('span');
-        span.textContent = this.outputVariable;
-        outputTerminal.appendChild(span);
-        
-        const connectionPoint = document.createElement('div');
-        connectionPoint.className = 'connection-point output-point';
-        connectionPoint.dataset.terminal = this.outputVariable;
-        outputTerminal.appendChild(connectionPoint);
-        
-        canvas.appendChild(outputTerminal);
-        
-        // Add event listeners to connection points
-        canvas.querySelectorAll('.connection-point').forEach(point => {
-            point.addEventListener('click', (e) => {
-                const terminal = e.target.dataset.terminal;
-                this.handleConnectionClick(terminal, 'terminal', 0, e);
-            });
-        });
-    }
-
-    generateNewExpression() {
-        const levelKey = `level${this.currentDifficulty}`;
-        const expressions = this.expressionDatabase[levelKey];
-        this.currentExpression = expressions[Math.floor(Math.random() * expressions.length)];
-        
-        // Parse the expression to get variables
-        const parsed = this.parseExpression(this.currentExpression);
-        this.inputVariables = parsed.inputs;
-        this.outputVariable = parsed.output;
-        
-        // Update the expression display
-        const expressionDisplay = document.getElementById('drawCircuitExpression');
-        if (expressionDisplay) {
-            expressionDisplay.textContent = this.currentExpression;
-        }
-        
-        // Generate terminals based on the expression
-        this.generateTerminals();
-        
-        // Clear existing circuit
-        this.clearCanvas();
-        
-        this.updateHelpDisplay();
-    }
-
-    addGate(type, x, y) {
-        const gate = {
-            id: this.nextGateId++,
-            type: type,
-            x: Math.max(80, Math.min(x, 400)), // Keep within bounds
-            y: Math.max(20, Math.min(y, 420)),
-            inputs: type === 'not' ? [''] : ['', ''],
-            output: ''
-        };
-
-        this.gates.push(gate);
-        this.renderGate(gate);
-        this.updateHelpDisplay();
-    }
-
-    async renderGate(gate) {
-        console.log(gate)
-        const canvas = document.getElementById('circuitCanvas');
-        const gateElement = await this.loadGateSVG(gate);
-        
-        // Add connection points
-        this.addGateConnectionPoints(gate, gateElement);
-
-        canvas.appendChild(gateElement);
-    }
-
-    async loadGateSVG(gate) {
-        const response = await fetch(`/svg/${gate.type}.svg`);
-        const svgText = await response.text();
-
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = svgText;
-
-        const svg = wrapper.querySelector('svg');
-        svg.style.position = 'absolute';
-        svg.style.left = `${gate.x}px`;
-        svg.style.top = `${gate.y}px`;
-        svg.dataset.gateId = gate.id;
-        svg.classList.add('circuit-gate', `${gate.type}-gate`);
-
-        return svg;
-    }
-
-    addGateConnectionPoints(gate, gateElement) {
-        // Input connection points
-        const inputCount = gate.type === 'not' ? 1 : 2;
-        for (let i = 0; i < inputCount; i++) {
-            const point = document.createElement('div');
-            point.className = `gate-input-point ${inputCount === 1 ? 'single-input' : (i === 0 ? 'input-0' : 'input-1')}`;
-            point.dataset.gateId = gate.id;
-            point.dataset.connectionType = 'input';
-            point.dataset.connectionIndex = i;
-            
-            point.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.handleConnectionClick(gate.id, 'input', i, e);
-            });
-            
-            gateElement.appendChild(point);
-        }
-
-        // Output connection point
-        const outputPoint = document.createElement('div');
-        outputPoint.className = 'gate-output-point';
-        outputPoint.dataset.gateId = gate.id;
-        outputPoint.dataset.connectionType = 'output';
-        
-        outputPoint.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.handleConnectionClick(gate.id, 'output', 0, e);
-        });
-        
-        gateElement.appendChild(outputPoint);
-
-        // Gate selection and dragging
-        gateElement.addEventListener('mousedown', (e) => {
-            if (e.button === 0 && !e.target.classList.contains('gate-input-point') && !e.target.classList.contains('gate-output-point')) {
-                this.startDragGate(e, gate);
-            }
-        });
-
-        gateElement.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('gate-input-point') && !e.target.classList.contains('gate-output-point')) {
-                this.selectGate(gate);
-            }
-        });
-    }
-
-    handleConnectionClick(gateId, type, index, event) {
-        if (this.activeConnection) {
-            // Complete connection
-            this.completeConnection(gateId, type, index);
-        } else {
-            // Start new connection
-            this.startConnection(gateId, type, index, event);
-        }
-    }
-
-    startConnection(gateId, type, index, event) {
-        this.activeConnection = { gateId, type, index };
-        
-        // Visual feedback
-        event.target.classList.add('active');
-        
-        // Show temporary wire layer
-        const tempLayer = document.getElementById('tempWireLayer');
-        tempLayer.style.display = 'block';
-        
-        const startPos = this.getConnectionPosition({ gateId, type, index });
-        const tempPath = document.getElementById('tempWirePath');
-        tempPath.setAttribute('d', `M ${startPos.x} ${startPos.y} L ${startPos.x} ${startPos.y}`);
-    }
-
-    completeConnection(toGateId, toType, toIndex) {
-        if (!this.activeConnection) return;
-
-        const fromConnection = this.activeConnection;
-        
-        // Validate connection
-        if (fromConnection.type === toType || 
-            (fromConnection.gateId === toGateId && fromConnection.type === 'input' && fromConnection.index === toIndex)) {
-            this.cancelConnection();
-            return;
-        }
-
-        // Check if target input is already connected
-        const existingWire = this.wires.find(w => 
-            w.to.gateId === toGateId && w.to.type === toType && w.to.index === toIndex
-        );
-        if (existingWire) {
-            this.deleteWire(existingWire.id);
-        }
-
-        // Create wire
-        const wire = {
-            id: this.nextWireId++,
-            from: fromConnection,
-            to: { gateId: toGateId, type: toType, index: toIndex }
-        };
-
-        this.wires.push(wire);
-        this.renderWire(wire);
-        this.cancelConnection();
-        this.updateHelpDisplay();
-    }
-
-    cancelConnection() {
-        // Hide temporary wire
-        document.getElementById('tempWireLayer').style.display = 'none';
-        
-        // Remove active class
-        document.querySelectorAll('.connection-point.active, .gate-input-point.active, .gate-output-point.active').forEach(point => {
-            point.classList.remove('active');
-        });
-        
-        this.activeConnection = null;
-    }
-
-    renderWire(wire) {
-        const wireLayer = document.getElementById('wireLayer');
-        const fromPos = this.getConnectionPosition(wire.from);
-        const toPos = this.getConnectionPosition(wire.to);
-
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        const midX = (fromPos.x + toPos.x) / 2;
-        const pathData = `M ${fromPos.x} ${fromPos.y} C ${midX} ${fromPos.y} ${midX} ${toPos.y} ${toPos.x} ${toPos.y}`;
-        path.setAttribute('d', pathData);
-        path.dataset.wireId = wire.id;
-
-        // Click to delete wire
-        path.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.deleteWire(wire.id);
-        });
-
-        wireLayer.appendChild(path);
-    }
-
-    getConnectionPosition(connection) {
-        if (this.inputVariables.includes(connection.gateId) || connection.gateId === this.outputVariable) {
-            // Terminal positions - now dynamic
-            const terminal = document.getElementById(
-                this.inputVariables.includes(connection.gateId) ? `input${connection.gateId}` : `output${connection.gateId}`
-            );
-            if (!terminal) return { x: 0, y: 0 };
-            
-            const rect = terminal.getBoundingClientRect();
-            const canvasRect = document.getElementById('circuitCanvas').getBoundingClientRect();
-            
-            return {
-                x: rect.left - canvasRect.left + (connection.gateId === this.outputVariable ? 0 : rect.width),
-                y: rect.top - canvasRect.top + rect.height / 2
-            };
-        } else {
-            // Gate positions
-            const gate = this.gates.find(g => g.id === connection.gateId);
-            if (!gate) return { x: 0, y: 0 };
-
-            if (connection.type === 'output') {
-                // Output connection positions
-                if (gate.type === 'not') {
-                    return { 
-                        x: gate.x + 50 + 10, // 50px width + 10px for circle
-                        y: gate.y + 20 // Half of 40px height
-                    };
-                } else {
-                    return { 
-                        x: gate.x + 70, // Full width of AND/OR gates
-                        y: gate.y + 25 // Half of 50px height
-                    };
-                }
-            } else {
-                // Input connection positions
-                if (gate.type === 'not') {
-                    return { 
-                        x: gate.x, 
-                        y: gate.y + 20 // Center of NOT gate
-                    };
-                } else {
-                    // AND/OR gates have two inputs
-                    const yOffset = connection.index === 0 ? 15 : 35; // 30% and 70% of 50px height
-                    return { 
-                        x: gate.x, 
-                        y: gate.y + yOffset 
-                    };
-                }
-            }
-        }
-    }
-
-    deleteWire(wireId) {
-        this.wires = this.wires.filter(w => w.id !== wireId);
-        const wireElement = document.querySelector(`[data-wire-id="${wireId}"]`);
-        if (wireElement) wireElement.remove();
-        this.updateHelpDisplay();
-    }
-
-    selectGate(gate) {
-        // Remove previous selection
-        document.querySelectorAll('.circuit-gate.selected').forEach(g => g.classList.remove('selected'));
-        
-        // Select new gate
-        const gateElement = document.querySelector(`[data-gate-id="${gate.id}"]`);
-        if (gateElement) {
-            gateElement.classList.add('selected');
-            this.selectedGate = gate;
-        }
-    }
-
-    startDragGate(e, gate) {
-        e.preventDefault();
-        this.isDragging = true;
-        this.dragOffset.x = e.clientX - gate.x;
-        this.dragOffset.y = e.clientY - gate.y;
-        
-        this.selectGate(gate);
-        document.body.style.cursor = 'grabbing';
-    }
-
-    handleMouseDown(e) {
-        if (e.target.id === 'circuitCanvas') {
-            // Clicked on empty canvas
-            this.selectedGate = null;
-            document.querySelectorAll('.circuit-gate.selected').forEach(g => g.classList.remove('selected'));
-            this.cancelConnection();
-        }
-
-        // Handle terminal connections
-        if (e.target.classList.contains('connection-point')) {
-            const terminal = e.target.dataset.terminal;
-            this.handleConnectionClick(terminal, 'terminal', 0, e);
-        }
-    }
-
-    handleMouseMove(e) {
-        if (this.isDragging && this.selectedGate) {
-            const canvas = document.getElementById('circuitCanvas');
-            const rect = canvas.getBoundingClientRect();
-            
-            this.selectedGate.x = Math.max(80, Math.min(e.clientX - this.dragOffset.x, rect.width - 100));
-            this.selectedGate.y = Math.max(20, Math.min(e.clientY - this.dragOffset.y, rect.height - 70));
-            
-            const gateElement = document.querySelector(`[data-gate-id="${this.selectedGate.id}"]`);
-            gateElement.style.left = this.selectedGate.x + 'px';
-            gateElement.style.top = this.selectedGate.y + 'px';
-            
-            this.updateWirePositions();
-        }
-
-        // Update temporary wire
-        if (this.activeConnection) {
-            const canvas = document.getElementById('circuitCanvas');
-            const rect = canvas.getBoundingClientRect();
-            const startPos = this.getConnectionPosition(this.activeConnection);
-            const endX = e.clientX - rect.left;
-            const endY = e.clientY - rect.top;
-            
-            const tempPath = document.getElementById('tempWirePath');
-            const midX = (startPos.x + endX) / 2;
-            const pathData = `M ${startPos.x} ${startPos.y} C ${midX} ${startPos.y} ${midX} ${endY} ${endX} ${endY}`;
-            tempPath.setAttribute('d', pathData);
-        }
-    }
-
-    handleMouseUp(e) {
-        if (this.isDragging) {
-            this.isDragging = false;
-            document.body.style.cursor = 'default';
-        }
-
-        if (this.activeConnection && !e.target.classList.contains('connection-point') && 
-            !e.target.classList.contains('gate-input-point') && !e.target.classList.contains('gate-output-point')) {
-            this.cancelConnection();
-        }
-    }
-
-    updateWirePositions() {
-        this.wires.forEach(wire => {
-            const wireElement = document.querySelector(`[data-wire-id="${wire.id}"]`);
-            if (wireElement) {
-                const fromPos = this.getConnectionPosition(wire.from);
-                const toPos = this.getConnectionPosition(wire.to);
-                const midX = (fromPos.x + toPos.x) / 2;
-                const pathData = `M ${fromPos.x} ${fromPos.y} C ${midX} ${fromPos.y} ${midX} ${toPos.y} ${toPos.x} ${toPos.y}`;
-                wireElement.setAttribute('d', pathData);
-            }
-        });
-    }
-
-    clearCanvas() {
-        // Remove all gates
-        this.gates.forEach(gate => {
-            const gateElement = document.querySelector(`[data-gate-id="${gate.id}"]`);
-            if (gateElement) gateElement.remove();
-        });
-        
-        // Clear wire layer
-        document.getElementById('wireLayer').innerHTML = '';
-        
-        this.gates = [];
-        this.wires = [];
-        this.selectedGate = null;
-        this.cancelConnection();
-        this.updateHelpDisplay();
-    }
-
-    deleteSelectedGate() {
-        if (!this.selectedGate) return;
-
-        const gateId = this.selectedGate.id;
-        
-        // Remove associated wires
-        this.wires = this.wires.filter(wire => {
-            const shouldDelete = wire.from.gateId === gateId || wire.to.gateId === gateId;
-            if (shouldDelete) {
-                const wireElement = document.querySelector(`[data-wire-id="${wire.id}"]`);
-                if (wireElement) wireElement.remove();
-            }
-            return !shouldDelete;
-        });
-
-        // Remove gate
-        this.gates = this.gates.filter(g => g.id !== gateId);
-        const gateElement = document.querySelector(`[data-gate-id="${gateId}"]`);
-        if (gateElement) gateElement.remove();
-        
-        this.selectedGate = null;
-        this.updateHelpDisplay();
-    }
-
-    getCircuitExpression() {
-        // Find what's connected to output terminal
-        const outputWire = this.wires.find(w => w.to.gateId === this.outputVariable);
-        if (!outputWire) return null;
-
-        return this.buildExpressionFromConnection(outputWire.from);
-    }
-
-    buildExpressionFromConnection(connection) {
-        if (this.inputVariables.includes(connection.gateId)) {
-            return connection.gateId;
-        }
-
-        const gate = this.gates.find(g => g.id === connection.gateId);
-        if (!gate) return 'UNKNOWN';
-
-        if (gate.type === 'not') {
-            const inputWire = this.wires.find(w => w.to.gateId === gate.id && w.to.index === 0);
-            if (!inputWire) return 'NOT ?';
-            const inputExpr = this.buildExpressionFromConnection(inputWire.from);
-            // Add parentheses only if the input is a complex expression
-            if (inputExpr.includes(' AND ') || inputExpr.includes(' OR ')) {
-                return `NOT (${inputExpr})`;
-            }
-            return `NOT ${inputExpr}`;
-        } else {
-            const input0Wire = this.wires.find(w => w.to.gateId === gate.id && w.to.index === 0);
-            const input1Wire = this.wires.find(w => w.to.gateId === gate.id && w.to.index === 1);
-            
-            if (!input0Wire || !input1Wire) return `${gate.type.toUpperCase()} ?`;
-            
-            const input0Expr = this.buildExpressionFromConnection(input0Wire.from);
-            const input1Expr = this.buildExpressionFromConnection(input1Wire.from);
-            
-            // Only add parentheses if this is not the top-level expression or if inputs are complex
-            const needsParens = this.needsParentheses(input0Expr, input1Expr, gate.type);
-            
-            if (needsParens) {
-                return `(${input0Expr} ${gate.type.toUpperCase()} ${input1Expr})`;
-            } else {
-                return `${input0Expr} ${gate.type.toUpperCase()} ${input1Expr}`;
-            }
-        }
-    }
-
-    needsParentheses(input0Expr, input1Expr, gateType) {
-        // Don't add parentheses for simple variable combinations at top level
-        const isSimpleVar = (expr) => this.inputVariables.some(v => expr === v) || expr.startsWith('NOT ');
-        
-        // If both inputs are simple (just variables or NOT variable), no parentheses needed
-        if (isSimpleVar(input0Expr) && isSimpleVar(input1Expr)) {
-            return false;
-        }
-        
-        // Add parentheses if either input contains operators
-        return input0Expr.includes(' AND ') || input0Expr.includes(' OR ') ||
-               input1Expr.includes(' AND ') || input1Expr.includes(' OR ');
-    }
-
-    updateHelpDisplay() {
-        if (document.getElementById('showCircuitExpression')?.checked) {
-            const circuitExpr = this.getCircuitExpression();
-            const helpDiv = document.getElementById('circuitExpression');
-            if (helpDiv) {
-                helpDiv.textContent = circuitExpr ? `${this.outputVariable} = ${circuitExpr}` : 'No circuit built';
-            }
-        }
-    }
-
-    checkAnswer() {
-        const circuitExpr = this.getCircuitExpression();
-        if (!circuitExpr) {
-            return { correct: false, message: `Circuit not connected to output ${this.outputVariable}` };
-        }
-
-        const builtExpression = `${this.outputVariable} = ${circuitExpr}`;
-        const targetExpression = this.currentExpression;
-        
-        // Simple comparison - in a real implementation you'd want more sophisticated expression matching
-        const correct = this.expressionsMatch(builtExpression, targetExpression);
-        
-        return {
-            correct: correct,
-            message: correct ? "Correct! Well done!" : `Incorrect. Your circuit: ${builtExpression}`,
-            builtExpression: builtExpression,
-            targetExpression: targetExpression
-        };
-    }
-
-    expressionsMatch(expr1, expr2) {
-        // Advanced expression matching that handles equivalent forms
-        const normalize = (expr) => {
-            let normalized = expr.replace(/\s+/g, ' ')
-                               .replace(/\(\s*/g, '(')
-                               .replace(/\s*\)/g, ')')
-                               .trim()
-                               .toUpperCase();
-            
-            // Remove unnecessary outer parentheses from expressions
-            const equalIndex = normalized.indexOf(' = ');
-            if (equalIndex !== -1) {
-                const prefix = normalized.substring(0, equalIndex + 3);
-                const content = normalized.substring(equalIndex + 3);
-                
-                if (content.startsWith('(') && content.endsWith(')')) {
-                    const inner = content.substring(1, content.length - 1);
-                    // Check if these are truly outer parentheses by counting depth
-                    let depth = 0;
-                    let hasOperatorAtTopLevel = false;
-                    for (let i = 0; i < inner.length; i++) {
-                        if (inner[i] === '(') depth++;
-                        else if (inner[i] === ')') depth--;
-                        else if (depth === 0 && (inner.substring(i, i + 4) === ' AND' || inner.substring(i, i + 3) === ' OR')) {
-                            hasOperatorAtTopLevel = true;
-                            break;
-                        }
-                    }
-                    // If there's no top-level operator, remove outer parentheses
-                    if (!hasOperatorAtTopLevel) {
-                        normalized = prefix + inner;
-                    }
-                }
-            }
-            
-            return normalized;
-        };
-        
-        const normalized1 = normalize(expr1);
-        const normalized2 = normalize(expr2);
-        
-        // Direct comparison first
-        if (normalized1 === normalized2) return true;
-        
-        // Handle commutative properties (A OR B = B OR A, A AND B = B AND A)
-        const swapCommutative = (expr) => {
-            return expr.replace(/(\w+)\s+(AND|OR)\s+(\w+)/g, (match, left, op, right) => {
-                return `${right} ${op} ${left}`;
-            });
-        };
-        
-        const swapped1 = swapCommutative(normalized1);
-        const swapped2 = swapCommutative(normalized2);
-        
-        return normalized1 === normalized2 || 
-               normalized1 === swapped2 || 
-               swapped1 === normalized2 || 
-               swapped1 === swapped2;
-    }
-}
-
-// Global functions called from HTML
-function setDrawCircuitModeDifficulty(level, clickedButton) {
-    if (!drawCircuitMode) {
-        drawCircuitMode = new DrawCircuitMode();
-    }
-    
-    // Update difficulty selection UI
-    document.querySelectorAll('#drawCircuitMode .btn-select').forEach(btn => {
-        btn.classList.remove('active', 'difficulty-active');
-    });
-    clickedButton.classList.add('active', 'difficulty-active');
-    
-    // Set difficulty and generate new expression
-    drawCircuitMode.setDifficulty(level);
-    
-    // Hide feedback and reset UI state
-    hideFeedback();
-    hideNextButton();
-    showSubmitCircuitButton();
-    answered = false;
-}
-
-function clearCircuitCanvas() {
-    if (drawCircuitMode) {
-        drawCircuitMode.clearCanvas();
-    }
-}
-
-function deleteSelectedGate() {
-    if (drawCircuitMode) {
-        drawCircuitMode.deleteSelectedGate();
-    }
-}
-
-function generateNewCircuitExpression() {
-    if (drawCircuitMode) {
-        drawCircuitMode.generateNewExpression();
-    }
-}
-
-function toggleCircuitExpression() {
-    const checkbox = document.getElementById('showCircuitExpression');
-    const helpInfo = document.getElementById('circuitHelpInfo');
-    
-    if (checkbox.checked) {
-        helpInfo.style.display = 'block';
-        if (drawCircuitMode) {
-            drawCircuitMode.updateHelpDisplay();
-        }
-    } else {
-        helpInfo.style.display = 'none';
-    }
-}
-
-function checkCircuitAnswer() {
-    if (!drawCircuitMode || answered) return;
-    
-    const result = drawCircuitMode.checkAnswer();
-    
-    answered = true;
-    totalQuestions++;
-    
-    hideSubmitCircuitButton();
-    
-    if (result.correct) {
-        score++;
-        showFeedback(result.message, 'correct');
-    } else {
-        showFeedback(result.message, 'incorrect');
-    }
-    
-    updateScoreDisplay();
-    showNextButton();
-}
-
-// Initialize when draw circuit mode is selected
-function initializeDrawCircuitMode() {
-    if (!drawCircuitMode) {
-        drawCircuitMode = new DrawCircuitMode();
-        drawCircuitMode.generateNewExpression();
-    }
-}
-
-// Helper functions that should exist in your main script
-function showSubmitCircuitButton() {
-    const btn = document.getElementById('submitCircuitBtn');
-    if (btn) btn.style.display = 'inline-block';
-}
-
-function hideSubmitCircuitButton() {
-    const btn = document.getElementById('submitCircuitBtn');
-    if (btn) btn.style.display = 'none';
-}
-
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     // Set the initial active button correctly
@@ -2872,3 +2097,416 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateScoreDisplay();
 });
+
+
+function initDrawCircuitMode() {
+    canvas = document.getElementById('circuitCanvas');
+    if (!canvas) {
+        console.error("Canvas not found!");
+        return;
+    }
+    ctx = canvas.getContext('2d');
+
+    // Pick a random expression
+    const allExpressions = [...expressionDatabase.level1, ...expressionDatabase.level2];
+    targetExpression = allExpressions[Math.floor(Math.random() * allExpressions.length)];
+    document.getElementById('targetExpression').textContent = targetExpression;
+
+    setupCanvas();
+    addEventListeners();
+    draw();
+}
+
+function setupCanvas() {
+    gates = [];
+    wires = [];
+    nextId = 0;
+    wireStartNode = null;
+
+    // Hide feedback from previous question
+    document.getElementById('feedback').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'none';
+
+    // Determine required inputs from expression
+    const requiredInputs = new Set();
+    if (targetExpression.includes('A')) requiredInputs.add('A');
+    if (targetExpression.includes('B')) requiredInputs.add('B');
+    if (targetExpression.includes('C')) requiredInputs.add('C');
+    
+    inputs = [];
+    let yPos = 100;
+    for (const inputName of requiredInputs) {
+        inputs.push({
+            id: `input-${inputName}`,
+            name: inputName,
+            x: 50,
+            y: yPos,
+            width: 50,
+            height: 30,
+            outputNode: { x: 75, y: yPos + 15, gateId: `input-${inputName}`, type: 'output', connectedTo: null }
+        });
+        yPos += 100;
+    }
+
+    output = {
+        id: 'output-Q',
+        name: 'Q',
+        x: 650,
+        y: 250,
+        width: 50,
+        height: 30,
+        inputNode: { x: 650, y: 265, gateId: 'output-Q', type: 'input', connectedTo: null }
+    };
+    
+    updateInterpretedExpression();
+}
+
+
+function addEventListeners() {
+    // Drag and drop from toolbox
+    const toolboxGates = document.querySelectorAll('.gate[draggable="true"]');
+    toolboxGates.forEach(gate => {
+        gate.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', e.target.id);
+        });
+    });
+
+    canvas.addEventListener('dragover', (e) => e.preventDefault());
+
+    canvas.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData('text/plain');
+        const type = id.replace('drag-', '');
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        addGate(type, x, y);
+    });
+
+    // Canvas interactions
+    canvas.addEventListener('mousedown', (e) => {
+        if (answered) return;
+        const pos = getMousePos(e);
+        const clickedNode = getClickedNode(pos);
+
+        if (clickedNode) {
+            wireStartNode = clickedNode;
+        } else {
+            draggingGate = getClickedGate(pos);
+            if (draggingGate) {
+                draggingOffset.x = pos.x - draggingGate.x;
+                draggingOffset.y = pos.y - draggingGate.y;
+            }
+        }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (draggingGate) {
+            const pos = getMousePos(e);
+            draggingGate.x = pos.x - draggingOffset.x;
+            draggingGate.y = pos.y - draggingOffset.y;
+            updateGateNodes(draggingGate);
+            draw();
+        } else if (wireStartNode) {
+            draw(); 
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.moveTo(wireStartNode.x, wireStartNode.y);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+        if (wireStartNode) {
+            const pos = getMousePos(e);
+            const endNode = getClickedNode(pos);
+            if (endNode && endNode !== wireStartNode && endNode.type !== wireStartNode.type) {
+                addWire(wireStartNode, endNode);
+            }
+            wireStartNode = null;
+        }
+        draggingGate = null;
+        draw();
+        updateInterpretedExpression();
+    });
+    
+    // Button listeners
+    document.getElementById('resetCircuitBtn').addEventListener('click', () => {
+        answered = false;
+        setupCanvas();
+        draw();
+    });
+}
+
+function addGate(type, x, y) {
+    const gateWidth = 80;
+    const gateHeight = 50;
+    const newGate = {
+        id: nextId++,
+        type: type,
+        x: x - gateWidth / 2,
+        y: y - gateHeight / 2,
+        width: gateWidth,
+        height: gateHeight,
+        inputNodes: [],
+        outputNode: { x: x + gateWidth/2, y: y, gateId: nextId-1, type: 'output', connectedTo: null }
+    };
+
+    if (type === 'NOT') {
+        newGate.inputNodes.push({ x: x - gateWidth/2, y: y, gateId: newGate.id, type: 'input', index: 0, connectedTo: null });
+    } else { // AND, OR
+        newGate.inputNodes.push({ x: x - gateWidth/2, y: y - 10, gateId: newGate.id, type: 'input', index: 0, connectedTo: null });
+        newGate.inputNodes.push({ x: x - gateWidth/2, y: y + 10, gateId: newGate.id, type: 'input', index: 1, connectedTo: null });
+    }
+    
+    gates.push(newGate);
+    draw();
+}
+
+function addWire(startNode, endNode) {
+    let fromNode = startNode.type === 'output' ? startNode : endNode;
+    let toNode = startNode.type === 'input' ? startNode : endNode;
+    
+    wires = wires.filter(w => w.to !== toNode);
+    if(toNode.connectedTo) {
+        const prevFromNode = findNodeByConnection(toNode.connectedTo);
+        if(prevFromNode) prevFromNode.connectedTo = null;
+    }
+
+    wires.push({ from: fromNode, to: toNode });
+    fromNode.connectedTo = { gateId: toNode.gateId, nodeIndex: toNode.index, nodeType: 'input' };
+    toNode.connectedTo = { gateId: fromNode.gateId, nodeIndex: fromNode.index, nodeType: 'output' };
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    wires.forEach(wire => {
+        ctx.beginPath();
+        ctx.moveTo(wire.from.x, wire.from.y);
+        ctx.lineTo(wire.to.x, wire.to.y);
+        ctx.stroke();
+    });
+
+    gates.forEach(gate => {
+        ctx.fillStyle = '#f0f0f0';
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.fillRect(gate.x, gate.y, gate.width, gate.height);
+        ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
+        
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '14px Arial';
+        ctx.fillText(gate.type, gate.x + gate.width / 2, gate.y + gate.height / 2);
+
+        drawNodesForGate(gate);
+    });
+    
+    [...inputs, output].forEach(io => {
+        ctx.fillStyle = '#d1e7dd';
+        ctx.strokeStyle = '#0f5132';
+        ctx.fillRect(io.x, io.y, io.width, io.height);
+        ctx.strokeRect(io.x, io.y, io.width, io.height);
+        
+        ctx.fillStyle = '#000';
+        ctx.fillText(io.name, io.x + io.width / 2, io.y + io.height / 2);
+
+        if (io.outputNode) drawNode(io.outputNode);
+        if (io.inputNode) drawNode(io.inputNode);
+    });
+}
+
+function drawNodesForGate(gate) {
+    gate.inputNodes.forEach(drawNode);
+    drawNode(gate.outputNode);
+}
+
+function drawNode(node) {
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = node.connectedTo ? '#3498db' : '#fff';
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.fill();
+    ctx.stroke();
+}
+
+
+// --- NEW: ANSWER CHECKING LOGIC ---
+
+/**
+ * Checks if the user's circuit is logically equivalent to the target expression.
+ * It does this by comparing the truth table of both expressions.
+ */
+function checkCircuitAnswer() {
+    const userExpr = document.getElementById('interpretedExpression').textContent;
+    const feedback = document.getElementById('feedback');
+
+    if (userExpr.includes('?')) {
+        feedback.textContent = 'Your circuit is not complete yet.';
+        feedback.className = 'feedback incorrect';
+        feedback.style.display = 'block';
+        return;
+    }
+
+    const requiredInputs = new Set();
+    if (targetExpression.includes('A')) requiredInputs.add('A');
+    if (targetExpression.includes('B')) requiredInputs.add('B');
+    if (targetExpression.includes('C')) requiredInputs.add('C');
+    const inputsArray = Array.from(requiredInputs);
+
+    let areEquivalent = true;
+    const numInputs = inputsArray.length;
+    const numCombinations = 2 ** numInputs;
+
+    for (let i = 0; i < numCombinations; i++) {
+        const inputValues = {};
+        for (let j = 0; j < numInputs; j++) {
+            inputValues[inputsArray[j]] = (i >> (numInputs - 1 - j)) & 1;
+        }
+
+        const targetResult = evaluateExpression(targetExpression, inputValues);
+        const userResult = evaluateExpression(userExpr, inputValues);
+
+        if (targetResult !== userResult) {
+            areEquivalent = false;
+            break;
+        }
+    }
+
+    if (areEquivalent) {
+        feedback.textContent = 'Correct! The circuit matches the expression.';
+        feedback.className = 'feedback correct';
+        document.getElementById('nextBtn').style.display = 'block';
+        answered = true;
+    } else {
+        feedback.textContent = 'Incorrect. The logic of your circuit does not match the target expression.';
+        feedback.className = 'feedback incorrect';
+    }
+    feedback.style.display = 'block';
+}
+
+/**
+ * Evaluates a boolean expression string with given variable values.
+ * @param {string} expression - e.g., "Q = (A AND B) OR C"
+ * @param {object} inputValues - e.g., { A: 1, B: 0, C: 1 }
+ * @returns {boolean | null} - The result of the evaluation or null on error.
+ */
+function evaluateExpression(expression, inputValues) {
+    let evalStr = expression.replace('Q = ', '').trim();
+    
+    // Replace boolean operators with JS logical operators
+    evalStr = evalStr.replace(/\bAND\b/g, '&&');
+    evalStr = evalStr.replace(/\bOR\b/g, '||');
+    evalStr = evalStr.replace(/\bNOT\b/g, '!');
+
+    const variables = Object.keys(inputValues);
+    const values = Object.values(inputValues).map(v => Boolean(v));
+
+    try {
+        // Using a Function constructor is safer than direct eval()
+        const evaluator = new Function(...variables, `return ${evalStr};`);
+        return evaluator(...values);
+    } catch (e) {
+        console.error("Error evaluating expression:", expression, e);
+        return null; // Return null if the expression is syntactically incorrect
+    }
+}
+
+
+// --- UTILITY AND LOGIC FUNCTIONS ---
+
+function getMousePos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+}
+
+function getClickedGate(pos) {
+    // Find gates from top to bottom (last rendered is on top)
+    for (let i = gates.length - 1; i >= 0; i--) {
+        const gate = gates[i];
+        if (pos.x > gate.x && pos.x < gate.x + gate.width && pos.y > gate.y && pos.y < gate.y + gate.height) {
+            return gate;
+        }
+    }
+    return null;
+}
+
+function getClickedNode(pos) {
+    const allNodes = [];
+    gates.forEach(g => allNodes.push(...g.inputNodes, g.outputNode));
+    inputs.forEach(i => allNodes.push(i.outputNode));
+    allNodes.push(output.inputNode);
+
+    for (const node of allNodes) {
+        const dist = Math.sqrt((pos.x - node.x) ** 2 + (pos.y - node.y) ** 2);
+        if (dist < 6) return node;
+    }
+    return null;
+}
+
+function updateGateNodes(gate) {
+    gate.outputNode.x = gate.x + gate.width;
+    gate.outputNode.y = gate.y + gate.height / 2;
+    if (gate.type === 'NOT') {
+        gate.inputNodes[0].x = gate.x;
+        gate.inputNodes[0].y = gate.y + gate.height / 2;
+    } else {
+        gate.inputNodes[0].x = gate.x;
+        gate.inputNodes[0].y = gate.y + gate.height / 2 - 10;
+        gate.inputNodes[1].x = gate.x;
+        gate.inputNodes[1].y = gate.y + gate.height / 2 + 10;
+    }
+}
+
+function findNodeByConnection(connection) {
+    const { gateId, nodeIndex, nodeType } = connection;
+    if (String(gateId).startsWith('input-')) {
+        const input = inputs.find(i => i.id === gateId);
+        return input ? input.outputNode : null;
+    }
+    if (String(gateId).startsWith('output-')) {
+        return output.inputNode;
+    }
+    const gate = gates.find(g => g.id === gateId);
+    if (!gate) return null;
+    return nodeType === 'input' ? gate.inputNodes[nodeIndex] : gate.outputNode;
+}
+
+function updateInterpretedExpression() {
+    const expression = buildExpression(output.inputNode);
+    document.getElementById('interpretedExpression').textContent = `Q = ${expression}`;
+}
+
+function buildExpression(node) {
+    if (!node || !node.connectedTo) return '?';
+
+    const sourceGateId = node.connectedTo.gateId;
+
+    if (String(sourceGateId).startsWith('input-')) {
+        const input = inputs.find(i => i.id === sourceGateId);
+        return input ? input.name : '?';
+    }
+
+    const sourceGate = gates.find(g => g.id === sourceGateId);
+    if (!sourceGate) return '?';
+
+    const inputsExpr = sourceGate.inputNodes.map(inputNode => {
+        const expr = buildExpression(inputNode);
+        if (expr.includes('AND') || expr.includes('OR')) {
+            return `(${expr})`;
+        }
+        return expr;
+    });
+
+    if (sourceGate.type === 'NOT') return `NOT ${inputsExpr[0]}`;
+    
+    return `${inputsExpr[0]} ${sourceGate.type} ${inputsExpr[1]}`;
+}

@@ -28,7 +28,7 @@
             </div>
 
             <div>
-                <div id="nameThatGateMode">
+                <div id="nameThatGateMode" class="game-mode-container">
                     <div class="question-area">
                         <h2>Which GCSE logic gate is this?</h2>
                         <div id="nameThatGateLogicDiagramDisplay" class="logic-diagram-display">
@@ -37,10 +37,10 @@
                     </div>
                     
                     <div class="options">
-                        <button class="btn option" onclick="checkNameThatGateAnswer('AND')">AND</button>
-                        <button class="btn option" onclick="checkNameThatGateAnswer('OR')">OR</button>
-                        <button class="btn option" onclick="checkNameThatGateAnswer('NOT')">NOT</button>
-                        <button class="btn option" onclick="checkNameThatGateAnswer('NONE')">NONE</button>
+                        <button class="btn option" onclick="checkAnswer('AND')">AND</button>
+                        <button class="btn option" onclick="checkAnswer('OR')">OR</button>
+                        <button class="btn option" onclick="checkAnswer('NOT')">NOT</button>
+                        <button class="btn option" onclick="checkAnswer('NONE')">NONE</button>
                     </div>
                 </div>
 
@@ -76,10 +76,6 @@
                     <div id="expressionHelpInfo" class="help-info">
                         <h4>Help Mode - Accepted Answers</h4>
                         <div id="acceptedAnswers" class="accepted-answers"></div>
-                    </div>
-
-                    <div class="mark-btn-container">
-                        <button id="submitExpressionBtn" class="btn btn-success" onclick="checkExpressionAnswer()">Submit Answer</button>
                     </div>
                 </div>
 
@@ -121,10 +117,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="mark-btn-container">
-                        <button id="submitTruthTableBtn" class="btn btn-success" onclick="checkTruthTableAnswer()">Submit Answer</button>
-                    </div>
                 </div>
 
                 <div id="drawCircuitMode" class="game-mode-container">
@@ -157,84 +149,30 @@
 
                             <!-- UI to draw the circuit - a panel and then elements on the side to select and place gates -->
                             <div class="circuit-builder-container">
-                                <div class="circuit-workspace">
-                                    <div class="toolbox-panel">
-                                        <h4>Logic Gates</h4>
-                                        <div class="gate-toolbox">
-                                        <div class="gate-tool and-tool" draggable="true" data-gate-type="and">
-                                            <div class="gate-icon">
-                                            <!-- AND Gate SVG -->
-                                            <svg width="200" height="120" viewBox="0 0 200 120">
-                                                <path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="#333" stroke-width="2"></path>
-                                                <line x1="30" y1="50" x2="60" y2="50" stroke="#333" stroke-width="2"></line>
-                                                <line x1="30" y1="70" x2="60" y2="70" stroke="#333" stroke-width="2"></line>
-                                                <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"></line>
-                                            </svg>
-                                            </div>
-                                            <div class="gate-label">AND</div>
-                                        </div>
 
-                                        <div class="gate-tool or-tool" draggable="true" data-gate-type="or">
-                                            <div class="gate-icon">
-                                            <!-- OR Gate SVG -->
-                                            <svg width="200" height="120" viewBox="0 0 200 120">
-                                                <path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="#333" stroke-width="2"></path>
-                                                <line x1="30" y1="50" x2="65" y2="50" stroke="#333" stroke-width="2"></line>
-                                                <line x1="30" y1="70" x2="65" y2="70" stroke="#333" stroke-width="2"></line>
-                                                <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"></line>
-                                            </svg>
-                                            </div>
-                                            <div class="gate-label">OR</div>
-                                        </div>
-
-                                        <div class="gate-tool not-tool" draggable="true" data-gate-type="not">
-                                            <div class="gate-icon">
-                                            <!-- NOT Gate SVG -->
-                                            <svg width="200" height="120" viewBox="0 0 200 120">
-                                                <path d="M 60 30 L 60 90 L 108 60 Z" fill="none" stroke="#333" stroke-width="2"></path>
-                                                <circle cx="115" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"></circle>
-                                                <line x1="30" y1="60" x2="60" y2="60" stroke="#333" stroke-width="2"></line>
-                                                <line x1="120" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"></line>
-                                            </svg>
-                                            </div>
-                                            <div class="gate-label">NOT</div>
-                                        </div>
-                                        </div>
-
-                                        
-                                    </div>
-
-                                    <div class="circuit-canvas-container">
-                                        <div class="circuit-canvas" id="circuitCanvas">
-                                            <!-- Terminals will be dynamically generated here based on the expression -->
-                                            
-                                            <!-- SVG layer for wires -->
-                                            <svg class="wire-layer" id="wireLayer">
-                                                <!-- Wires will be drawn here -->
-                                            </svg>
-
-                                            <!-- Temporary wire for dragging -->
-                                            <svg class="temp-wire-layer" id="tempWireLayer" style="display: none;">
-                                                <path id="tempWirePath" stroke="#007bff" stroke-width="3" fill="none" stroke-dasharray="5,5"></path>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="circuit-controls">
-                                    <button class="btn btn-danger btn-small" onclick="clearCircuitCanvas()" title="Clear all gates and wires">
-                                        Clear Canvas
-                                    </button>
-                                    <button class="btn btn-warning btn-small" onclick="deleteSelectedGate()" title="Delete selected gate">
-                                        Delete Selected
-                                    </button>
-                                    <button class="btn btn-primary btn-small" onclick="generateNewCircuitExpression()" title="Generate new expression">
-                                        New Expression
-                                    </button>
-                                </div>
                             </div>
 
                         </div>
+                    </div>
+
+                    <div class="question-area">
+                        <h2>Draw The Circuit For This Expression:</h2>
+                        <p id="targetExpression" style="font-weight: bold; font-size: 1.2em;"></p>
+                    </div>
+                    <div id="drawCircuitContainer">
+                        <div id="circuitToolbox">
+                            <h3>Toolbox</h3>
+                            <div class="gate" draggable="true" id="drag-AND">AND</div>
+                            <div class="gate" draggable="true" id="drag-OR">OR</div>
+                            <div class="gate" draggable="true" id="drag-NOT">NOT</div>
+                            <button id="resetCircuitBtn" class="btn" style="width: 100%; margin-top: 20px; background-color: #dc3545;">Reset</button>
+                        </div>
+                        <div id="canvasContainer">
+                            <canvas id="circuitCanvas" width="750" height="500"></canvas>
+                        </div>
+                    </div>
+                    <div id="circuitInfo">
+                        <p>Your Current Circuit: <span id="interpretedExpression">Q = ?</span></p>
                     </div>
 
                     <div id="circuitHelpInfo" class="help-info">
@@ -242,9 +180,6 @@
                         <div id="circuitExpression" class="accepted-answers"></div>
                     </div>
 
-                    <div class="mark-btn-container">
-                        <button id="submitCircuitBtn" class="btn btn-success" onclick="checkCircuitAnswer()">Submit Answer</button>
-                    </div>
                 </div>
 
 
@@ -283,9 +218,6 @@
                         <div id="scenarioAcceptedAnswers" class="accepted-answers"></div>
                     </div>
 
-                    <div class="mark-btn-container">
-                        <button id="submitScenarioBtn" class="btn btn-success" onclick="checkScenarioAnswer()">Submit Answer</button>
-                    </div>
                 </div>
 
                 <div id="feedback" class="feedback"></div>
@@ -293,7 +225,9 @@
                     <button id="nextBtn" class="btn btn-nav" onclick="nextQuestion()">Next Question</button>
                 </div>
             </div>
-
+            <div class="mark-btn-container">
+                <button id="submitBtn" class="btn btn-success" onclick="checkAnswer()">Submit Answer</button>
+            </div>
             <div class="score">
                 <p>Score: <span id="scoreDisplay">0/0</span></p>
             </div>
