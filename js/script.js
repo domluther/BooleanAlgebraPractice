@@ -334,34 +334,34 @@ const expressionDatabase = {
         'Q = NOT (NOT A)'
     ],
     level3: [
-        'Q = (A AND B) OR (C AND D)',
-        'Q = (A OR B) AND (C OR D)',
-        'Q = (A AND B) AND (C OR D)',
-        'Q = (A OR B) OR (C AND D)',
-        'Q = (NOT (A AND B)) OR C',
-        'Q = (NOT (A OR B)) AND C',
-        'Q = A AND (NOT (B OR C))',
-        'Q = A OR (NOT (B AND C))',
-        'Q = (NOT A) AND (NOT B)',
-        'Q = (NOT A) OR (NOT B)',
-        'Q = ((NOT A) AND B) OR C',
-        'Q = (A AND (NOT B)) OR C',
-        'Q = ((NOT A) OR B) AND C',
-        'Q = (A OR (NOT B)) AND C',
-        'Q = NOT ((NOT A) AND B)',
-        'Q = NOT (A AND (NOT B))',
-        'Q = (A AND B) OR (NOT C)',
-        'Q = (A OR B) AND (NOT C)',
+        // 'Q = (A AND B) OR (C AND D)',
+        // 'Q = (A OR B) AND (C OR D)',
+        // 'Q = (A AND B) AND (C OR D)',
+        // 'Q = (A OR B) OR (C AND D)',
+        // 'Q = (NOT (A AND B)) OR C',
+        // 'Q = (NOT (A OR B)) AND C',
+        // 'Q = A AND (NOT (B OR C))',
+        // 'Q = A OR (NOT (B AND C))',
+        // 'Q = (NOT A) AND (NOT B)',
+        // 'Q = (NOT A) OR (NOT B)',
+        // 'Q = ((NOT A) AND B) OR C',
+        // 'Q = (A AND (NOT B)) OR C',
+        // 'Q = ((NOT A) OR B) AND C',
+        // 'Q = (A OR (NOT B)) AND C',
+        // 'Q = NOT ((NOT A) AND B)',
+        // 'Q = NOT (A AND (NOT B))',
+        // 'Q = (A AND B) OR (NOT C)',
+        // 'Q = (A OR B) AND (NOT C)',
         'Q = (NOT A) AND (B OR C)',
-        'Q = (NOT A) OR (B AND C)',
-        'Q = ((NOT A) AND (NOT B)) AND C',
-        'Q = ((NOT A) OR (NOT B)) OR C',
-        'Q = (A AND (NOT B)) AND C',
-        'Q = (A OR (NOT B)) OR C',
-        'Q = NOT ((A OR B) OR C)',
-        'Q = NOT ((A AND B) AND C)',
-        'Q = ((A AND (NOT B)) OR C)',
-        'Q = ((A OR (NOT B)) AND C)'
+        // 'Q = (NOT A) OR (B AND C)',
+        // 'Q = ((NOT A) AND (NOT B)) AND C',
+        // 'Q = ((NOT A) OR (NOT B)) OR C',
+        // 'Q = (A AND (NOT B)) AND C',
+        // 'Q = (A OR (NOT B)) OR C',
+        // 'Q = NOT ((A OR B) OR C)',
+        // 'Q = NOT ((A AND B) AND C)',
+        // 'Q = ((A AND (NOT B)) OR C)',
+        // 'Q = ((A OR (NOT B)) AND C)'
     ],
     level4: [
     'Q = ((A AND B) OR (C AND D)) OR E',
@@ -2117,6 +2117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// Code for Circuit Drawing Mode
 function initDrawCircuitMode() {
     canvas = document.getElementById('circuitCanvas');
     if (!canvas) {
@@ -2362,37 +2363,7 @@ function addCircuitModeEventListeners() {
     });
 }
 
-function enableResetButton() {
-    const resetBtn = document.getElementById('resetCircuitBtn');
-    if (resetBtn) {
-        resetBtn.disabled = false;
-        resetBtn.classList.remove('disabled');
-    }
-}
 
-function disableResetButton() {
-    const resetBtn = document.getElementById('resetCircuitBtn');
-    if (resetBtn){
-        resetBtn.disabled = true;
-        resetBtn.classList.add('disabled');
-    }
-}
-
-function enableRemoveSelectedButton() {
-    const removeBtn = document.getElementById('removeSelectedBtn');
-    if (removeBtn) {
-        removeBtn.disabled = false;
-        removeBtn.classList.remove('disabled');
-    }
-}
-
-function disableRemoveSelectedButton() {
-    const removeBtn = document.getElementById('removeSelectedBtn');
-    if (removeBtn) {
-        removeBtn.disabled = true;
-        removeBtn.classList.add('disabled');
-    }
-}
 
 function addGate(type, x, y) {
     const gateWidth = 80;
@@ -2502,6 +2473,7 @@ function draw() {
 }
 
 function drawNodesForGate(gate) {
+    // console.log('Drawing nodes for gate:', gate);
     gate.inputNodes.forEach(drawNode);
     drawNode(gate.outputNode);
 }
@@ -2570,9 +2542,6 @@ function distanceToLine(point, lineStart, lineEnd) {
 }
 
 function removeSelected() {
-    console.log('removeSelected called');
-    console.log('selectedGate:', selectedGate);
-    console.log('selectedWire:', selectedWire);
     if (selectedGate) {
         removeGate(selectedGate);
         selectedGate = null;
@@ -2771,35 +2740,97 @@ function findNodeByConnectionInfo(connection) {
 }
 
 function updateInterpretedExpression() {
-    const expression = buildExpression(output.inputNode);
-    const outputName = output ? output.name : '?';
-    document.getElementById('interpretedExpression').textContent = `${outputName} = ${expression}`;
+    const expressionElement = document.getElementById('interpretedExpression');
+
+    if (output?.inputNode?.connectedTo) {
+        // ✅ Q is connected → build expression from Q
+        const expression = buildExpression(output.inputNode);
+        const outputName = output.name || '?';
+        expressionElement.textContent = `${outputName} = ${expression}`;
+        return;
+    }
+
+    // ❌ Q is not connected → look for a fully connected gate
+    const gate = gates.find(gate =>
+        gate.outputNode &&
+        gate.outputNode.connectedTo == null &&
+        gate.inputNodes.length > 0 &&
+        gate.inputNodes.every(node => node.connectedTo)
+    );
+
+    if (gate) {
+        console.log(`Found standalone gate: ${gate.type}`);
+        const expression = buildExpression(gate.outputNode);
+        expressionElement.textContent = expression;
+    } else {
+        expressionElement.textContent = '';
+    }
 }
 
 function buildExpression(node) {
-    if (!node || !node.connectedTo) return '?';
+    console.log('buildExpression called for node:', node);
+
+    if (!node) {
+        return '?';
+    }
+
+    // 🔁 If it's an output node, find its gate and recurse
+    if (node.type === 'output') {
+        const gate = gates.find(g => g.id === node.gateId);
+        if (!gate) {
+            return '?';
+        }
+
+        return buildExpressionFromGate(gate);
+    }
+
+    // 🔁 If it's an input node, follow its connection
+    if (!node.connectedTo) {
+        return '?';
+    }
 
     const sourceGateId = node.connectedTo.gateId;
 
     if (String(sourceGateId).startsWith('input-')) {
         const input = inputs.find(i => i.id === sourceGateId);
-        return input ? input.name : '?';
+        const inputName = input ? input.name : '?';
+        return inputName;
     }
 
     const sourceGate = gates.find(g => g.id === sourceGateId);
-    if (!sourceGate) return '?';
+    if (!sourceGate) {
+        return '?';
+    }
 
-    const inputsExpr = sourceGate.inputNodes.map(inputNode => {
-        const expr = buildExpression(inputNode);
-        if (expr.includes('AND') || expr.includes('OR')) {
-            return `(${expr})`;
+    return buildExpressionFromGate(sourceGate);
+}
+
+function buildExpressionFromGate(gate) {
+
+    const inputsExpr = gate.inputNodes.map(inputNode => {
+        let expr = buildExpression(inputNode);
+
+        // Wrap if it contains any binary operator
+        if (expr.includes(' AND ') || expr.includes(' OR ') || expr.includes(' XOR ')) {
+            expr = `(${expr})`;
         }
+
+        // Wrap NOT expressions as well (we'll identify them as starting with "NOT ")
+        if (expr.startsWith('NOT ')) {
+            expr = `(${expr})`;
+        }
+
         return expr;
     });
 
-    if (sourceGate.type === 'NOT') return `NOT ${inputsExpr[0]}`;
-    
-    return `${inputsExpr[0]} ${sourceGate.type} ${inputsExpr[1]}`;
+    let finalExpr;
+    if (gate.type === 'NOT') {
+        finalExpr = `NOT ${inputsExpr[0]}`;
+    } else {
+        finalExpr = `${inputsExpr[0]} ${gate.type} ${inputsExpr[1]}`;
+    }
+
+    return finalExpr;
 }
 
 function setDrawCircuitModeDifficulty(level, clickedButton) {
@@ -2818,6 +2849,38 @@ function setDrawCircuitModeDifficulty(level, clickedButton) {
     hideNextButton();
     showSubmitButton();
     answered = false;
+}
+
+function enableResetButton() {
+    const resetBtn = document.getElementById('resetCircuitBtn');
+    if (resetBtn) {
+        resetBtn.disabled = false;
+        resetBtn.classList.remove('disabled');
+    }
+}
+
+function disableResetButton() {
+    const resetBtn = document.getElementById('resetCircuitBtn');
+    if (resetBtn){
+        resetBtn.disabled = true;
+        resetBtn.classList.add('disabled');
+    }
+}
+
+function enableRemoveSelectedButton() {
+    const removeBtn = document.getElementById('removeSelectedBtn');
+    if (removeBtn) {
+        removeBtn.disabled = false;
+        removeBtn.classList.remove('disabled');
+    }
+}
+
+function disableRemoveSelectedButton() {
+    const removeBtn = document.getElementById('removeSelectedBtn');
+    if (removeBtn) {
+        removeBtn.disabled = true;
+        removeBtn.classList.add('disabled');
+    }
 }
 
 function generateDrawCircuitQuestion() {
