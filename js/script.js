@@ -39,6 +39,7 @@ let draggingOffset = { x: 0, y: 0 };
 let wireStartNode = null;
 let targetExpression = "";
 let parsedTargetExpression = {};
+let drawCircuitModeDifficultyLevel = 1;
 
 
 function setGameMode(mode, clickedButton) {
@@ -1633,7 +1634,6 @@ function nextQuestion() {
     } else if (currentMode === 'truthTable') {
         showSubmitButton();
         generateTruthTableQuestion();
-        
         // Reset all select elements
         document.querySelectorAll('.truth-table-select').forEach(select => {
             select.value = '';
@@ -1642,6 +1642,7 @@ function nextQuestion() {
         });
     }  
     else if (currentMode === 'drawCircuit') {
+        showSubmitButton();
         initDrawCircuitMode();
     } else {
         console.error('Unknown game mode:', currentMode);
@@ -2107,10 +2108,13 @@ function initDrawCircuitMode() {
     }
     ctx = canvas.getContext('2d');
 
-    // Pick a random expression
-    const allExpressions = [...expressionDatabase.level1, ...expressionDatabase.level2];
-    targetExpression = allExpressions[Math.floor(Math.random() * allExpressions.length)];
+    // Pick a random expression from appropriate difficulty level
+    const levelKey = `level${drawCircuitModeDifficultyLevel}`;
+    const expressions = expressionDatabase[levelKey];
+
+    targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
     document.getElementById('targetExpression').textContent = targetExpression;
+    parsedTargetExpression = parseExpression(targetExpression);
 
     setupCanvas();
     addEventListeners();
@@ -2148,14 +2152,16 @@ function setupCanvas() {
         yPos += 100;
     }
 
+    const outputName = parsedTargetExpression.output;
+
     output = {
-        id: 'output-Q',
-        name: 'Q',
+        id: `output-${outputName}`,
+        name: outputName,
         x: 650,
         y: 250,
         width: 50,
         height: 30,
-        inputNode: { x: 650, y: 265, gateId: 'output-Q', type: 'input', connectedTo: null }
+        inputNode: { x: 650, y: 265, gateId: `output-${outputName}`, type: 'input', connectedTo: null }
     };
     
     updateInterpretedExpression();
@@ -2163,7 +2169,6 @@ function setupCanvas() {
 
 
 function addEventListeners() {
-    // Drag and drop from toolbox
     const toolboxGates = document.querySelectorAll('.gate[draggable="true"]');
     toolboxGates.forEach(gate => {
         gate.addEventListener('dragstart', (e) => {
@@ -2175,6 +2180,9 @@ function addEventListeners() {
 
     canvas.addEventListener('drop', (e) => {
         e.preventDefault();
+        // Guard clause to ensure drag originated from toolbox
+        if (!e.dataTransfer.getData('text/plain')) return;
+        
         const id = e.dataTransfer.getData('text/plain');
         const type = id.replace('drag-', '');
         const rect = canvas.getBoundingClientRect();
@@ -2183,7 +2191,6 @@ function addEventListeners() {
         addGate(type, x, y);
     });
 
-    // Canvas interactions
     canvas.addEventListener('mousedown', (e) => {
         if (answered) return;
         const pos = getMousePos(e);
@@ -2194,6 +2201,8 @@ function addEventListeners() {
         } else {
             draggingGate = getClickedGate(pos);
             if (draggingGate) {
+                // Prevent browser's default drag behavior for canvas items
+                e.preventDefault(); 
                 draggingOffset.x = pos.x - draggingGate.x;
                 draggingOffset.y = pos.y - draggingGate.y;
             }
@@ -2233,7 +2242,6 @@ function addEventListeners() {
         updateInterpretedExpression();
     });
     
-    // Button listeners
     document.getElementById('resetCircuitBtn').addEventListener('click', () => {
         answered = false;
         setupCanvas();
@@ -2272,7 +2280,7 @@ function addWire(startNode, endNode) {
     
     wires = wires.filter(w => w.to !== toNode);
     if(toNode.connectedTo) {
-        const prevFromNode = findNodeByConnection(toNode.connectedTo);
+        const prevFromNode = findNodeByConnectionInfo(toNode.connectedTo);
         if(prevFromNode) prevFromNode.connectedTo = null;
     }
 
@@ -2282,6 +2290,7 @@ function addWire(startNode, endNode) {
 }
 
 function draw() {
+    if(!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.strokeStyle = '#333';
@@ -2339,70 +2348,58 @@ function drawNode(node) {
 }
 
 
-// --- NEW: ANSWER CHECKING LOGIC ---
+// --- ANSWER CHECKING LOGIC ---
 
 /**
  * Checks if the user's circuit is logically equivalent to the target expression.
  * It does this by comparing the truth table of both expressions.
  */
 function checkCircuitAnswer() {
-    const userExpr = document.getElementById('interpretedExpression').textContent;
+    const userExprText = document.getElementById('interpretedExpression').textContent;
     const feedback = document.getElementById('feedback');
 
-    if (userExpr.includes('?')) {
+    if (userExprText.includes('?')) {
         feedback.textContent = 'Your circuit is not complete yet.';
         feedback.className = 'feedback incorrect';
         feedback.style.display = 'block';
         return;
     }
 
-    const requiredInputs = new Set();
-    if (targetExpression.includes('A')) requiredInputs.add('A');
-    if (targetExpression.includes('B')) requiredInputs.add('B');
-    if (targetExpression.includes('C')) requiredInputs.add('C');
-    const inputsArray = Array.from(requiredInputs);
-
-    let areEquivalent = true;
-    const numInputs = inputsArray.length;
-    const numCombinations = 2 ** numInputs;
-
-    for (let i = 0; i < numCombinations; i++) {
-        const inputValues = {};
-        for (let j = 0; j < numInputs; j++) {
-            inputValues[inputsArray[j]] = (i >> (numInputs - 1 - j)) & 1;
-        }
-
-        const targetResult = evaluateExpression(targetExpression, inputValues);
-        const userResult = evaluateExpression(userExpr, inputValues);
-
-        if (targetResult !== userResult) {
-            areEquivalent = false;
-            break;
-        }
+    const userExprParts = userExprText.split('=');
+    if (userExprParts.length < 2 || userExprParts[0].trim() !== parsedTargetExpression.output) {
+         feedback.textContent = `Incorrect. Your circuit outputs to ${userExprParts[0].trim()} but it should output to ${parsedTargetExpression.output}.`;
+        feedback.className = 'feedback incorrect';
+        feedback.style.display = 'block';
+        return;
     }
 
-    if (areEquivalent) {
+    console.log("User expression:", userExprText);
+    console.log("Target expression:", targetExpression);
+
+    const possibleAnswers = generateAllAcceptedExpressionModeAnswers(targetExpression);
+
+    const isCorrect = possibleAnswers.some(acceptedAnswer => {
+        return userExprText === acceptedAnswer;
+    });
+
+    if (isCorrect) {
         feedback.textContent = 'Correct! The circuit matches the expression.';
         feedback.className = 'feedback correct';
-        document.getElementById('nextBtn').style.display = 'block';
+        document.getElementById('nextBtn').style.display = 'inline-block';
+        document.getElementById('submitBtn').style.display = 'none';
         answered = true;
     } else {
-        feedback.textContent = 'Incorrect. The logic of your circuit does not match the target expression.';
+        feedback.textContent = `Incorrect. The logic of your circuit (${userExprText}) does not match the target expression (${targetExpression}).`;
         feedback.className = 'feedback incorrect';
     }
     feedback.style.display = 'block';
 }
 
-/**
- * Evaluates a boolean expression string with given variable values.
- * @param {string} expression - e.g., "Q = (A AND B) OR C"
- * @param {object} inputValues - e.g., { A: 1, B: 0, C: 1 }
- * @returns {boolean | null} - The result of the evaluation or null on error.
- */
 function evaluateExpression(expression, inputValues) {
-    let evalStr = expression.replace('Q = ', '').trim();
+    const exprParts = expression.split('=');
+    if (exprParts.length < 2) return null;
+    let evalStr = exprParts[1].trim();
     
-    // Replace boolean operators with JS logical operators
     evalStr = evalStr.replace(/\bAND\b/g, '&&');
     evalStr = evalStr.replace(/\bOR\b/g, '||');
     evalStr = evalStr.replace(/\bNOT\b/g, '!');
@@ -2411,17 +2408,35 @@ function evaluateExpression(expression, inputValues) {
     const values = Object.values(inputValues).map(v => Boolean(v));
 
     try {
-        // Using a Function constructor is safer than direct eval()
         const evaluator = new Function(...variables, `return ${evalStr};`);
         return evaluator(...values);
     } catch (e) {
         console.error("Error evaluating expression:", expression, e);
-        return null; // Return null if the expression is syntactically incorrect
+        return null;
     }
 }
 
 
 // --- UTILITY AND LOGIC FUNCTIONS ---
+
+function parseExpression(expression) {
+    const parts = expression.split('=');
+    if (parts.length !== 2) return { output: 'Q', inputs: ['A', 'B'] }; // Default fallback
+
+    const outputVar = parts[0].trim();
+    const rightSide = parts[1].trim();
+
+    const tokens = rightSide.split(/[^A-Z0-9_]/).filter(Boolean);
+    const booleanOperators = new Set(['NOT', 'AND', 'OR', 'NAND', 'NOR', 'XOR']);
+    
+    const variables = tokens.filter(token => !booleanOperators.has(token));
+    const uniqueVariables = [...new Set(variables)].sort();
+
+    return {
+        output: outputVar,
+        inputs: uniqueVariables
+    };
+}
 
 function getMousePos(evt) {
     const rect = canvas.getBoundingClientRect();
@@ -2429,7 +2444,6 @@ function getMousePos(evt) {
 }
 
 function getClickedGate(pos) {
-    // Find gates from top to bottom (last rendered is on top)
     for (let i = gates.length - 1; i >= 0; i--) {
         const gate = gates[i];
         if (pos.x > gate.x && pos.x < gate.x + gate.width && pos.y > gate.y && pos.y < gate.y + gate.height) {
@@ -2466,7 +2480,7 @@ function updateGateNodes(gate) {
     }
 }
 
-function findNodeByConnection(connection) {
+function findNodeByConnectionInfo(connection) {
     const { gateId, nodeIndex, nodeType } = connection;
     if (String(gateId).startsWith('input-')) {
         const input = inputs.find(i => i.id === gateId);
@@ -2482,7 +2496,8 @@ function findNodeByConnection(connection) {
 
 function updateInterpretedExpression() {
     const expression = buildExpression(output.inputNode);
-    document.getElementById('interpretedExpression').textContent = `Q = ${expression}`;
+    const outputName = output ? output.name : '?';
+    document.getElementById('interpretedExpression').textContent = `${outputName} = ${expression}`;
 }
 
 function buildExpression(node) {
