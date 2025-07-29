@@ -16,7 +16,7 @@ let nameThatGateReason = '';
 // Global variables for expression writing mode
 let currentExpression = '';
 let currentAcceptedAnswers = [];
-let expressionHelpMode = false;
+let circuitHelpMode = false;
 
 // Global variables for truth table mode
 let showIntermediateColumns = false;
@@ -82,7 +82,7 @@ function setGameMode(mode, clickedButton) {
     } else if (mode === 'writeExpression') {
         showSubmitButton();
         generateExpressionQuestion();
-        if (expressionHelpMode) {
+        if (circuitHelpMode) {
             document.getElementById('expressionHelpInfo').style.display = 'block';
             updateHelpDisplayForExpressionMode();
         }
@@ -375,10 +375,10 @@ const expressionDatabase = {
 
 // Help mode for expression writing
 function toggleHelpExpressionMode() {
-    expressionHelpMode = document.getElementById('debugMode').checked;
+    circuitHelpMode = document.getElementById('debugMode').checked;
     const expressionHelpInfo = document.getElementById('expressionHelpInfo');
 
-    if (expressionHelpMode && currentMode === 'writeExpression') {
+    if (circuitHelpMode && currentMode === 'writeExpression') {
         expressionHelpInfo.style.display = 'block';
         updateHelpDisplayForExpressionMode();
     } else {
@@ -387,7 +387,7 @@ function toggleHelpExpressionMode() {
 }
 
 function updateHelpDisplayForExpressionMode() {
-    if (expressionHelpMode) {
+    if (circuitHelpMode) {
         const acceptedAnswersDiv = document.getElementById('acceptedAnswers');
         if (currentAcceptedAnswers && currentAcceptedAnswers.length > 0) {
             acceptedAnswersDiv.innerHTML = currentAcceptedAnswers.map(answer => 
@@ -411,7 +411,7 @@ function setExpressionModeDifficulty(level, clickedButton) {
     generateExpressionQuestion();
     hideFeedback();
     
-    if (expressionHelpMode) {
+    if (circuitHelpMode) {
         updateHelpDisplayForExpressionMode();
     }
 
@@ -431,7 +431,7 @@ function generateExpressionQuestion() {
     
     currentAcceptedAnswers = generateAllAcceptedExpressionModeAnswers(currentExpression);
 
-    if (expressionHelpMode) {
+    if (circuitHelpMode) {
         updateHelpDisplayForExpressionMode();
     }
 
@@ -1637,7 +1637,7 @@ function nextQuestion() {
     } else if (currentMode === 'writeExpression') {
         showSubmitButton();
         generateExpressionQuestion();
-        if (expressionHelpMode) {
+        if (circuitHelpMode) {
             updateHelpDisplayForExpressionMode();
         }
     }
@@ -2424,9 +2424,6 @@ function checkCircuitAnswer() {
         return;
     }
 
-    console.log("User expression:", userExprText);
-    console.log("Target expression:", targetExpression);
-
     const possibleAnswers = generateAllAcceptedExpressionModeAnswers(targetExpression);
 
     const isCorrect = possibleAnswers.some(acceptedAnswer => {
@@ -2440,7 +2437,7 @@ function checkCircuitAnswer() {
         document.getElementById('submitBtn').style.display = 'none';
         answered = true;
     } else {
-        feedback.textContent = `Incorrect. The logic of your circuit (${userExprText}) does not match the target expression (${targetExpression}).`;
+        feedback.textContent = `Incorrect. Your circuit diagram (${userExprText}) does not match the target diagram (${targetExpression}).`;
         feedback.className = 'feedback incorrect';
     }
     feedback.style.display = 'block';
@@ -2608,4 +2605,17 @@ function generateDrawCircuitQuestion() {
     setupCanvas()
     draw();
 
+}
+
+// Help mode for circuit drawing
+function toggleHelpCircuitMode() {
+    circuitHelpMode = document.getElementById('showCircuitExpression').checked;
+    const circuitHelpInfo = document.getElementById('circuitHelpInfo');
+
+    if (circuitHelpMode && currentMode === 'drawCircuit') {
+        circuitHelpInfo.style.display = 'block';
+        updateHelpDisplayForExpressionMode();
+    } else {
+        circuitHelpInfo.style.display = 'none';
+    }
 }

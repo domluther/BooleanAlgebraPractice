@@ -132,7 +132,7 @@
                             
                             <div class="help-toggle">
                                 <label class="help-label">
-                                    <input type="checkbox" id="showCircuitExpression" onchange="toggleCircuitExpression()" class="help-checkbox">
+                                    <input type="checkbox" id="showCircuitExpression" onchange="toggleHelpCircuitMode()" class="help-checkbox">
                                     Show expression so far
                                 </label>
                             </div>
@@ -167,13 +167,10 @@
                             <canvas id="circuitCanvas" width="750" height="500"></canvas>
                         </div>
                     </div>
-                    <div id="circuitInfo">
-                        <p>Your Current Circuit: <span id="interpretedExpression">Q = ?</span></p>
-                    </div>
 
                     <div id="circuitHelpInfo" class="help-info">
                         <h4>Help Mode - Current circuit</h4>
-                        <div id="circuitExpression" class="accepted-answers"></div>
+                        <div id="interpretedExpression" class="accepted-answers">Q = ?</div>
                     </div>
 
                 </div>
