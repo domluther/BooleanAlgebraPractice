@@ -2124,31 +2124,72 @@ function setupCanvas() {
     document.getElementById('feedback').style.display = 'none';
     document.getElementById('nextBtn').style.display = 'none';
 
+    const canvasHeight = canvas.height;
+    const canvasWidth = canvas.width;
+
+    const terminalWidth = 60;
+    const terminalHeight = 40;
+
+    const inputCount = parsedTargetExpression.inputs.length;
+
+    // Adaptive margins based on number of inputs
+    // At 1 input: 25% margin → startY = 25% of canvas
+    // At 7 inputs: 10% margin → startY = 10% of canvas
+    const minMarginRatio = 0.10;
+    const maxMarginRatio = 0.25;
+    const clampedInputCount = Math.min(Math.max(inputCount, 1), 7); // clamp to [1, 7]
+    const t = (clampedInputCount - 1) / 6; // normalised between 0 (1 input) to 1 (7 inputs)
+    const marginRatio = maxMarginRatio - (maxMarginRatio - minMarginRatio) * t;
+
+    const startY = canvasHeight * marginRatio;
+    const endY = canvasHeight * (1 - marginRatio);
+    const availableHeight = endY - startY;
+
+    const spaceBetween = inputCount > 1 ? availableHeight / (inputCount - 1) : 0;
+
     inputs = [];
-    let yPos = 100;
-    for (const inputName of parsedTargetExpression.inputs) {
+
+    for (let i = 0; i < inputCount; i++) {
+        const inputName = parsedTargetExpression.inputs[i];
+
+        const centerY = inputCount > 1
+            ? startY + i * spaceBetween
+            : (startY + endY) / 2;
+
         inputs.push({
             id: `input-${inputName}`,
             name: inputName,
-            x: 50,
-            y: yPos,
-            width: 50,
-            height: 30,
-            outputNode: { x: 75, y: yPos + 15, gateId: `input-${inputName}`, type: 'output', connectedTo: null }
+            x: 30,
+            y: centerY - terminalHeight / 2,
+            width: terminalWidth,
+            height: terminalHeight,
+            outputNode: {
+                x: 30 + terminalWidth,
+                y: centerY,
+                gateId: `input-${inputName}`,
+                type: 'output',
+                connectedTo: null
+            }
         });
-        yPos += 100;
     }
 
     const outputName = parsedTargetExpression.output;
+    const outputCenterY = canvasHeight / 2;
 
     output = {
         id: `output-${outputName}`,
         name: outputName,
-        x: 650,
-        y: 250,
-        width: 50,
-        height: 30,
-        inputNode: { x: 650, y: 265, gateId: `output-${outputName}`, type: 'input', connectedTo: null }
+        x: canvasWidth - 100,
+        y: outputCenterY - terminalHeight / 2, // top-left corner
+        width: terminalWidth,
+        height: terminalHeight,
+        inputNode: {
+            x: canvasWidth - 100,
+            y: outputCenterY,
+            gateId: `output-${outputName}`,
+            type: 'input',
+            connectedTo: null
+        }
     };
     
     updateInterpretedExpression();
@@ -2299,7 +2340,7 @@ function draw() {
         ctx.fillStyle = '#000';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = '14px Arial';
+        ctx.font = '16px Arial';
         ctx.fillText(gate.type, gate.x + gate.width / 2, gate.y + gate.height / 2);
 
         drawNodesForGate(gate);
@@ -2312,6 +2353,9 @@ function draw() {
         ctx.strokeRect(io.x, io.y, io.width, io.height);
         
         ctx.fillStyle = '#000';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '16px Arial';
         ctx.fillText(io.name, io.x + io.width / 2, io.y + io.height / 2);
 
         if (io.outputNode) drawNode(io.outputNode);
