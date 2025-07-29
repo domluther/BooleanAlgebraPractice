@@ -1,12 +1,6 @@
 /* ===== CSS VARIABLES ===== */
 :root {
-    /* Color Palette */
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --success-gradient: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    --warning-gradient: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-    --danger-gradient: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-    --disabled-gradient: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
-    
+
     /* Specific Colors */
     --bg-dark: #2d3748;
     --bg-darker: #1a202c;
@@ -15,10 +9,25 @@
     --bg-light-teal: #F0FDFA;
     --border-color: #4a5568;
     --border-light: #e2e8f0;
+    --primary-base: #667eea; /* Indigo */
+    --primary-dark: #764ba2;
+    --success-base: #48bb78;
+    --success-dark: #38a169;
     --warning-base: #ed8936;
     --warning-dark: #dd6b20;
     --danger-base: #e53e3e;
     --danger-dark: #c53030;
+    --secondary-base: #718096; /* Slate gray */
+    --secondary-dark: #4a5568;
+    --secondary-gradient: linear-gradient(135deg, var(--secondary-base) 0%, var(--secondary-dark) 100%);
+
+    /* Color Palette */
+    --primary-gradient: linear-gradient(135deg, var(--primary-base) 0%, var(--primary-dark) 100%);
+    --success-gradient: linear-gradient(135deg, var(--success-base) 0%, var(--success-dark) 100%);
+    --warning-gradient: linear-gradient(135deg, var(--warning-base) 0%, var(--warning-dark) 100%);
+    --danger-gradient: linear-gradient(135deg, var(--danger-base) 0%, var(--danger-dark) 100%);
+    --disabled-gradient: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+    
 
     /* Text Colors */
     --text-primary: #2d3748;
@@ -262,7 +271,7 @@ body {
     border-radius: var(--radius-lg);
     margin-bottom: var(--spacing-lg);
     box-shadow: var(--shadow-sm);
-    border-left: 4px solid; /* Border color will be set by a modifier class */
+    border-left: 4px solid; /* Need accent for border colour */
 }
 
 /* Modifier for background color */
@@ -316,12 +325,12 @@ body {
 }
 
 .btn:disabled {
-    background: var(--disabled-gradient) !important;
-    color: #cbd5e0 !important;
-    cursor: not-allowed !important;
+    background: var(--disabled-gradient);
+    color: white;
+    cursor: not-allowed;
     opacity: 0.6;
-    transform: none !important;
-    box-shadow: none !important;
+    transform: none;
+    box-shadow: none;
 }
 
 /* Button Variants */
@@ -334,13 +343,32 @@ body {
     box-shadow: 0 6px 20px rgba(72, 187, 120, 0.3);
 }
 
+.btn-secondary {
+    background: var(--secondary-gradient);
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, var(--secondary-dark) 0%, #2d3748 100%);
+    box-shadow: 0 6px 20px rgba(113, 128, 150, 0.3);
+}
+
+.btn-secondary-ghost {
+    background: none;
+    color: var(--text-muted);
+    border: 1px solid var(--border-light);
+}
+
+.btn-secondary-ghost:hover {
+    background: #edf2f7;
+    color: var(--text-primary);
+}
+
 /* Full-width utility */
 .btn-full {
     width: 100%;
     margin-top: 10px;
 }
 
-/* Orange (Warning) Button */
 .btn-warning {
     background: var(--warning-gradient);
 }
@@ -350,7 +378,6 @@ body {
     box-shadow: 0 6px 20px rgba(230, 126, 34, 0.3);
 }
 
-/* Red (Danger) Button – reuses existing gradient */
 .btn-danger {
     background: var(--danger-gradient);
 }
@@ -360,7 +387,6 @@ body {
     box-shadow: 0 6px 20px rgba(229, 62, 62, 0.3);
 }
 
-
 .btn-small {
     padding: 8px 16px;
     font-size: 14px;
@@ -369,7 +395,7 @@ body {
     transition: var(--transition-fast);
 }
 
-/* REFACTORED: Unified style for selectable buttons (replaces .btn-select and .difficulty-btn) */
+/* Unified style for selectable buttons */
 .btn-select {
     background: #f0f0f0;
     border: 2px solid #ddd;
@@ -387,12 +413,10 @@ body {
     border-color: transparent; /* Hide border when active gradient is shown */
 }
 
-/* Modifier for the main mode buttons' active color */
 .btn-select.active.mode-active {
     background: #4CAF50;
 }
 
-/* Modifier for the difficulty level buttons' active color */
 .btn-select.active.difficulty-active {
     background: #2196F3;
 }
@@ -406,7 +430,7 @@ body {
     box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
 }
 
-/* ===== SCORE SYSTEM & MODAL (UNCHANGED) ===== */
+/* ===== SCORE SYSTEM & MODAL ===== */
 .score-button {
     position: absolute;
     top: var(--spacing-lg);
@@ -427,7 +451,7 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: none; /* Hidden by default - enable in site-specific CSS if needed */
+    display: block;
 }
 
 .score-button:hover {
@@ -611,14 +635,10 @@ body {
     background: #cbd5e0;
 }
 
-/* ===== BOOLEAN ALGEBRA PRACTICE SPECIFIC STYLES ===== */
-
-/* REFACTORED: Grouped rule to hide game modes by default */
 .game-mode-container {
     display: none;
 }
 
-/* Mode Selector */
 .mode-selector {
     display: flex;
     justify-content: center;
@@ -691,8 +711,6 @@ body {
     font-weight: bold;
     color: var(--text-primary);
 }
-
-
 
 /* Question Area */
 .question-area {
@@ -854,7 +872,6 @@ body {
     font-weight: bold;
 }
 
-
 /* ===== SCENARIO MODE (Specifics) ===== */
 .scenario-content {
     max-width: 100%;
@@ -1009,58 +1026,6 @@ body {
 .truth-table tbody tr:hover .intermediate-cell { background: #fefcbf; }
 .truth-table tbody tr:hover .output-cell { background: #fbb6b6; }
 
-/* ===== RESPONSIVE DESIGN (UNCHANGED) ===== */
-@media (max-width: 768px) {
-    .container { margin: var(--spacing-sm); border-radius: var(--radius-md); }
-    .content { padding: var(--spacing-lg); }
-    .header { padding: var(--spacing-md) var(--spacing-lg); }
-    .header h1 { font-size: 1.8em; }
-    .panel { padding: var(--spacing-lg); }
-    .selection-controls { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
-    .gate-svg { width: 150px; height: 90px; }
-    .logic-diagram-display { padding: var(--spacing-lg); min-height: 150px; }
-    .expression-input { font-size: 1rem; padding: var(--spacing-sm); }
-    .options { gap: var(--spacing-sm); }
-    .btn { font-size: 14px; padding: 10px 20px; }
-    .btn-small { font-size: 12px; padding: 6px 12px; }
-    .score-button { position: static; margin-top: var(--spacing-md); display: inline-block; }
-    .score-modal { width: 95%; margin: var(--spacing-sm); }
-    .score-modal-header, .score-modal-content, .score-modal-footer { padding: var(--spacing-md) var(--spacing-lg); }
-    .stat-grid { grid-template-columns: 1fr; }
-    .program-item { flex-direction: column; align-items: flex-start; }
-    .site-nav { position: static; margin-bottom: var(--spacing-md); }
-    .nav-menu { min-width: 100%; position: fixed; top: 0; left: 0; right: 0; margin-top: 0; border-radius: 0; max-height: 100vh; overflow-y: auto; }
-    .nav-dropdown.open .nav-menu { transform: translateY(0); }
-    .truth-table { font-size: 0.85em; }
-    .truth-table-select { width: 40px; font-size: 0.9em; }
-    .expression-text { font-size: 1.1em; padding: var(--spacing-md); }
-    .intermediate-header { font-size: 0.8em; }
-}
-
-@media (max-width: 480px) {
-    body { padding: var(--spacing-sm); }
-    .header h1 { font-size: 1.5em; }
-    .header p { font-size: 1em; }
-    .content { padding: var(--spacing-md); }
-    .panel { padding: var(--spacing-md); }
-    .mode-selector { gap: var(--spacing-sm); }
-    .btn { font-size: 12px; padding: 8px 16px; }
-    .btn-small { font-size: 11px; padding: 4px 8px; }
-    .expression-input { max-width: 100%; font-size: 0.9rem; }
-    .dark-content { padding: var(--spacing-md); }
-    .data-table { font-size: 12px; }
-    .data-table th, .data-table td { padding: var(--spacing-sm); }
-    .truth-table-select { width: 35px; font-size: 0.8em; padding: var(--spacing-xs); }
-    .expression-text { font-size: 1em; }
-    .intermediate-header { font-size: 0.7em; }
-}
-
-/* Animations */
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
 /* =====  Draw Circuit Mode Styles ===== */
 
 /* Container for the toolbox and canvas */
@@ -1072,7 +1037,7 @@ body {
 }
 
 /* Styling for the toolbox on the left */
-#circuitToolbox {
+.circuit-toolbox {
     flex: 0 0 200px; /* Does not grow, starts at 200px width */
     background-color: var(--bg-light);
     padding: var(--spacing-lg);
@@ -1082,7 +1047,7 @@ body {
     align-self: flex-start; /* Aligns to the top */
 }
 
-#circuitToolbox h3 {
+.circuit-toolbox h3 {
     text-align: center;
     color: var(--text-primary);
     margin-bottom: var(--spacing-lg);
@@ -1104,7 +1069,6 @@ body {
   transition: transform var(--transition-fast), color var(--transition-fast);
   box-shadow: none;
 }
-
 
 .gate:hover {
   transform: translateY(-2px);
@@ -1161,27 +1125,10 @@ body {
     height: auto;
 }
 
-/* The area displaying the interpreted circuit expression */
-#circuitInfo {
-    text-align: center;
-    margin-top: var(--spacing-lg);
-    padding: var(--spacing-md) var(--spacing-xl);
-    background: var(--bg-light);
-    border-radius: var(--radius-md);
-    border-left: 4px solid var(--text-accent);
-    font-size: 1.1em;
-}
-
-#circuitInfo p {
-    margin: 0;
-    color: var(--text-secondary);
-}
-
 #interpretedExpression {
     font-weight: bold;
     color: var(--text-primary);
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-    min-height: 24px;
     display: inline-block;
 }
 
@@ -1194,7 +1141,56 @@ body {
      box-shadow: 0 6px 20px rgba(229, 62, 62, 0.3);
 }
 
-/* Hide the old, unstyled help info div */
-#circuitHelpInfo {
-    display: none;
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .container { margin: var(--spacing-sm); border-radius: var(--radius-md); }
+    .content { padding: var(--spacing-lg); }
+    .header { padding: var(--spacing-md) var(--spacing-lg); }
+    .header h1 { font-size: 1.8em; }
+    .panel { padding: var(--spacing-lg); }
+    .selection-controls { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
+    .gate-svg { width: 150px; height: 90px; }
+    .logic-diagram-display { padding: var(--spacing-lg); min-height: 150px; }
+    .expression-input { font-size: 1rem; padding: var(--spacing-sm); }
+    .options { gap: var(--spacing-sm); }
+    .btn { font-size: 14px; padding: 10px 20px; }
+    .btn-small { font-size: 12px; padding: 6px 12px; }
+    .score-button { position: static; margin-top: var(--spacing-md); display: inline-block; }
+    .score-modal { width: 95%; margin: var(--spacing-sm); }
+    .score-modal-header, .score-modal-content, .score-modal-footer { padding: var(--spacing-md) var(--spacing-lg); }
+    .stat-grid { grid-template-columns: 1fr; }
+    .program-item { flex-direction: column; align-items: flex-start; }
+    .site-nav { position: static; margin-bottom: var(--spacing-md); }
+    .nav-menu { min-width: 100%; position: fixed; top: 0; left: 0; right: 0; margin-top: 0; border-radius: 0; max-height: 100vh; overflow-y: auto; }
+    .nav-dropdown.open .nav-menu { transform: translateY(0); }
+    .truth-table { font-size: 0.85em; }
+    .truth-table-select { width: 40px; font-size: 0.9em; }
+    .expression-text { font-size: 1.1em; padding: var(--spacing-md); }
+    .intermediate-header { font-size: 0.8em; }
 }
+
+@media (max-width: 480px) {
+    body { padding: var(--spacing-sm); }
+    .header h1 { font-size: 1.5em; }
+    .header p { font-size: 1em; }
+    .content { padding: var(--spacing-md); }
+    .panel { padding: var(--spacing-md); }
+    .mode-selector { gap: var(--spacing-sm); }
+    .btn { font-size: 12px; padding: 8px 16px; }
+    .btn-small { font-size: 11px; padding: 4px 8px; }
+    .expression-input { max-width: 100%; font-size: 0.9rem; }
+    .dark-content { padding: var(--spacing-md); }
+    .data-table { font-size: 12px; }
+    .data-table th, .data-table td { padding: var(--spacing-sm); }
+    .truth-table-select { width: 35px; font-size: 0.8em; padding: var(--spacing-xs); }
+    .expression-text { font-size: 1em; }
+    .intermediate-header { font-size: 0.7em; }
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
