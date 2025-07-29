@@ -2,32 +2,31 @@ let score = 0;
 let totalQuestions = 0;
 let answered = false;
 let currentMode = 'nameThatGate';
+let difficultyLevels = {
+    writeExpression: 1,
+    scenario: 1,
+    truthTable: 1,
+    drawCircuit: 1
+};
 
 // Global variables for name that gate mode
 let currentGate = '';
 let gateReason = '';
 
 // Global variables for expression writing mode
-let expressionModeDifficultyLevel = 1;
 let currentExpression = '';
 let currentAcceptedAnswers = [];
 let expressionHelpMode = false;
 
-// Global variables for scenario mode
-let scenarioModeDifficultyLevel = 1;
-let scenarioHelpMode = false;
-let currentScenario = '';
-let currentScenarioAcceptedAnswers = [];
-
 // Global variables for truth table mode
-let truthTableModeDifficultyLevel = 1;
 let showIntermediateColumns = false;
 let currentTruthTableExpression = '';
 let currentTruthTableData = [];
 let truthTableInputs = [];
 let expertMode = false;
 
-// DRAW CIRCUIT MODE GLOBALS ---
+
+// Global variables for draw circuit mode
 let canvas, ctx;
 let gates = [];
 let wires = [];
@@ -39,7 +38,12 @@ let draggingOffset = { x: 0, y: 0 };
 let wireStartNode = null;
 let targetExpression = "";
 let parsedTargetExpression = {};
-let drawCircuitModeDifficultyLevel = 1;
+
+// Global variables for scenario mode
+let scenarioHelpMode = false;
+let currentScenario = '';
+let currentScenarioAcceptedAnswers = [];
+
 
 
 function setGameMode(mode, clickedButton) {
@@ -92,8 +96,7 @@ function setGameMode(mode, clickedButton) {
     } else if (mode === 'truthTable') {
         showSubmitButton();
         generateTruthTableQuestion();
-    }
-    else if (mode === 'drawCircuit') {
+    } else if (mode === 'drawCircuit') {
         initDrawCircuitMode();
     }
 }
@@ -385,8 +388,8 @@ function updateHelpDisplayForExpressionMode() {
 
 // Expression Mode functionality
 function setExpressionModeDifficulty(level, clickedButton) {
-    expressionModeDifficultyLevel = level;
-    
+    difficultyLevels.writeExpression = level;
+
     document.querySelectorAll('#writeExpressionMode .btn-select').forEach(btn => {
         btn.classList.remove('active', 'difficulty-active');
     });
@@ -407,7 +410,7 @@ function setExpressionModeDifficulty(level, clickedButton) {
 
 function generateExpressionQuestion() {
     const logicDiagramDisplay = document.getElementById('logicDiagramDisplay');
-    const levelKey = `level${expressionModeDifficultyLevel}`;
+    const levelKey = `level${difficultyLevels.writeExpression}`;
     const expressions = expressionDatabase[levelKey];
 
     currentExpression = expressions[Math.floor(Math.random() * expressions.length)];
@@ -701,8 +704,8 @@ function updateHelpDisplayForScenarioMode() {
 
 // Scenario Mode functionality
 function setScenarioModeDifficulty(level, clickedButton) {
-    scenarioModeDifficultyLevel = level;
-    
+    difficultyLevels.scenario = level;
+
     // UPDATED: Changed selector from .difficulty-btn to .btn-select
     document.querySelectorAll('#scenarioMode .btn-select').forEach(btn => {
         btn.classList.remove('active', 'difficulty-active');
@@ -926,7 +929,7 @@ function generateScenarioQuestion() {
     };
 
     const scenarioDisplay = document.getElementById('scenarioDisplay');
-    const scenarios = scenarioScenarios[scenarioModeDifficultyLevel];
+    const scenarios = scenarioScenarios[difficultyLevels.scenario];
     
     // Pick a random scenario from the current difficulty level
     const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
@@ -1028,8 +1031,8 @@ function handleEnterKeyForScenarioMode(event) {
 
 // Truth Table Mode functionality
 function setTruthTableModeDifficulty(level, clickedButton) {
-    truthTableModeDifficultyLevel = level;
-    
+    difficultyLevels.truthTable = level;
+
     // UPDATED: Changed selector from .difficulty-btn to .btn-select
     document.querySelectorAll('#truthTableMode .btn-select').forEach(btn => {
         btn.classList.remove('active', 'difficulty-active');
@@ -1129,8 +1132,8 @@ function generateTruthTableQuestion() {
     const truthTableCircuitContainer = document.getElementById('truthTableLogicDiagramDisplay');
 
     // Get expressions for current difficulty level
-    const expressions = expressionDatabase[`level${truthTableModeDifficultyLevel}`];
-    
+    const expressions = expressionDatabase[`level${difficultyLevels.truthTable}`];
+
     // Pick a random expression
     currentTruthTableExpression = expressions[Math.floor(Math.random() * expressions.length)];
     
@@ -2124,6 +2127,12 @@ function setupCanvas() {
     document.getElementById('feedback').style.display = 'none';
     document.getElementById('nextBtn').style.display = 'none';
 
+    addTerminals();
+    
+    updateInterpretedExpression();
+}
+
+function addTerminals(){
     const canvasHeight = canvas.height;
     const canvasWidth = canvas.width;
 
@@ -2191,10 +2200,8 @@ function setupCanvas() {
             connectedTo: null
         }
     };
-    
-    updateInterpretedExpression();
-}
 
+}
 
 function addEventListeners() {
     const toolboxGates = document.querySelectorAll('.gate[draggable="true"]');
@@ -2559,7 +2566,7 @@ function buildExpression(node) {
 }
 
 function setDrawCircuitModeDifficulty(level, clickedButton) {
-    drawCircuitModeDifficultyLevel = level;
+    difficultyLevels.drawCircuit = level;
 
     // UPDATED: Changed selector from .difficulty-btn to .btn-select
     document.querySelectorAll('#drawCircuitMode .btn-select').forEach(btn => {
@@ -2578,7 +2585,7 @@ function setDrawCircuitModeDifficulty(level, clickedButton) {
 
 function generateDrawCircuitQuestion() {
     // Generate a random expression based on the selected difficulty level
-    const levelKey = `level${drawCircuitModeDifficultyLevel}`;
+    const levelKey = `level${difficultyLevels.drawCircuit}`;
     const expressions = expressionDatabase[levelKey];
 
     targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
