@@ -252,7 +252,6 @@ body {
 }
 
 /* ===== REUSABLE PANEL COMPONENT ===== */
-/* This new class replaces .game-area, .program-selection, .feature-section, etc. */
 .panel {
     background-color: var(--bg-light);
     padding: var(--spacing-xl);
@@ -600,18 +599,39 @@ body {
 /* Controls inside panels */
 .selection-controls {
     display: flex;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-xl);
     align-items: center;
-    margin-bottom: var(--spacing-lg);
+    /* margin-bottom: var(--spacing-lg); */
     flex-wrap: wrap;
+    justify-content: space-between;
 }
 
-.selection-controls .difficulty-buttons {
+.difficulty-section {
     display: flex;
-    gap: var(--spacing-sm);
     align-items: center;
-    margin-bottom: 0;
-    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.selection-controls label, .options-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 80px;
+}
+
+.selection-controls select {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--border-light);
+    border-radius: 6px;
+    font-size: 16px;
+    background: var(--bg-white);
+    color: var(--text-primary);
+    min-width: 150px;
+}
+
+.selection-controls select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 /* Help toggle styles */
@@ -628,6 +648,20 @@ body {
 .help-checkbox {
     margin-right: var(--spacing-xs);
 }
+
+/* Options section (checkboxes) */
+.options-section {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.options-label {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+
 
 /* Question Area */
 .question-area {
@@ -729,6 +763,7 @@ body {
 .mark-btn-container {
     text-align: center;
     padding: var(--spacing-xs);
+    margin-bottom: var(--spacing-lg)
 }
 
 .mark-btn-container .btn {
@@ -951,7 +986,6 @@ body {
     .header h1 { font-size: 1.8em; }
     .panel { padding: var(--spacing-lg); }
     .selection-controls { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
-    .difficulty-buttons { width: 100%; justify-content: center; }
     .gate-svg { width: 150px; height: 90px; }
     .logic-diagram-display { padding: var(--spacing-lg); min-height: 150px; }
     .expression-input { font-size: 1rem; padding: var(--spacing-sm); }
@@ -979,7 +1013,6 @@ body {
     .content { padding: var(--spacing-md); }
     .panel { padding: var(--spacing-md); }
     .mode-selector { gap: var(--spacing-sm); }
-    .difficulty-buttons { gap: var(--spacing-xs); }
     .btn { font-size: 12px; padding: 8px 16px; }
     .btn-small { font-size: 11px; padding: 4px 8px; }
     .expression-input { max-width: 100%; font-size: 0.9rem; }

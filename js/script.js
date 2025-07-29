@@ -8,6 +8,28 @@ let difficultyLevels = {
     truthTable: 1,
     drawCircuit: 1
 };
+const modeSettings = [{
+    gameMode: 'nameThatGate',
+    label: 'Name That Gate',
+    levels: 0
+
+}, {
+    gameMode: 'writeExpression',
+    label: 'Expression Writing',
+    levels: 4
+}, {
+    gameMode: 'truthTable',
+    label: 'Truth Tables',
+    levels: 3
+}, {
+    gameMode: 'drawCircuit',
+    label: 'Draw Circuit',
+    levels: 4
+}, {
+    gameMode: 'scenario',
+    label: 'Scenarios',
+    levels: 3
+}];
 
 // Global variables for name that gate mode
 let nameThatGateCurrentGate = '';
@@ -47,25 +69,10 @@ let currentScenarioAcceptedAnswers = [];
 const gateImages = {};
 
 function generateModeSelectorButtons() {
-    const modes = [{
-        gameMode: 'nameThatGate',
-        label: 'Name That Gate'
-    }, {
-        gameMode: 'writeExpression',
-        label: 'Expression Writing'
-    }, {
-        gameMode: 'truthTable',
-        label: 'Truth Tables'
-    }, {
-        gameMode: 'drawCircuit',
-        label: 'Draw Circuit'
-    }, {
-        gameMode: 'scenario',
-        label: 'Scenarios'
-    }];
+
     const container = document.getElementById('modeSelector');
 
-    modes.forEach(mode => {
+    modeSettings.forEach(mode => {
         const button = document.createElement('button');
         button.className = 'btn btn-select';
         button.onclick = () => setGameMode(mode.gameMode, button);
@@ -74,41 +81,53 @@ function generateModeSelectorButtons() {
     });
 }
 
-function generateDifficultyButtons(gameMode) {
-
+function generateDifficultyDropdown(gameMode) {
     if (gameMode === 'nameThatGate') return; // No difficulty levels for this mode
 
-    const modes = [{
-        gameMode: 'writeExpression',
-        levels: 4
-    },
-    {
-        gameMode: 'truthTable',
-        levels: 3
-    },
-    {
-        gameMode: 'drawCircuit',
-        levels: 4
-    },
-    {
-        gameMode: 'scenario',
-        levels: 3
-    }];
 
     const currentDifficulty = difficultyLevels[gameMode] || 1;
+    const levelLookup = {
+        1: 'Easy',
+        2: 'Medium',
+        3: 'Hard',
+        4: 'Expert'
+    };
 
-    const container = document.querySelector(`#${gameMode}Mode .difficulty-buttons`);
-    container.innerHTML = ''; // Clear previous buttons
+    const container = document.querySelector(`#${gameMode}Mode .difficulty-section`);
+    container.innerHTML = ''; // Clear previous content
 
-    const levels = Array.from({ length: modes.find(m => m.gameMode === gameMode).levels }, (_, i) => i + 1);
-    levels.forEach(level => {
-        const button = document.createElement('button');
-        button.className = `btn btn-small btn-select ${currentDifficulty === level ? 'active difficulty-active' : ''}`;
-        button.innerText = `Level ${level}`;
-        button.onclick = () => setDifficultyLevel(level, button);
-        container.appendChild(button);
+    const label = document.createElement('label');
+    label.className = 'difficulty-heading';
+    label.textContent = 'Difficulty:';
+    label.setAttribute('for', `${gameMode}-difficulty-select`);
+
+    container.appendChild(label);
+
+    const select = document.createElement('select');
+    select.className = 'difficulty-select';
+    select.id = `${gameMode}-difficulty-select`;
+
+    // Add difficulty levels as <option> elements
+    const maxLevel = modeSettings.find(m => m.gameMode === gameMode)?.levels || 3;
+    for (let i = 1; i <= maxLevel; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = levelLookup[i] || `Level ${i}`;
+        if (i === currentDifficulty) {
+            option.selected = true;
+        }
+        select.appendChild(option);
+    }
+
+    // Handle change event
+    select.addEventListener('change', function () {
+        const level = parseInt(this.value);
+        setDifficultyLevel(level, this);
     });
+
+    container.appendChild(select);
 }
+
 
 function setGameMode(mode, clickedButton) {
     currentMode = mode;
@@ -127,7 +146,7 @@ function setGameMode(mode, clickedButton) {
     document.getElementById('scenarioHelpInfo').style.display = 'none';
     document.getElementById('circuitHelpInfo').style.display = 'none';
 
-    generateDifficultyButtons(mode);
+    generateDifficultyDropdown(mode);
 
     // Show the selected mode
     const activeContainer = document.getElementById(mode + 'Mode');
@@ -205,6 +224,7 @@ function checkAnswer(answer='') {
 function showSubmitButton() {
     document.getElementById('submitBtn').style.display = 'inline-block';
 }
+
 function hideSubmitButton() {
     document.getElementById('submitBtn').style.display = 'none';
 }
@@ -399,34 +419,34 @@ const expressionDatabase = {
         'Q = NOT (NOT A)'
     ],
     level3: [
-        // 'Q = (A AND B) OR (C AND D)',
-        // 'Q = (A OR B) AND (C OR D)',
-        // 'Q = (A AND B) AND (C OR D)',
-        // 'Q = (A OR B) OR (C AND D)',
-        // 'Q = (NOT (A AND B)) OR C',
-        // 'Q = (NOT (A OR B)) AND C',
-        // 'Q = A AND (NOT (B OR C))',
-        // 'Q = A OR (NOT (B AND C))',
-        // 'Q = (NOT A) AND (NOT B)',
-        // 'Q = (NOT A) OR (NOT B)',
-        // 'Q = ((NOT A) AND B) OR C',
-        // 'Q = (A AND (NOT B)) OR C',
-        // 'Q = ((NOT A) OR B) AND C',
-        // 'Q = (A OR (NOT B)) AND C',
-        // 'Q = NOT ((NOT A) AND B)',
-        // 'Q = NOT (A AND (NOT B))',
-        // 'Q = (A AND B) OR (NOT C)',
-        // 'Q = (A OR B) AND (NOT C)',
+        'Q = (A AND B) OR (C AND D)',
+        'Q = (A OR B) AND (C OR D)',
+        'Q = (A AND B) AND (C OR D)',
+        'Q = (A OR B) OR (C AND D)',
+        'Q = (NOT (A AND B)) OR C',
+        'Q = (NOT (A OR B)) AND C',
+        'Q = A AND (NOT (B OR C))',
+        'Q = A OR (NOT (B AND C))',
+        'Q = (NOT A) AND (NOT B)',
+        'Q = (NOT A) OR (NOT B)',
+        'Q = ((NOT A) AND B) OR C',
+        'Q = (A AND (NOT B)) OR C',
+        'Q = ((NOT A) OR B) AND C',
+        'Q = (A OR (NOT B)) AND C',
+        'Q = NOT ((NOT A) AND B)',
+        'Q = NOT (A AND (NOT B))',
+        'Q = (A AND B) OR (NOT C)',
+        'Q = (A OR B) AND (NOT C)',
         'Q = (NOT A) AND (B OR C)',
-        // 'Q = (NOT A) OR (B AND C)',
-        // 'Q = ((NOT A) AND (NOT B)) AND C',
-        // 'Q = ((NOT A) OR (NOT B)) OR C',
-        // 'Q = (A AND (NOT B)) AND C',
-        // 'Q = (A OR (NOT B)) OR C',
-        // 'Q = NOT ((A OR B) OR C)',
-        // 'Q = NOT ((A AND B) AND C)',
-        // 'Q = ((A AND (NOT B)) OR C)',
-        // 'Q = ((A OR (NOT B)) AND C)'
+        'Q = (NOT A) OR (B AND C)',
+        'Q = ((NOT A) AND (NOT B)) AND C',
+        'Q = ((NOT A) OR (NOT B)) OR C',
+        'Q = (A AND (NOT B)) AND C',
+        'Q = (A OR (NOT B)) OR C',
+        'Q = NOT ((A OR B) OR C)',
+        'Q = NOT ((A AND B) AND C)',
+        'Q = ((A AND (NOT B)) OR C)',
+        'Q = ((A OR (NOT B)) AND C)'
     ],
     level4: [
     'Q = ((A AND B) OR (C AND D)) OR E',
@@ -2437,8 +2457,8 @@ function addCircuitModeEventListeners() {
 function addGate(type, x, y) {
     console.log(gateImages)
 
-    const gateWidth = 80;
-    const gateHeight = 50;
+    const gateWidth = 120;
+    const gateHeight = 54;
     const newGate = {
         id: nextId++,
         type: type,
@@ -2503,7 +2523,6 @@ function draw() {
     // Draw gates
     gates.forEach(gate => {
         // Highlight selected gate
-        console.log('Drawing gate:', gate);
         if (gate.image && gate.image.complete) {
             ctx.drawImage(gate.image, gate.x, gate.y, gate.width, gate.height);
             
