@@ -1,7 +1,8 @@
-/* ===== CSS VARIABLES ===== */
+/* ============================================= */
+/* ===== 1. CSS VARIABLES ====================== */
+/* ============================================= */
 :root {
-
-	/* Specific Colors */
+	/* ----- Colors ----- */
 	--bg-dark: #2d3748;
 	--bg-darker: #1a202c;
 	--bg-light: #f7fafc;
@@ -9,8 +10,9 @@
 	--bg-light-teal: #F0FDFA;
 	--border-color: #4a5568;
 	--border-light: #e2e8f0;
+
+	/* ----- Brand & Status Colors ----- */
 	--primary-base: #667eea;
-	/* Indigo */
 	--primary-dark: #764ba2;
 	--success-base: #48bb78;
 	--success-dark: #38a169;
@@ -19,26 +21,24 @@
 	--danger-base: #e53e3e;
 	--danger-dark: #c53030;
 	--secondary-base: #718096;
-	/* Slate gray */
 	--secondary-dark: #4a5568;
-	--secondary-gradient: linear-gradient(135deg, var(--secondary-base) 0%, var(--secondary-dark) 100%);
 
-	/* Color Palette */
+	/* ----- Gradients ----- */
 	--primary-gradient: linear-gradient(135deg, var(--primary-base) 0%, var(--primary-dark) 100%);
 	--success-gradient: linear-gradient(135deg, var(--success-base) 0%, var(--success-dark) 100%);
 	--warning-gradient: linear-gradient(135deg, var(--warning-base) 0%, var(--warning-dark) 100%);
 	--danger-gradient: linear-gradient(135deg, var(--danger-base) 0%, var(--danger-dark) 100%);
+	--secondary-gradient: linear-gradient(135deg, var(--secondary-base) 0%, var(--secondary-dark) 100%);
 	--disabled-gradient: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
 
-
-	/* Text Colors */
+	/* ----- Text Colors ----- */
 	--text-primary: #2d3748;
 	--text-secondary: #4a5568;
 	--text-muted: #718096;
 	--text-light: #e2e8f0;
 	--text-accent: #90cdf4;
 
-	/* Success/Error Colors */
+	/* ----- Feedback Colors ----- */
 	--success-bg: #c6f6d5;
 	--success-text: #22543d;
 	--success-border: #9ae6b4;
@@ -46,31 +46,34 @@
 	--error-text: #c53030;
 	--error-border: #feb2b2;
 
-	/* Spacing */
+	/* ----- Sizing & Spacing ----- */
 	--spacing-xs: 5px;
 	--spacing-sm: 10px;
 	--spacing-md: 15px;
 	--spacing-lg: 20px;
 	--spacing-xl: 30px;
 
-	/* Border Radius */
+	/* ----- Border Radius ----- */
 	--radius-sm: 4px;
 	--radius-md: 8px;
 	--radius-lg: 12px;
 	--radius-xl: 15px;
 
-	/* Shadows */
+	/* ----- Shadows ----- */
 	--shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
 	--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
 	--shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.2);
 	--shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.3);
 
-	/* Transitions */
+	/* ----- Transitions ----- */
 	--transition-fast: 0.2s ease;
 	--transition-normal: 0.3s ease;
 }
 
-/* ===== RESET & BASE ===== */
+
+/* ============================================= */
+/* ===== 2. RESET & BASE STYLES ================ */
+/* ============================================= */
 * {
 	margin: 0;
 	padding: 0;
@@ -89,7 +92,10 @@ body {
 	align-items: center;
 }
 
-/* ===== LAYOUT COMPONENTS ===== */
+
+/* ============================================= */
+/* ===== 3. LAYOUT COMPONENTS ================== */
+/* ============================================= */
 .container {
 	max-width: 1200px;
 	margin: 0 auto;
@@ -123,7 +129,6 @@ body {
 	padding: var(--spacing-xl);
 }
 
-/* ===== FOOTER ===== */
 .footer {
 	background: var(--bg-dark);
 	color: var(--text-light);
@@ -144,7 +149,12 @@ body {
 	text-decoration: underline;
 }
 
-/* ===== SITE NAVIGATION ===== */
+
+/* ============================================= */
+/* ===== 4. REUSABLE COMPONENTS ============== */
+/* ============================================= */
+
+/* ----- Site Navigation ----- */
 .site-nav {
 	position: absolute;
 	top: var(--spacing-lg);
@@ -266,7 +276,7 @@ body {
 	line-height: 1.3;
 }
 
-/* ===== REUSABLE PANEL COMPONENT ===== */
+/* ----- Panel Component ----- */
 .panel {
 	background-color: var(--bg-light);
 	padding: var(--spacing-xl);
@@ -274,15 +284,12 @@ body {
 	margin-bottom: var(--spacing-lg);
 	box-shadow: var(--shadow-sm);
 	border-left: 4px solid;
-	/* Need accent for border colour */
 }
 
-/* Modifier for background color */
 .panel.bg-white {
 	background-color: var(--bg-white);
 }
 
-/* Modifiers for accent color */
 .panel.panel-accent-primary {
 	border-left-color: #667eea;
 }
@@ -301,9 +308,8 @@ body {
 	font-size: 1.3em;
 }
 
-/* ===== BUTTON SYSTEM ===== */
+/* ----- Button System ----- */
 .btn {
-	background: var(--primary-gradient);
 	color: white;
 	border: none;
 	padding: 12px 24px;
@@ -336,69 +342,53 @@ body {
 	box-shadow: none;
 }
 
-/* Button Variants */
-.btn-success {
-	background: var(--success-gradient);
-}
-
-.btn-success:hover {
-	background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
-	box-shadow: 0 6px 20px rgba(72, 187, 120, 0.3);
-}
-
-.btn-secondary {
-	background: var(--secondary-gradient);
-}
-
-.btn-secondary:hover {
-	background: linear-gradient(135deg, var(--secondary-dark) 0%, #2d3748 100%);
-	box-shadow: 0 6px 20px rgba(113, 128, 150, 0.3);
-}
-
-.btn-secondary-ghost {
-	background: none;
-	color: var(--text-muted);
-	border: 1px solid var(--border-light);
-}
-
-.btn-secondary-ghost:hover {
-	background: #edf2f7;
-	color: var(--text-primary);
-}
-
-/* Full-width utility */
 .btn-full {
 	width: 100%;
 	margin-top: 10px;
 }
 
-.btn-warning {
-	background: var(--warning-gradient);
+/* Gradient Button Variants */
+.btn-primary {
+	background: var(--primary-gradient);
+	--btn-shadow-color: rgba(102, 126, 234, 0.3);
 }
 
-.btn-warning:hover {
-	background: linear-gradient(135deg, var(--warning-dark) 0%, #b34700 100%);
-	box-shadow: 0 6px 20px rgba(230, 126, 34, 0.3);
+.btn-success {
+	background: var(--success-gradient);
+	--btn-shadow-color: rgba(72, 187, 120, 0.3);
+}
+
+.btn-secondary {
+	background: var(--secondary-gradient);
+	--btn-shadow-color: rgba(113, 128, 150, 0.3);
+}
+
+.btn-warning {
+	background: var(--warning-gradient);
+	--btn-shadow-color: rgba(230, 126, 34, 0.3);
 }
 
 .btn-danger {
 	background: var(--danger-gradient);
+	--btn-shadow-color: rgba(229, 62, 62, 0.3);
 }
 
-.btn-danger:hover {
-	background: linear-gradient(135deg, var(--danger-dark) 0%, #9b2c2c 100%);
-	box-shadow: 0 6px 20px rgba(229, 62, 62, 0.3);
+.btn-nav {
+	background: var(--primary-gradient);
+	--btn-shadow-color: rgba(102, 126, 234, 0.3);
 }
 
-.btn-small {
-	padding: 8px 16px;
-	font-size: 14px;
-	border-radius: var(--radius-sm);
-	font-weight: 500;
-	transition: var(--transition-fast);
+/* Refactored Hover State for Gradient Buttons */
+.btn-primary:hover,
+.btn-success:hover,
+.btn-secondary:hover,
+.btn-warning:hover,
+.btn-danger:hover,
+.btn-nav:hover {
+	box-shadow: 0 6px 20px var(--btn-shadow-color, rgba(0, 0, 0, 0.2));
 }
 
-/* Unified style for selectable buttons */
+/* Selectable Button Style */
 .btn-select {
 	background: #f0f0f0;
 	border: 2px solid #ddd;
@@ -414,7 +404,6 @@ body {
 .btn-select.active {
 	color: white;
 	border-color: transparent;
-	/* Hide border when active gradient is shown */
 }
 
 .btn-select.active.mode-active {
@@ -425,16 +414,7 @@ body {
 	background: #2196F3;
 }
 
-.btn-nav {
-	background: var(--primary-gradient);
-}
-
-.btn-nav:hover {
-	background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-	box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-}
-
-/* ===== SCORE SYSTEM & MODAL ===== */
+/* ----- Score System & Modal ----- */
 .score-button {
 	position: absolute;
 	top: var(--spacing-lg);
@@ -526,6 +506,275 @@ body {
 	overflow-y: auto;
 }
 
+.score-modal-footer {
+	background: var(--bg-light);
+	padding: var(--spacing-lg) var(--spacing-xl);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-top: 1px solid var(--border-light);
+}
+
+.reset-scores-btn {
+	background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+	color: white;
+	border: none;
+	padding: var(--spacing-sm) 16px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-weight: 600;
+	transition: var(--transition-fast);
+}
+
+.reset-scores-btn:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(245, 101, 101, 0.3);
+}
+
+.close-modal-btn {
+	background: var(--border-light);
+	color: var(--text-secondary);
+	border: none;
+	padding: var(--spacing-sm) 16px;
+	border-radius: 6px;
+	cursor: pointer;
+	font-weight: 600;
+	transition: var(--transition-fast);
+}
+
+.close-modal-btn:hover {
+	background: #cbd5e0;
+}
+
+/* ----- Generic Game Components ----- */
+.game-mode-container {
+	display: none;
+}
+
+.question-area {
+	text-align: center;
+	margin-bottom: var(--spacing-xl);
+}
+
+.question-area h2,
+.question-area h3 {
+	color: var(--text-primary);
+	margin-bottom: var(--spacing-lg);
+	font-size: 1.4em;
+}
+
+.logic-diagram-display {
+	background: var(--bg-light-teal);
+	border: 2px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	margin: var(--spacing-lg) 0;
+	min-height: 200px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: var(--shadow-sm);
+}
+
+.expression-input {
+	width: 100%;
+	max-width: 400px;
+	padding: var(--spacing-md);
+	font-size: 1.2rem;
+	border: 2px solid var(--border-light);
+	border-radius: var(--radius-md);
+	text-align: center;
+	margin: var(--spacing-lg) auto;
+	display: block;
+	background: var(--bg-white);
+	color: var(--text-primary);
+	transition: var(--transition-fast);
+}
+
+.expression-input:focus {
+	outline: none;
+	border-color: #667eea;
+	box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.options {
+	display: flex;
+	justify-content: center;
+	gap: var(--spacing-md);
+	flex-wrap: wrap;
+	margin-bottom: var(--spacing-lg);
+}
+
+.options .btn {
+	min-width: 80px;
+}
+
+.options .btn.correct {
+	background: var(--success-gradient);
+	border: 2px solid var(--success-border);
+}
+
+.options .btn.incorrect {
+	background: var(--danger-gradient);
+	border: 2px solid var(--error-border);
+}
+
+.feedback {
+	margin: var(--spacing-lg) 0;
+	padding: var(--spacing-lg);
+	border-radius: var(--radius-md);
+	font-size: 16px;
+	font-weight: 600;
+	display: none;
+}
+
+.feedback.correct {
+	background: var(--success-bg);
+	color: var(--success-text);
+	border: 2px solid var(--success-border);
+}
+
+.feedback.incorrect {
+	background: var(--error-bg);
+	color: var(--error-text);
+	border: 2px solid var(--error-border);
+}
+
+.feedback-details {
+	margin-top: var(--spacing-md);
+	font-weight: normal;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.score {
+	text-align: center;
+	font-size: 1.2rem;
+	font-weight: 600;
+	background: var(--bg-white);
+	color: var(--text-primary);
+	padding: var(--spacing-md) var(--spacing-xl);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-sm);
+	max-width: 250px;
+	margin: 0 auto var(--spacing-lg) auto;
+	border-left: 4px solid #4299e1;
+}
+
+.score p {
+	margin: 0;
+}
+
+#scoreDisplay {
+	color: #4299e1;
+	font-weight: bold;
+}
+
+.help-info {
+	display: none;
+	background: #fff3cd;
+	border: 1px solid #ffeaa7;
+	border-radius: var(--radius-md);
+	padding: var(--spacing-lg);
+	margin: var(--spacing-lg) 0;
+	border-left: 4px solid #f39c12;
+}
+
+.help-info h4 {
+	margin-bottom: var(--spacing-md);
+	color: #856404;
+	font-size: 1em;
+}
+
+.accepted-answers {
+	font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+	font-size: 0.9rem;
+	color: #856404;
+	background: rgba(255, 255, 255, 0.5);
+	padding: var(--spacing-md);
+	border-radius: var(--radius-sm);
+}
+
+.mark-btn-container {
+	text-align: center;
+	padding: var(--spacing-xs);
+	margin-bottom: var(--spacing-lg)
+}
+
+.mark-btn-container .btn {
+	margin: 0 var(--spacing-xs);
+}
+
+/* ============================================= */
+/* ===== 5. GAME MODE SPECIFIC STYLES ========== */
+/* ============================================= */
+
+/* ----- Generic Controls ----- */
+.mode-selector {
+	display: flex;
+	justify-content: center;
+	gap: var(--spacing-lg);
+	margin-bottom: var(--spacing-xl);
+	flex-wrap: wrap;
+}
+
+.selection-controls {
+	display: flex;
+	gap: var(--spacing-xl);
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.difficulty-section {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-sm);
+}
+
+.selection-controls label,
+.options-label {
+	font-weight: 600;
+	color: var(--text-secondary);
+	min-width: 80px;
+}
+
+.selection-controls select {
+	padding: var(--spacing-sm) var(--spacing-md);
+	border: 2px solid var(--border-light);
+	border-radius: 6px;
+	font-size: 16px;
+	background: var(--bg-white);
+	color: var(--text-primary);
+	min-width: 150px;
+}
+
+.selection-controls select:focus {
+	outline: none;
+	border-color: #667eea;
+	box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.help-toggle {
+	margin-top: var(--spacing-md);
+}
+
+.help-label {
+	font-size: 0.9rem;
+	color: var(--text-muted);
+	font-weight: normal;
+}
+
+.help-checkbox {
+	margin-right: var(--spacing-xs);
+}
+
+.options-section {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-lg);
+}
+
+/* ----- Score Modal Specifics ----- */
 .overall-stats {
 	margin-bottom: var(--spacing-xl);
 }
@@ -599,285 +848,7 @@ body {
 	color: var(--text-muted);
 }
 
-.score-modal-footer {
-	background: var(--bg-light);
-	padding: var(--spacing-lg) var(--spacing-xl);
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	border-top: 1px solid var(--border-light);
-}
-
-.reset-scores-btn {
-	background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-	color: white;
-	border: none;
-	padding: var(--spacing-sm) 16px;
-	border-radius: 6px;
-	cursor: pointer;
-	font-weight: 600;
-	transition: var(--transition-fast);
-}
-
-.reset-scores-btn:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 4px 8px rgba(245, 101, 101, 0.3);
-}
-
-.close-modal-btn {
-	background: var(--border-light);
-	color: var(--text-secondary);
-	border: none;
-	padding: var(--spacing-sm) 16px;
-	border-radius: 6px;
-	cursor: pointer;
-	font-weight: 600;
-	transition: var(--transition-fast);
-}
-
-.close-modal-btn:hover {
-	background: #cbd5e0;
-}
-
-.game-mode-container {
-	display: none;
-}
-
-.mode-selector {
-	display: flex;
-	justify-content: center;
-	gap: var(--spacing-lg);
-	margin-bottom: var(--spacing-xl);
-	flex-wrap: wrap;
-}
-
-/* Controls inside panels */
-.selection-controls {
-	display: flex;
-	gap: var(--spacing-xl);
-	align-items: center;
-	/* margin-bottom: var(--spacing-lg); */
-	flex-wrap: wrap;
-	justify-content: space-between;
-}
-
-.difficulty-section {
-	display: flex;
-	align-items: center;
-	gap: var(--spacing-sm);
-}
-
-.selection-controls label,
-.options-label {
-	font-weight: 600;
-	color: var(--text-secondary);
-	min-width: 80px;
-}
-
-.selection-controls select {
-	padding: var(--spacing-sm) var(--spacing-md);
-	border: 2px solid var(--border-light);
-	border-radius: 6px;
-	font-size: 16px;
-	background: var(--bg-white);
-	color: var(--text-primary);
-	min-width: 150px;
-}
-
-.selection-controls select:focus {
-	outline: none;
-	border-color: #667eea;
-	box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-/* Help toggle styles */
-.help-toggle {
-	margin-top: var(--spacing-md);
-}
-
-.help-label {
-	font-size: 0.9rem;
-	color: var(--text-muted);
-	font-weight: normal;
-}
-
-.help-checkbox {
-	margin-right: var(--spacing-xs);
-}
-
-/* Options section (checkboxes) */
-.options-section {
-	display: flex;
-	align-items: center;
-	gap: var(--spacing-lg);
-}
-
-.options-label {
-	font-weight: bold;
-	color: var(--text-primary);
-}
-
-/* Question Area */
-.question-area {
-	text-align: center;
-	margin-bottom: var(--spacing-xl);
-}
-
-.question-area h2,
-.question-area h3 {
-	color: var(--text-primary);
-	margin-bottom: var(--spacing-lg);
-	font-size: 1.4em;
-}
-
-.logic-diagram-display {
-	background: var(--bg-light-teal);
-	border: 2px solid var(--border-light);
-	border-radius: var(--radius-lg);
-	margin: var(--spacing-lg) 0;
-	min-height: 200px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-shadow: var(--shadow-sm);
-}
-
-/* Options */
-.options {
-	display: flex;
-	justify-content: center;
-	gap: var(--spacing-md);
-	flex-wrap: wrap;
-	margin-bottom: var(--spacing-lg);
-}
-
-.options .btn {
-	min-width: 80px;
-}
-
-.options .btn.correct {
-	background: var(--success-gradient);
-	border: 2px solid var(--success-border);
-}
-
-.options .btn.incorrect {
-	background: var(--danger-gradient);
-	border: 2px solid var(--error-border);
-}
-
-/* Expression Input */
-.expression-input {
-	width: 100%;
-	max-width: 400px;
-	padding: var(--spacing-md);
-	font-size: 1.2rem;
-	border: 2px solid var(--border-light);
-	border-radius: var(--radius-md);
-	text-align: center;
-	margin: var(--spacing-lg) auto;
-	display: block;
-	background: var(--bg-white);
-	color: var(--text-primary);
-	transition: var(--transition-fast);
-}
-
-.expression-input:focus {
-	outline: none;
-	border-color: #667eea;
-	box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-/* A single help style for all modes */
-.help-info {
-	display: none;
-	background: #fff3cd;
-	border: 1px solid #ffeaa7;
-	border-radius: var(--radius-md);
-	padding: var(--spacing-lg);
-	margin: var(--spacing-lg) 0;
-	border-left: 4px solid #f39c12;
-}
-
-.help-info h4 {
-	margin-bottom: var(--spacing-md);
-	color: #856404;
-	font-size: 1em;
-}
-
-.accepted-answers {
-	font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-	font-size: 0.9rem;
-	color: #856404;
-	background: rgba(255, 255, 255, 0.5);
-	padding: var(--spacing-md);
-	border-radius: var(--radius-sm);
-}
-
-/* Button Container */
-.mark-btn-container {
-	text-align: center;
-	padding: var(--spacing-xs);
-	margin-bottom: var(--spacing-lg)
-}
-
-.mark-btn-container .btn {
-	margin: 0 var(--spacing-xs);
-}
-
-/* Feedback System */
-.feedback {
-	margin: var(--spacing-lg) 0;
-	padding: var(--spacing-lg);
-	border-radius: var(--radius-md);
-	font-size: 16px;
-	font-weight: 600;
-	display: none;
-}
-
-.feedback.correct {
-	background: var(--success-bg);
-	color: var(--success-text);
-	border: 2px solid var(--success-border);
-}
-
-.feedback.incorrect {
-	background: var(--error-bg);
-	color: var(--error-text);
-	border: 2px solid var(--error-border);
-}
-
-.feedback-details {
-	margin-top: var(--spacing-md);
-	font-weight: normal;
-	font-size: 14px;
-	line-height: 1.6;
-}
-
-/* Score Display */
-.score {
-	text-align: center;
-	font-size: 1.2rem;
-	font-weight: 600;
-	background: var(--bg-white);
-	color: var(--text-primary);
-	padding: var(--spacing-md) var(--spacing-xl);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-sm);
-	max-width: 250px;
-	margin: 0 auto var(--spacing-lg) auto;
-	border-left: 4px solid #4299e1;
-}
-
-.score p {
-	margin: 0;
-}
-
-#scoreDisplay {
-	color: #4299e1;
-	font-weight: bold;
-}
-
-/* ===== SCENARIO MODE (Specifics) ===== */
+/* ----- Scenario Mode Specifics ----- */
 .scenario-content {
 	max-width: 100%;
 	margin: 0 auto;
@@ -894,7 +865,6 @@ body {
 	text-align: left;
 }
 
-/* Input Table */
 .input-table-container {
 	margin-top: var(--spacing-lg);
 }
@@ -935,7 +905,6 @@ body {
 
 .input-table tr:hover {
 	background-color: #edf2f7;
-	/* subtle hover */
 }
 
 .input-table td:first-child {
@@ -955,7 +924,7 @@ body {
 	color: var(--text-secondary);
 }
 
-/* ===== TRUTH TABLE MODE (Specifics) ===== */
+/* ----- Truth Table Mode Specifics ----- */
 .expression-display {
 	margin-bottom: var(--spacing-lg);
 	text-align: center;
@@ -1092,28 +1061,22 @@ body {
 	background: #fbb6b6;
 }
 
-/* =====  Draw Circuit Mode Styles ===== */
-
-/* Container for the toolbox and canvas */
+/* ----- Draw Circuit Mode Specifics ----- */
 #drawCircuitContainer {
 	display: flex;
 	gap: var(--spacing-xl);
 	margin-top: var(--spacing-lg);
 	flex-wrap: wrap;
-	/* Allows stacking on smaller screens */
 }
 
-/* Styling for the toolbox on the left */
 .circuit-toolbox {
 	flex: 0 0 200px;
-	/* Does not grow, starts at 200px width */
 	background-color: var(--bg-light);
 	padding: var(--spacing-lg);
 	border-radius: var(--radius-lg);
 	border: 1px solid var(--border-light);
 	box-shadow: var(--shadow-sm);
 	align-self: flex-start;
-	/* Aligns to the top */
 }
 
 .circuit-toolbox h3 {
@@ -1128,7 +1091,6 @@ body {
 	flex-direction: column;
 	align-items: center;
 	padding: 0.75rem 0.25rem;
-	/* Combines earlier padding values */
 	margin-bottom: var(--spacing-sm);
 	cursor: grab;
 	border: none;
@@ -1157,7 +1119,6 @@ body {
 	width: 100%;
 	height: 50px;
 	aspect-ratio: 1.5;
-	/* optional, keep consistent proportions */
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -1165,7 +1126,6 @@ body {
 
 .gate-svg {
 	width: 90%;
-	/* Make it take up most of the button */
 	height: auto;
 	pointer-events: none;
 	display: block;
@@ -1177,12 +1137,9 @@ body {
 	pointer-events: none;
 }
 
-/* The container for the drawing canvas */
 #canvasContainer {
 	flex: 1;
-	/* Takes up the remaining space */
 	min-width: 0;
-	/* Prevents flexbox overflow issues */
 	background: var(--bg-light-teal);
 	border: 2px solid var(--border-light);
 	border-radius: var(--radius-lg);
@@ -1191,7 +1148,6 @@ body {
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	/* Ensures canvas corners are rounded */
 }
 
 #circuitCanvas {
@@ -1207,7 +1163,6 @@ body {
 	display: inline-block;
 }
 
-/* Styling for the reset button to match other buttons */
 #resetCircuitBtn {
 	background: var(--danger-gradient);
 }
@@ -1216,7 +1171,9 @@ body {
 	box-shadow: 0 6px 20px rgba(229, 62, 62, 0.3);
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+/* ============================================= */
+/* ===== 6. RESPONSIVE DESIGN ================== */
+/* ============================================= */
 @media (max-width: 768px) {
 	.container {
 		margin: var(--spacing-sm);
@@ -1267,11 +1224,6 @@ body {
 	.btn {
 		font-size: 14px;
 		padding: 10px 20px;
-	}
-
-	.btn-small {
-		font-size: 12px;
-		padding: 6px 12px;
 	}
 
 	.score-button {
@@ -1370,27 +1322,9 @@ body {
 		padding: 8px 16px;
 	}
 
-	.btn-small {
-		font-size: 11px;
-		padding: 4px 8px;
-	}
-
 	.expression-input {
 		max-width: 100%;
 		font-size: 0.9rem;
-	}
-
-	.dark-content {
-		padding: var(--spacing-md);
-	}
-
-	.data-table {
-		font-size: 12px;
-	}
-
-	.data-table th,
-	.data-table td {
-		padding: var(--spacing-sm);
 	}
 
 	.truth-table-select {
@@ -1408,7 +1342,9 @@ body {
 	}
 }
 
-/* Animations */
+/* ============================================= */
+/* ===== 7. ANIMATIONS ========================= */
+/* ============================================= */
 @keyframes pulse {
 
 	0%,
