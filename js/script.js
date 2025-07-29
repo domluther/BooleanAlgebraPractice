@@ -81,22 +81,20 @@ function setGameMode(mode, clickedButton) {
     // Initialize the selected mode
     if (mode === 'nameThatGate') {
         generateNameThatGateQuestion();
+        hideSubmitButton()
     } else if (mode === 'writeExpression') {
-        showSubmitButton();
         generateExpressionQuestion();
         if (expressionHelpMode) {
             document.getElementById('expressionHelpInfo').style.display = 'block';
             updateHelpDisplayForExpressionMode();
         }
     } else if (mode === 'scenario') {
-        showSubmitButton();
         generateScenarioQuestion();
         if (scenarioHelpMode) {
             document.getElementById('scenarioHelpInfo').style.display = 'block';
             updateHelpDisplayForScenarioMode();
         }
     } else if (mode === 'truthTable') {
-        showSubmitButton();
         generateTruthTableQuestion();
     } else if (mode === 'drawCircuit') {
         initDrawCircuitMode();
@@ -140,7 +138,7 @@ function checkAnswer(answer='') {
 }
 
 function showSubmitButton() {
-    document.getElementById('submitBtn').style.display = 'block';
+    document.getElementById('submitBtn').style.display = 'inline-block';
 }
 function hideSubmitButton() {
     document.getElementById('submitBtn').style.display = 'none';
@@ -1180,7 +1178,6 @@ function generateTruthTableQuestion() {
         
         // Calculate final output
         result.Q = evaluateExpression(currentTruthTableExpression.split(' = ')[1], combination);
-        
         return result;
     });
     
@@ -1374,10 +1371,9 @@ function checkNormalModeAnswer() {
             select.classList.add('unanswered');
             return;
         }
-        
+
         outputTotal++;
         const correctValue = currentTruthTableData[rowIndex].Q ? '1' : '0';
-        
         if (userValue === correctValue) {
             outputCorrect++;
             select.classList.add('correct');
@@ -2130,6 +2126,8 @@ function initDrawCircuitMode() {
     ctx = canvas.getContext('2d');
 
     generateDrawCircuitQuestion();
+    enableResetButton();
+    disableRemoveSelectedButton();
 
     addCircuitModeEventListeners();
     draw();
@@ -2268,6 +2266,7 @@ function addCircuitModeEventListeners() {
             if (clickedWire) {
                 clearSelections();
                 selectedWire = clickedWire;
+                enableRemoveSelectedButton();
                 draw();
                 return;
             }
@@ -2284,9 +2283,11 @@ function addCircuitModeEventListeners() {
                 } else {
                     clearSelections();
                     selectedGate = clickedGate;
+                    enableRemoveSelectedButton();
                     draw();
                 }
             } else {
+                disableRemoveSelectedButton();
                 clearSelections();
                 draw();
             }
@@ -2348,7 +2349,9 @@ function addCircuitModeEventListeners() {
     });
     
     document.getElementById('resetCircuitBtn').addEventListener('click', () => {
+        if (answered) return;
         answered = false;
+        disableRemoveSelectedButton();
         setupCanvas();
         draw();
     });
@@ -2357,6 +2360,38 @@ function addCircuitModeEventListeners() {
     document.getElementById('removeSelectedBtn').addEventListener('click', () => {
         removeSelected();
     });
+}
+
+function enableResetButton() {
+    const resetBtn = document.getElementById('resetCircuitBtn');
+    if (resetBtn) {
+        resetBtn.disabled = false;
+        resetBtn.classList.remove('disabled');
+    }
+}
+
+function disableResetButton() {
+    const resetBtn = document.getElementById('resetCircuitBtn');
+    if (resetBtn){
+        resetBtn.disabled = true;
+        resetBtn.classList.add('disabled');
+    }
+}
+
+function enableRemoveSelectedButton() {
+    const removeBtn = document.getElementById('removeSelectedBtn');
+    if (removeBtn) {
+        removeBtn.disabled = false;
+        removeBtn.classList.remove('disabled');
+    }
+}
+
+function disableRemoveSelectedButton() {
+    const removeBtn = document.getElementById('removeSelectedBtn');
+    if (removeBtn) {
+        removeBtn.disabled = true;
+        removeBtn.classList.add('disabled');
+    }
 }
 
 function addGate(type, x, y) {
@@ -2535,12 +2570,17 @@ function distanceToLine(point, lineStart, lineEnd) {
 }
 
 function removeSelected() {
+    console.log('removeSelected called');
+    console.log('selectedGate:', selectedGate);
+    console.log('selectedWire:', selectedWire);
     if (selectedGate) {
         removeGate(selectedGate);
         selectedGate = null;
+        disableRemoveSelectedButton();
     } else if (selectedWire) {
         removeWire(selectedWire);
         selectedWire = null;
+        disableRemoveSelectedButton();
     }
     draw();
     updateInterpretedExpression();
@@ -2624,34 +2664,13 @@ function checkCircuitAnswer() {
         document.getElementById('nextBtn').style.display = 'inline-block';
         document.getElementById('submitBtn').style.display = 'none';
         answered = true;
+        disableResetButton();
     } else {
         feedback.textContent = `Incorrect. Your circuit diagram (${userExprText}) does not match the target diagram (${targetExpression}).`;
         feedback.className = 'feedback incorrect';
     }
     feedback.style.display = 'block';
 }
-
-function evaluateExpression(expression, inputValues) {
-    const exprParts = expression.split('=');
-    if (exprParts.length < 2) return null;
-    let evalStr = exprParts[1].trim();
-    
-    evalStr = evalStr.replace(/\bAND\b/g, '&&');
-    evalStr = evalStr.replace(/\bOR\b/g, '||');
-    evalStr = evalStr.replace(/\bNOT\b/g, '!');
-
-    const variables = Object.keys(inputValues);
-    const values = Object.values(inputValues).map(v => Boolean(v));
-
-    try {
-        const evaluator = new Function(...variables, `return ${evalStr};`);
-        return evaluator(...values);
-    } catch (e) {
-        console.error("Error evaluating expression:", expression, e);
-        return null;
-    }
-}
-
 
 // --- UTILITY AND LOGIC FUNCTIONS ---
 
@@ -2668,7 +2687,6 @@ function parseExpression(expression) {
     const variables = tokens.filter(token => !booleanOperators.has(token));
     const uniqueVariables = [...new Set(variables)].sort();
 
-    console.log(uniqueVariables)
     return {
         output: outputVar,
         inputs: uniqueVariables
