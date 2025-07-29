@@ -15,7 +15,11 @@
     --bg-light-teal: #F0FDFA;
     --border-color: #4a5568;
     --border-light: #e2e8f0;
-    
+    --warning-base: #ed8936;
+    --warning-dark: #dd6b20;
+    --danger-base: #e53e3e;
+    --danger-dark: #c53030;
+
     /* Text Colors */
     --text-primary: #2d3748;
     --text-secondary: #4a5568;
@@ -329,6 +333,33 @@ body {
     background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
     box-shadow: 0 6px 20px rgba(72, 187, 120, 0.3);
 }
+
+/* Full-width utility */
+.btn-full {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Orange (Warning) Button */
+.btn-warning {
+    background: var(--warning-gradient);
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, var(--warning-dark) 0%, #b34700 100%);
+    box-shadow: 0 6px 20px rgba(230, 126, 34, 0.3);
+}
+
+/* Red (Danger) Button – reuses existing gradient */
+.btn-danger {
+    background: var(--danger-gradient);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, var(--danger-dark) 0%, #9b2c2c 100%);
+    box-shadow: 0 6px 20px rgba(229, 62, 62, 0.3);
+}
+
 
 .btn-small {
     padding: 8px 16px;
