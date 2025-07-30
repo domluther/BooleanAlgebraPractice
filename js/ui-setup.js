@@ -1,22 +1,27 @@
-// Handles initial UI generation and setup
+// ui-setup.js
+// Handles initial UI generation and setup - moved from app.js
+
+import { difficultyLabels, appSettings } from './config.js';
 
 /**
  * Generates the mode selector buttons based on available game modes.
  * @param {GameManager} gameManager - The game manager instance.
  */
 export function generateModeSelectorButtons(gameManager) {
-    const container = document.getElementById('modeSelector');
+    const container = document.querySelector(appSettings.selectors.modeSelector);
     container.innerHTML = ''; // Clear existing buttons
 
     for (const [modeKey, mode] of Object.entries(gameManager.modeSettings)) {
         const button = document.createElement('button');
-        button.className = 'btn btn-select';
+        button.className = appSettings.cssClasses.modeButton;
         button.dataset.mode = modeKey; // Store mode key in a data attribute
         button.innerText = mode.label;
 
         button.onclick = () => {
             // Update active button styling
-            document.querySelectorAll('.mode-selector .btn-select').forEach(btn => btn.classList.remove('active', 'mode-active'));
+            document.querySelectorAll('.mode-selector .btn-select').forEach(btn => 
+                btn.classList.remove('active', 'mode-active')
+            );
             button.classList.add('active', 'mode-active');
             
             // Hide all game mode containers and help sections
@@ -50,23 +55,22 @@ export function generateDifficultyDropdown(gameManager, gameMode) {
         return;
     }
 
-    const levelLookup = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Expert' };
     container.innerHTML = ''; // Clear previous content
 
     const label = document.createElement('label');
-    label.className = 'difficulty-heading';
+    label.className = appSettings.cssClasses.difficultyHeading;
     label.textContent = 'Difficulty:';
     label.setAttribute('for', `${gameMode}-difficulty-select`);
     container.appendChild(label);
 
     const select = document.createElement('select');
-    select.className = 'difficulty-select';
+    select.className = appSettings.cssClasses.difficultySelect;
     select.id = `${gameMode}-difficulty-select`;
 
     for (let i = 1; i <= config.levels; i++) {
         const option = document.createElement('option');
         option.value = i;
-        option.textContent = levelLookup[i] || `Level ${i}`;
+        option.textContent = difficultyLabels[i] || `Level ${i}`;
         select.appendChild(option);
     }
 
@@ -89,8 +93,8 @@ export function setupGlobalEventListeners(gameManager) {
     });
     document.getElementById('submitBtn').addEventListener('click', () => gameManager.submitAnswer());
 
-    // Generic help toggles (excluding mode-specific checkboxes)
-    const genericHelpCheckboxes = document.querySelectorAll('.help-toggle .help-checkbox:not(#showIntermediateColumns):not(#expertMode)');
+    // Generic help toggles
+    const genericHelpCheckboxes = document.querySelectorAll('.help-toggle .help-checkbox');
     genericHelpCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', () => gameManager.toggleHelp());
     });

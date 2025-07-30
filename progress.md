@@ -1,53 +1,122 @@
-JavaScript Refactoring Plan
-Proposed File Structure
+JavaScript Refactoring Plan - Updated Status
+Current File Structure & Purpose
 Core Application Files
-* app.js - Main application initialization and global state management
-* game-manager.js - Game mode switching, scoring, UI state management
-* ui-utils.js - Common UI utilities (feedback, buttons, scoring display)
+
+app.js ✅ - Main application bootstrap and initialization
+config.js ✅ - Application configuration, mode settings, constants
+game-manager.js ✅ - Game mode switching, scoring, central state management
+ui-manager.js ✅ - High-level UI state orchestration and workflow management
+ui-setup.js ✅ - Initial UI generation (mode buttons, difficulty dropdowns, event listeners)
+
 Game Mode Files
-✅* name-that-gate.js - Name That Gate mode logic
-✅* expression-writing.js - Expression Writing mode logic
-✅* truth-table.js - Truth Table mode logic
-✅* draw-circuit.js - Draw Circuit mode logic
-✅* scenario.js - Scenario mode logic
+
+name-that-gate.js ✅ - Name That Gate mode logic
+expression-writing.js ✅ - Expression Writing mode logic
+truth-table.js ✅ - Truth Table mode logic
+draw-circuit.js ✅ - Draw Circuit mode logic (interactive canvas-based circuit building)
+scenario.js ✅ - Scenario mode logic (real-world Boolean logic problems)
+
 Utility Files
-✅* circuit-generator.js - SVG circuit generation class
-✅* expression-utils.js - Expression parsing and validation utilities
-✅* data.js - Expression database and static data
-Key Benefits of This Structure
-1. Separation of Concerns
-Each file has a single, clear responsibility:
-* Game modes are isolated from each other
-* UI logic is separated from game logic
-* Utility functions are reusable across modes
-2. Maintainability
-* Easy to find and modify specific functionality
-* Reduced risk of breaking unrelated features when making changes
-* Clear dependencies between modules
-3. Scalability
-* Easy to add new game modes without touching existing code
-* Simple to extend or modify individual features
-* Better organization for team development
-4. Testing
-* Each module can be unit tested independently
-* Easier to mock dependencies
-* More focused test files
-Refactoring Plan
-Phase 1: Extract Utilities
 
-✅ Move CircuitGenerator class to its own file
-✅ Move static data (expression database) to separate file
-✅ Extract expression parsing/validation functions
+circuit-generator.js ✅ - SVG circuit generation and rendering
+expression-utils.js ✅ - Expression parsing, validation, and manipulation utilities
+data.js ✅ - Expression database and static data
 
-Phase 2: Extract Game Modes (in progress)
+Supporting Files
 
-✅Start with simpler modes (Name That Gate, Expression Writing, Scenario + Truth Table)
-✅Move each mode's functions to dedicated files
-✅Ensure proper module exports/imports
+navigation.js - Site navigation dropdown functionality (needs review)
+score-manager.js - Score tracking, persistence, and statistics (needs review)
 
-Phase 3: Refactor Core (upcoming)
 
-✅Create centralized game manager
-Extract common UI utilities
-Clean up main app initialization
+Completed Work ✅
+Phase 1: Extract Utilities ✅
 
+CircuitGenerator class extracted to its own file
+Static data moved to separate data.js file
+Expression parsing/validation functions extracted to expression-utils.js
+
+Phase 2: Extract Game Modes ✅
+
+All 5 game modes extracted to dedicated files
+Proper module exports/imports implemented
+Mode-specific functionality isolated
+
+Phase 3: Refactor Core ✅ (Mostly Complete)
+
+Created config.js for centralized configuration
+Refactored game-manager.js to use config and standardized dependency injection
+Created ui-setup.js for UI generation logic
+Cleaned up app.js to focus on application bootstrap
+
+
+Remaining Work & Future Explorations
+Phase 4: Constructor Standardization 🔄
+Current Issue: DrawCircuit has different constructor signature
+
+DrawCircuit: constructor(dependencies)
+All others: constructor(circuitGenerator, dependencies)
+
+Tasks:
+
+Update DrawCircuit constructor to match standard pattern
+Test that dependency injection works correctly for all modes
+Verify all modes initialize properly
+
+Phase 5: HTML Generation Opportunities 🆕
+Goal: Move repetitive HTML structures from index.html to JavaScript generation
+Candidates for ui-setup.js generation:
+
+Selection Control Panels - The repetitive <div class="panel panel-accent-info"> blocks with difficulty dropdowns and options
+Help Sections - The standardized <div class="help-info"> blocks that appear across modes
+Input/Button Combinations - Submit button + input field patterns
+Mode Container Structure - The <div class="game-mode-container"> wrappers
+
+Benefits:
+
+Reduce HTML duplication
+Ensure consistent structure across modes
+Easier to modify common layouts
+Centralized control of UI patterns
+
+Phase 6: Supporting Files Review 🔍
+Files that need examination:
+
+navigation.js - Determine if this fits the new architecture
+score-manager.js - Review integration with game-manager.js state management
+
+Phase 7: Final Cleanup & Polish 🧹
+Tasks:
+
+Remove all remaining TODO comments
+Ensure consistent coding patterns across all files
+Verify all imports/exports are optimized
+Add comprehensive JSDoc documentation where missing
+Consider lazy loading for game modes (performance optimization)
+
+
+Immediate Next Steps
+
+Fix DrawCircuit constructor - Standardize the constructor signature
+Test the refactored dependency system - Ensure all modes work correctly
+Analyze index.html - Identify specific HTML structures that would benefit from JavaScript generation
+Review navigation.js and score-manager.js - Determine their role in the new architecture
+
+
+Long-term Considerations
+Performance Optimizations
+
+Consider lazy loading game modes only when needed
+Optimize circuit generation for complex expressions
+Cache frequently used DOM elements
+
+Maintainability Improvements
+
+Standardize error handling patterns across all modules
+Implement consistent logging/debugging utilities
+Consider adding unit tests for core utilities
+
+Feature Extensibility
+
+Design pattern makes adding new game modes straightforward
+Configuration-driven approach allows easy mode customization
+Modular structure supports independent feature development

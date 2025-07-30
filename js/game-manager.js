@@ -1,12 +1,6 @@
 // game-manager.js
 
-// EFFICIENCY: As the number of modes grows, consider lazy loading them
-// dynamically instead of importing all of them at the start.
-import { NameThatGate } from './name-that-gate.js';
-import { ExpressionWriting } from './expression-writing.js';
-import { DrawCircuit } from './draw-circuit.js';
-import { Scenario } from './scenario.js';
-import { TruthTable } from './truth-table.js';
+import { modeSettings, appSettings } from './config.js';
 import { CircuitGenerator } from './circuit-generator.js';
 
 /**
@@ -18,6 +12,10 @@ export class GameManager {
         this.uiManager = uiManager;
         this.circuitGenerator = new CircuitGenerator();
 
+        // Import configuration
+        this.modeSettings = modeSettings;
+        this.appSettings = appSettings;
+
         // Centralized State Management
         this.score = 0;
         this.totalQuestions = 0;
@@ -25,65 +23,42 @@ export class GameManager {
         this.currentMode = null; // The string key for the current mode
         this.activeModeInstance = null; // The instance of the current mode class
 
-        // TODO: (Phase 3) - The modeSettings object could be moved into a
-        // separate configuration file (e.g., `config.js`) to keep this manager focused on logic.
-        this.modeSettings = {
-            nameThatGate: {
-                label: 'Name That Gate',
-                levels: 0,
-                class: NameThatGate,
-                dependencies: [this.circuitGenerator]
-            },
-            writeExpression: {
-                label: 'Expression Writing',
-                levels: 4,
-                class: ExpressionWriting,
-                dependencies: [this.circuitGenerator]
-            },
-            truthTable: {
-                label: 'Truth Tables',
-                levels: 4,
-                class: TruthTable,
-                dependencies: [this.circuitGenerator]
-            },
-            drawCircuit: {
-                label: 'Draw Circuit',
-                levels: 4,
-                class: DrawCircuit,
-                dependencies: [] // This mode doesn't need the circuit generator
-            },
-            scenario: {
-                label: 'Scenarios',
-                levels: 3,
-                class: Scenario,
-                dependencies: [this.circuitGenerator]
-            }
-        };
-
-        // Instantiate all game modes, passing dependencies
+        // Instantiate all game modes with standardized dependency injection
         this.modeInstances = this.createModeInstances();
     }
 
     /**
      * Creates instances of all game modes defined in modeSettings.
-     * This follows the dependency injection pattern.
+     * Uses standardized dependency injection pattern for all modes.
      */
     createModeInstances() {
         const instances = {};
+        
+        // Available dependencies that can be injected
+        const availableDependencies = {
+            circuitGenerator: this.circuitGenerator
+        };
+
+        // Common dependencies passed to all modes
         const commonDependencies = {
             ui: this.uiManager,
             state: this.getStateAccessors()
         };
 
         for (const [key, config] of Object.entries(this.modeSettings)) {
-            // The DrawCircuit constructor has a different signature.
-            // TODO: (Phase 3) - Standardize constructor signatures for all modes.
-            if (key === 'drawCircuit') {
-                 instances[key] = new config.class(commonDependencies);
-            } else {
-                 instances[key] = new config.class(...config.dependencies, commonDependencies);
-            }
+            // Resolve required dependencies
+            const resolvedDependencies = config.dependencies.map(depName => {
+                if (!availableDependencies[depName]) {
+                    throw new Error(`Unknown dependency '${depName}' required by mode '${key}'`);
+                }
+                return availableDependencies[depName];
+            });
+
+            // Create instance with standardized constructor signature:
+            // new ModeClass(...resolvedDependencies, commonDependencies)
+            instances[key] = new config.class(...resolvedDependencies, commonDependencies);
         }
+        
         return instances;
     }
 
