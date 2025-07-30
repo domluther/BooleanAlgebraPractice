@@ -606,7 +606,12 @@ body {
 
 .options .btn {
 	min-width: 80px;
+	background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+	color: #2d3748;
+	border: 2px solid #e2e8f0;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
+
 
 .options .btn.correct {
 	background: var(--success-gradient);
@@ -617,6 +622,8 @@ body {
 	background: var(--danger-gradient);
 	border: 2px solid var(--error-border);
 }
+
+
 
 .feedback {
 	margin: var(--spacing-lg) 0;

@@ -80,11 +80,10 @@ let expressionWritingMode;
 let scenarioMode;
 let truthTableMode;
 let drawCircuitMode;
-// TODO: (Phase 3) Add instances for other modes as they are refactored
+
 
 // Create the circuit generator instance
 const circuitGenerator = new CircuitGenerator();
-
 
 // Page generation
 function generateModeSelectorButtons() {

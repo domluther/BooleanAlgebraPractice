@@ -72,7 +72,8 @@ export class NameThatGate {
 
         // Reset option button styles
         document.querySelectorAll('#nameThatGateMode .options .btn').forEach(btn => {
-            btn.classList.remove('correct', 'incorrect');
+            btn.disabled = false;
+            btn.classList.remove('correct', 'incorrect', 'disabled');
         });
     }
 
@@ -113,6 +114,11 @@ export class NameThatGate {
             }
             this.ui.showFeedback(message, 'incorrect');
         }
+
+        nameThatGateButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.classList.add('disabled');
+        });
 
         // Use injected UI functions
         this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
