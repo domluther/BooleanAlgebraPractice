@@ -115,7 +115,8 @@ export class NameThatGate {
         }
 
         // Use injected UI functions
-        this.ui.updateScoreDisplay();
+        this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
+;
         this.ui.showNextButton();
     }
 

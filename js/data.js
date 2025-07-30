@@ -44,7 +44,9 @@ export const expressionDatabase = {
 		"Q = C OR (A OR B)",
 		"Q = C OR (B AND A)",
 		"Q = C OR (B OR A)",
-		'Q = NOT (NOT A)'
+		'Q = NOT (NOT A)',
+		"Q = NOT (A OR B)",
+		"Q = NOT (A AND B)",
 	],
 	level3: [
 		'Q = (A AND B) OR (C AND D)',

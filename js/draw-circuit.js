@@ -111,7 +111,8 @@ export class DrawCircuit {
         } else {
             this.ui.showFeedback(`Incorrect. Your circuit diagram (${userExprText}) does not match the target diagram (${this.targetExpression}).`, 'incorrect');
         }
-        this.ui.updateScoreDisplay();
+        this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
+;
     }
     
     /**

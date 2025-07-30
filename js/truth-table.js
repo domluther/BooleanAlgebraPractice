@@ -136,7 +136,8 @@ export class TruthTable {
             this._checkNormalModeAnswer();
         }
 
-        this.ui.updateScoreDisplay();
+        this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
+;
         this.ui.showNextButton();
     }
     

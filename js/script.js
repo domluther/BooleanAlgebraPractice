@@ -1,15 +1,19 @@
 import { CircuitGenerator } from './circuit-generator.js';
-import { expressionDatabase } from './data.js';
-import { generateAllAcceptedAnswers } from './expression-utils.js';
+import { UIManager } from './ui-manager.js';
+
 import { ExpressionWriting } from './expression-writing.js';
+import { DrawCircuit } from './draw-circuit.js';
 import { NameThatGate } from './name-that-gate.js';
 import { Scenario } from './scenario.js';
 import { TruthTable } from './truth-table.js';
-import { DrawCircuit } from './draw-circuit.js';
+
 let score = 0;
 let totalQuestions = 0;
 let answered = false;
+// TODO - This should be in central state management, not global scope
 let currentMode = 'nameThatGate';
+let uiManager;
+
 const modeSettings = {
 	nameThatGate: {
 		label: 'Name That Gate',
@@ -158,42 +162,6 @@ function handleEnterKey(event) {
 	}
 }
 
-function showFeedback(message, type) {
-	const feedbackDiv = document.getElementById('feedback');
-	feedbackDiv.textContent = message;
-	feedbackDiv.className = `feedback ${type}`;
-	feedbackDiv.style.display = 'block';
-}
-
-function hideFeedback() {
-	// Hide feedback and next button
-	document.getElementById('feedback').style.display = 'none';
-}
-
-function showNextButton() {
-	document.getElementById('nextBtn').style.display = 'inline-block';
-}
-
-function hideNextButton() {
-	document.getElementById('nextBtn').style.display = 'none';
-}
-
-function updateScoreDisplay() {
-	document.getElementById('scoreDisplay').textContent = `${score}/${totalQuestions}`;
-}
-
-function showSubmitButton() {
-    // No submit button in nameThatGate mode
-    if (currentMode === 'nameThatGate') {
-        return;
-    }
-	document.getElementById('submitBtn').style.display = 'inline-block';
-}
-
-function hideSubmitButton() {
-	document.getElementById('submitBtn').style.display = 'none';
-}
-
 function toggleHelpMode() {
 	const modeConfig = modeSettings[currentMode];
 	
@@ -222,9 +190,7 @@ function toggleHelpMode() {
 }
 
 function resetUIState() {
-	hideNextButton();
-    hideFeedback();
-	showSubmitButton();
+	uiManager.resetUIState(currentMode);
 	answered = false;
 }
 
@@ -312,21 +278,18 @@ function hideAllHelpInfo() {
 document.addEventListener('DOMContentLoaded', () => {
 	document.addEventListener('keydown', handleEnterKey);
 
+	uiManager = new UIManager();
 	// Define the dependencies object that the modes need
 	const commonDependencies = {
-		ui: {
-			showFeedback,
-			showNextButton,
-			hideSubmitButton,
-			updateScoreDisplay,
-			resetUIState, // only used by truth table mode + draw circuit mode
-		},
+		ui: uiManager,
 		state: {
 			getAnswered: () => answered,
 			setAnswered: (val) => { answered = val; },
 			incrementScore: () => { score++; },
-			incrementTotalQuestions: () => { totalQuestions++; }
-		},
+			incrementTotalQuestions: () => { totalQuestions++; },
+			getScore: () => score,
+			getTotalQuestions: () => totalQuestions,
+		}
 	};
 	// Pass the dependencies when creating the instance
 	nameThatGateMode = new NameThatGate(circuitGenerator, commonDependencies);
@@ -344,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	} else {
 		generateNameThatGateQuestion();
 	}
-	updateScoreDisplay();
+    uiManager.updateScoreDisplay(score, totalQuestions);
 
 });
 

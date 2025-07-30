@@ -93,7 +93,8 @@ export class ExpressionWriting {
             this.ui.showFeedback(`Incorrect. The correct answer is: ${this.currentExpression}`, 'incorrect');
         }
 
-        this.ui.updateScoreDisplay();
+        this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
+;
         this.ui.showNextButton();
     }
     
