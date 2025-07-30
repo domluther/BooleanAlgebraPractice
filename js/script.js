@@ -1,3 +1,7 @@
+import { CircuitGenerator } from './circuit-generator.js';
+import { expressionDatabase } from './data.js';
+import { generateAllAcceptedAnswers } from './expression-utils.js';
+
 let score = 0;
 let totalQuestions = 0;
 let answered = false;
@@ -93,560 +97,7 @@ let currentScenario = '';
 let currentScenarioAcceptedAnswers = [];
 const gateImages = {};
 
-//  Used in expression mode, truth table mode and draw circuit mode
-const expressionDatabase = {
-	level1: [
-		"Q = A AND B",
-		"Q = A OR B",
-		"Q = NOT A",
-		"Q = NOT B",
-	],
-	level2: [
-		"Q = (A AND B) AND C",
-		"Q = (A AND B) OR C",
-		"Q = (A AND C) AND B",
-		"Q = (A AND C) OR B",
-		"Q = (A OR B) AND C",
-		"Q = (A OR B) OR C",
-		"Q = (A OR C) AND B",
-		"Q = (A OR C) OR B",
-		"Q = (B AND C) AND A",
-		"Q = (B AND C) OR A",
-		"Q = (B OR C) AND A",
-		"Q = (B OR C) OR A",
-		"Q = A AND (B AND C)",
-		"Q = A AND (B OR C)",
-		"Q = A AND (C AND B)",
-		"Q = A AND (C OR B)",
-		"Q = A OR (B AND C)",
-		"Q = A OR (B OR C)",
-		"Q = A OR (C AND B)",
-		"Q = A OR (C OR B)",
-		"Q = B AND (A AND C)",
-		"Q = B AND (A OR C)",
-		"Q = B AND (C AND A)",
-		"Q = B AND (C OR A)",
-		"Q = B OR (A AND C)",
-		"Q = B OR (A OR C)",
-		"Q = B OR (C AND A)",
-		"Q = B OR (C OR A)",
-		"Q = C AND (A AND B)",
-		"Q = C AND (A OR B)",
-		"Q = C AND (B AND A)",
-		"Q = C AND (B OR A)",
-		"Q = C OR (A AND B)",
-		"Q = C OR (A OR B)",
-		"Q = C OR (B AND A)",
-		"Q = C OR (B OR A)",
-		'Q = NOT (NOT A)'
-	],
-	level3: [
-		'Q = (A AND B) OR (C AND D)',
-		'Q = (A OR B) AND (C OR D)',
-		'Q = (A AND B) AND (C OR D)',
-		'Q = (A OR B) OR (C AND D)',
-		'Q = (NOT (A AND B)) OR C',
-		'Q = (NOT (A OR B)) AND C',
-		'Q = A AND (NOT (B OR C))',
-		'Q = A OR (NOT (B AND C))',
-		'Q = (NOT A) AND (NOT B)',
-		'Q = (NOT A) OR (NOT B)',
-		'Q = ((NOT A) AND B) OR C',
-		'Q = (A AND (NOT B)) OR C',
-		'Q = ((NOT A) OR B) AND C',
-		'Q = (A OR (NOT B)) AND C',
-		'Q = NOT ((NOT A) AND B)',
-		'Q = NOT (A AND (NOT B))',
-		'Q = (A AND B) OR (NOT C)',
-		'Q = (A OR B) AND (NOT C)',
-		'Q = (NOT A) AND (B OR C)',
-		'Q = (NOT A) OR (B AND C)',
-		'Q = ((NOT A) AND (NOT B)) AND C',
-		'Q = ((NOT A) OR (NOT B)) OR C',
-		'Q = (A AND (NOT B)) AND C',
-		'Q = (A OR (NOT B)) OR C',
-		'Q = NOT ((A OR B) OR C)',
-		'Q = NOT ((A AND B) AND C)',
-		'Q = ((A AND (NOT B)) OR C)',
-		'Q = ((A OR (NOT B)) AND C)'
-	],
-	level4: [
-		'Q = ((A AND B) OR (C AND D)) OR E',
-		'Q = (A AND (B OR C)) AND (D OR E)',
-		'Q = ((A OR B) AND (C AND D)) OR E',
-		'Q = (A OR (B AND C)) OR (D AND E)',
-		'Q = (NOT (A AND B)) OR (C AND D)',
-		'Q = (A AND B) AND (NOT (C OR D))',
-		'Q = ((NOT A) OR B) AND (C OR (NOT D))',
-		'Q = (A AND ((NOT B) OR C)) OR (D AND E)'
-	]
-};
-
-// Generates SVG for expressions - used in expression writing + truth table modes
-class CircuitGenerator {
-	constructor() {
-		this.gateId = 0;
-		this.wireId = 0;
-		this.variablePositions = new Map(); // Track variable positions to avoid overlaps
-	}
-
-	parseExpression(expr) {
-		// Remove Q = from the beginning
-		const rightSide = expr.split(' = ')[1];
-		return this.parseTokens(this.tokenize(rightSide));
-	}
-
-	tokenize(expr) {
-		const tokens = [];
-		let i = 0;
-		while (i < expr.length) {
-			if (expr[i] === ' ') {
-				i++;
-				continue;
-			}
-			if (expr[i] === '(') {
-				tokens.push('(');
-				i++;
-			} else if (expr[i] === ')') {
-				tokens.push(')');
-				i++;
-			} else if (expr.substr(i, 3) === 'AND') {
-				tokens.push('AND');
-				i += 3;
-			} else if (expr.substr(i, 2) === 'OR') {
-				tokens.push('OR');
-				i += 2;
-			} else if (expr.substr(i, 3) === 'NOT') {
-				tokens.push('NOT');
-				i += 3;
-			} else if (/[A-Z]/.test(expr[i])) {
-				tokens.push(expr[i]);
-				i++;
-			} else {
-				i++;
-			}
-		}
-		return tokens;
-	}
-
-	parseTokens(tokens) {
-		return this.parseOr(tokens, 0).node;
-	}
-
-	parseOr(tokens, pos) {
-		let result = this.parseAnd(tokens, pos);
-
-		while (result.pos < tokens.length && tokens[result.pos] === 'OR') {
-			const right = this.parseAnd(tokens, result.pos + 1);
-			result = {
-				node: {
-					type: 'OR',
-					left: result.node,
-					right: right.node
-				},
-				pos: right.pos
-			};
-		}
-		return result;
-	}
-
-	parseAnd(tokens, pos) {
-		let result = this.parseNot(tokens, pos);
-
-		while (result.pos < tokens.length && tokens[result.pos] === 'AND') {
-			const right = this.parseNot(tokens, result.pos + 1);
-			result = {
-				node: {
-					type: 'AND',
-					left: result.node,
-					right: right.node
-				},
-				pos: right.pos
-			};
-		}
-		return result;
-	}
-
-	parseNot(tokens, pos) {
-		if (pos < tokens.length && tokens[pos] === 'NOT') {
-			const operand = this.parsePrimary(tokens, pos + 1);
-			return {
-				node: {
-					type: 'NOT',
-					operand: operand.node
-				},
-				pos: operand.pos
-			};
-		}
-		return this.parsePrimary(tokens, pos);
-	}
-
-	parsePrimary(tokens, pos) {
-		if (pos >= tokens.length) return {
-			node: null,
-			pos
-		};
-
-		if (tokens[pos] === '(') {
-			const result = this.parseOr(tokens, pos + 1);
-			return {
-				node: result.node,
-				pos: result.pos + 1
-			}; // Skip closing )
-		} else if (/[A-Z]/.test(tokens[pos])) {
-			return {
-				node: {
-					type: 'VAR',
-					name: tokens[pos]
-				},
-				pos: pos + 1
-			};
-		}
-		return {
-			node: null,
-			pos
-		};
-	}
-
-	generateCircuit(expression, container) {
-		this.gateId = 0;
-		this.wireId = 0;
-		this.variablePositions = new Map(); // Reset for each circuit generation
-
-		const ast = this.parseExpression(expression);
-		const layout = this.layoutNodes(ast);
-		const svg = this.renderSVG(layout, container);
-
-		return svg;
-	}
-
-	// Check if this is a simple single-gate circuit
-	isSingleGateCircuit(node) {
-		if (!node) return false;
-
-		// Single gate: AND/OR with only variable children, or NOT with variable child
-		if (node.type === 'AND' || node.type === 'OR') {
-			return (node.left && node.left.type === 'VAR') &&
-				(node.right && node.right.type === 'VAR');
-		} else if (node.type === 'NOT') {
-			return node.operand && node.operand.type === 'VAR';
-		}
-
-		return false;
-	}
-
-	layoutNodes(node, x = null, y = null, level = 0, parentGateInputY = null) {
-		if (!node) return null;
-
-		// Calculate circuit depth for width determination
-		const depth = this.getCircuitDepth(node);
-		const baseWidth = Math.max(300, depth * 100);
-
-		if (x === null) {
-			x = baseWidth - 50;
-		}
-
-		if (y === null) {
-			y = 125;
-		}
-
-		const minY = 40;
-		const maxY = 210;
-		y = Math.max(minY, Math.min(maxY, y));
-
-		const nodeLayout = {
-			...node,
-			x: x,
-			y: y,
-			id: this.gateId++,
-			level: level
-		};
-
-		if (node.type === 'VAR') {
-			nodeLayout.width = 20;
-			nodeLayout.height = 20;
-			nodeLayout.x = 60;
-
-			let targetY = y;
-			if (parentGateInputY !== null) {
-				targetY = parentGateInputY;
-			}
-
-			nodeLayout.y = this.adjustVariablePosition(node.name, targetY);
-		} else if (node.type === 'NOT') {
-			nodeLayout.width = 60;
-			nodeLayout.height = 40;
-			nodeLayout.operand = this.layoutNodes(node.operand, x - 90, y, level + 1, y);
-		} else { // AND or OR
-			nodeLayout.width = 80;
-			nodeLayout.height = 60;
-
-			const baseSpacing = Math.max(40, 55 - (level * 5));
-			const spacing = Math.min(baseSpacing, (maxY - minY) / 4);
-
-			const leftY = Math.max(minY, Math.min(maxY, y - spacing));
-			const rightY = Math.max(minY, Math.min(maxY, y + spacing));
-
-			nodeLayout.left = this.layoutNodes(node.left, x - 100, leftY, level + 1, y - 15);
-			nodeLayout.right = this.layoutNodes(node.right, x - 100, rightY, level + 1, y + 15);
-		}
-
-		return nodeLayout;
-	}
-
-	adjustVariablePosition(varName, proposedY) {
-		const minSeparation = 30;
-
-		// Check if this variable already has a position assigned
-		if (this.variablePositions.has(varName)) {
-			return this.variablePositions.get(varName);
-		}
-
-		let adjustedY = proposedY;
-		let conflictFound = true;
-		let attempts = 0;
-		const maxAttempts = 10;
-
-		const minY = 40;
-		const maxY = 210;
-
-		while (conflictFound && attempts < maxAttempts) {
-			conflictFound = false;
-			attempts++;
-
-			for (const [existingVar, existingY] of this.variablePositions) {
-				if (Math.abs(adjustedY - existingY) < minSeparation) {
-					const moveUp = existingY - minSeparation;
-					const moveDown = existingY + minSeparation;
-
-					if (Math.abs(moveUp - proposedY) < Math.abs(moveDown - proposedY) && moveUp >= minY) {
-						adjustedY = moveUp;
-					} else if (moveDown <= maxY) {
-						adjustedY = moveDown;
-					} else if (moveUp >= minY) {
-						adjustedY = moveUp;
-					} else {
-						adjustedY = Math.max(minY, Math.min(maxY, proposedY));
-					}
-
-					conflictFound = true;
-					break;
-				}
-			}
-		}
-
-		adjustedY = Math.max(minY, Math.min(maxY, adjustedY));
-		this.variablePositions.set(varName, adjustedY);
-
-		return adjustedY;
-	}
-
-	getCircuitDepth(node) {
-		if (!node) return 0;
-		if (node.type === 'VAR') return 1;
-		if (node.type === 'NOT') return 1 + this.getCircuitDepth(node.operand);
-		return 1 + Math.max(this.getCircuitDepth(node.left), this.getCircuitDepth(node.right));
-	}
-
-	renderSVG(layout, container) {
-		// Check for simple hardcoded cases first
-		const simpleResult = this.renderSimpleCircuit(layout);
-		if (simpleResult) {
-			const svg = `<svg width="200" height="120" viewBox="0 0 200 120">${simpleResult}</svg>`;
-			container.innerHTML = svg;
-			return svg;
-		}
-
-		// Calculate dynamic width based on circuit complexity
-		const depth = this.getCircuitDepth(layout);
-		const width = Math.max(350, depth * 100 + 100);
-		const height = 250;
-		let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
-
-		// Collect all variables for input labels
-		const variables = new Set();
-		this.collectVariables(layout, variables);
-
-		// Render connections first (so they appear behind gates)
-		svg += this.renderConnections(layout);
-
-		// Render gates
-		svg += this.renderGates(layout);
-
-		// Output label
-		svg += `<text x="${width - 30}" y="${height/2 + 5}" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
-
-		// Output line to Q
-		const rootOutput = this.getOutputPoint(layout);
-		svg += `<line x1="${rootOutput.x}" y1="${rootOutput.y}" x2="${width - 50}" y2="${height/2}" stroke="#333" stroke-width="2"/>`;
-
-		svg += '</svg>';
-		container.innerHTML = svg;
-		return svg;
-	}
-
-	renderSimpleCircuit(layout) {
-		if (!layout || !this.isSingleGateCircuit(layout)) {
-			return null;
-		}
-
-		if (layout.type === 'AND' && layout.left && layout.right &&
-			layout.left.type === 'VAR' && layout.right.type === 'VAR') {
-			// Hardcoded AND gate
-			const varA = layout.left.name;
-			const varB = layout.right.name;
-			return `<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="50" x2="60" y2="50" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="70" x2="60" y2="70" stroke="#333" stroke-width="2"/>
-        <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
-        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
-		}
-
-		if (layout.type === 'OR' && layout.left && layout.right &&
-			layout.left.type === 'VAR' && layout.right.type === 'VAR') {
-			// Hardcoded OR gate
-			const varA = layout.left.name;
-			const varB = layout.right.name;
-			return `<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="50" x2="65" y2="50" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="70" x2="65" y2="70" stroke="#333" stroke-width="2"/>
-        <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
-        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
-		}
-
-		if (layout.type === 'NOT' && layout.operand && layout.operand.type === 'VAR') {
-			// Hardcoded NOT gate
-			const varA = layout.operand.name;
-			return `<path d="M 60 30 L 60 90 L 108 60 Z" fill="none" stroke="#333" stroke-width="2"/>
-        <circle cx="115" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="60" x2="60" y2="60" stroke="#333" stroke-width="2"/>
-        <line x1="120" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-        <text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
-		}
-
-		return null;
-	}
-
-	collectVariables(node, variables) {
-		if (!node) return;
-		if (node.type === 'VAR') {
-			variables.add(node.name);
-		} else if (node.type === 'NOT') {
-			this.collectVariables(node.operand, variables);
-		} else {
-			this.collectVariables(node.left, variables);
-			this.collectVariables(node.right, variables);
-		}
-	}
-
-	renderGates(node) {
-		if (!node) return '';
-
-		let svg = '';
-
-		if (node.type === 'AND') {
-			svg += `<path d="M ${node.x - 40} ${node.y - 30} L ${node.x - 40} ${node.y + 30} L ${node.x - 15} ${node.y + 30} A 30 30 0 0 0 ${node.x - 15} ${node.y - 30} Z" fill="none" stroke="#333" stroke-width="2"/>`;
-			svg += this.renderGates(node.left);
-			svg += this.renderGates(node.right);
-		} else if (node.type === 'OR') {
-			svg += `<path d="M ${node.x - 40} ${node.y - 30} Q ${node.x - 15} ${node.y - 30} ${node.x + 10} ${node.y} Q ${node.x - 15} ${node.y + 30} ${node.x - 40} ${node.y + 30} Q ${node.x - 25} ${node.y} ${node.x - 40} ${node.y - 30}" fill="none" stroke="#333" stroke-width="2"/>`;
-			svg += this.renderGates(node.left);
-			svg += this.renderGates(node.right);
-		} else if (node.type === 'NOT') {
-			svg += `<path d="M ${node.x - 30} ${node.y - 20} L ${node.x - 30} ${node.y + 20} L ${node.x + 19} ${node.y} Z" fill="none" stroke="#333" stroke-width="2"/>`;
-			svg += `<circle cx="${node.x + 25}" cy="${node.y}" r="5" fill="none" stroke="#333" stroke-width="2"/>`;
-			svg += this.renderGates(node.operand);
-		} else if (node.type === 'VAR') {
-			// Render variable labels at their positions
-			svg += `<text x="${node.x - 10}" y="${node.y + 5}" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${node.name}</text>`;
-		}
-
-		return svg;
-	}
-
-	renderConnections(node) {
-		if (!node) return '';
-
-		let svg = '';
-
-		if (node.type === 'AND') {
-			// Connection from left child to gate
-			if (node.left) {
-				const leftOutput = this.getOutputPoint(node.left);
-				svg += `<line x1="${leftOutput.x}" y1="${leftOutput.y}" x2="${node.x - 40}" y2="${node.y - 15}" stroke="#333" stroke-width="2"/>`;
-			}
-
-			// Connection from right child to gate
-			if (node.right) {
-				const rightOutput = this.getOutputPoint(node.right);
-				svg += `<line x1="${rightOutput.x}" y1="${rightOutput.y}" x2="${node.x - 40}" y2="${node.y + 15}" stroke="#333" stroke-width="2"/>`;
-			}
-
-			svg += this.renderConnections(node.left);
-			svg += this.renderConnections(node.right);
-		} else if (node.type === 'OR') {
-			// Connection from left child to gate
-			if (node.left) {
-				const leftOutput = this.getOutputPoint(node.left);
-				svg += `<line x1="${leftOutput.x}" y1="${leftOutput.y}" x2="${node.x - 35}" y2="${node.y - 15}" stroke="#333" stroke-width="2"/>`;
-			}
-
-			// Connection from right child to gate
-			if (node.right) {
-				const rightOutput = this.getOutputPoint(node.right);
-				svg += `<line x1="${rightOutput.x}" y1="${rightOutput.y}" x2="${node.x - 35}" y2="${node.y + 15}" stroke="#333" stroke-width="2"/>`;
-			}
-
-			svg += this.renderConnections(node.left);
-			svg += this.renderConnections(node.right);
-		} else if (node.type === 'NOT') {
-			// Connection from operand to NOT gate
-			if (node.operand) {
-				const operandOutput = this.getOutputPoint(node.operand);
-				svg += `<line x1="${operandOutput.x}" y1="${operandOutput.y}" x2="${node.x - 30}" y2="${node.y}" stroke="#333" stroke-width="2"/>`;
-			}
-
-			svg += this.renderConnections(node.operand);
-		}
-
-		return svg;
-	}
-
-	getOutputPoint(node) {
-		if (!node) return {
-			x: 0,
-			y: 0
-		};
-
-		if (node.type === 'VAR') {
-			return {
-				x: node.x + 10,
-				y: node.y
-			};
-		} else if (node.type === 'NOT') {
-			return {
-				x: node.x + 30,
-				y: node.y
-			};
-		} else if (node.type === 'OR') {
-			return {
-				x: node.x + 10,
-				y: node.y
-			};
-		} else {
-			return {
-				x: node.x + 15,
-				y: node.y
-			};
-		}
-	}
-}
-
+// Create the circuit generator instance
 const circuitGenerator = new CircuitGenerator();
 
 // Page generation
@@ -887,314 +338,6 @@ function hideAllHelpInfo() {
 	});
 }
 
-function setDifficultyLevel(level, clickedButton) {
-	const modeConfig = modeSettings[currentMode];
-	
-	if (!modeConfig) {
-		console.error(`Unknown mode: ${currentMode}`);
-		return;
-	}
-	
-	// Update difficulty level
-	modeSettings[currentMode].currentDifficulty = level;
-
-    // Update button states
-	updateDifficultyButtons(currentMode, clickedButton);
-	
-	// Generate new question (only if the mode has a generateQuestion function)
-	if (modeConfig.generateQuestion) {
-		modeConfig.generateQuestion();
-	}
-	
-	hideFeedback();
-	
-	// Update help if needed
-	if (modeConfig.updateHelp) {
-		modeConfig.updateHelp();
-	}
-	
-	// Reset UI state
-	resetUIState();
-}
-
-function updateDifficultyButtons(mode, clickedButton) {
-	const selector = `#${mode}Mode .btn-select`;
-	document.querySelectorAll(selector).forEach(btn => {
-		btn.classList.remove('active', 'difficulty-active');
-	});
-	clickedButton.classList.add('active', 'difficulty-active');
-}
-
-function submitAnswer(answer = '') {
-	if (answered) return;
-
-	if (currentMode === 'drawCircuit') {
-		checkCircuitAnswer();
-	} else if (currentMode === 'nameThatGate') {
-		checkNameThatGateAnswer(answer);
-	} else if (currentMode === 'writeExpression') {
-		checkExpressionAnswer();
-	} else if (currentMode === 'scenario') {
-		checkScenarioAnswer();
-	} else if (currentMode === 'truthTable') {
-		checkTruthTableAnswer();
-	}
-}
-
-// Used in expression mode, scenario mode and draw circuit mode
-function generateAllAcceptedAnswers(baseExpression) {
-	const answers = new Set([baseExpression]);
-
-	const parts = baseExpression.split(' = ');
-	if (parts.length !== 2) return [baseExpression];
-
-	// Output on left, expression on right
-	const leftSide = parts[0];
-	const rightSide = parts[1];
-
-	// Generate all possible variations
-	const variations = generateExpressionVariations(rightSide);
-
-	variations.forEach(variation => {
-		answers.add(`${leftSide} = ${variation}`);
-	});
-
-	// Convert to array and sort for consistent display
-	const result = [...answers].sort();
-	return result;
-}
-
-// Generates possible options using commutative but not associative (eg no removal of brackets)
-function generateExpressionVariations(expression) {
-	// Parse the expression into an abstract syntax tree
-	function parseExpression(expr) {
-		expr = expr.trim();
-
-		// Handle NOT operations
-		if (expr.startsWith('NOT ')) {
-			const operand = expr.substring(4).trim();
-			return {
-				type: 'NOT',
-				operand: parseExpression(operand),
-				hasParens: false // Track if this NOT was originally in parentheses
-			};
-		}
-
-		// Handle parentheses
-		if (expr.startsWith('(') && expr.endsWith(')')) {
-			// Check if these are the outermost parentheses
-			let depth = 0;
-			let isOutermost = true;
-			for (let i = 0; i < expr.length; i++) {
-				if (expr[i] === '(') depth++;
-				else if (expr[i] === ')') depth--;
-
-				if (depth === 0 && i < expr.length - 1) {
-					isOutermost = false;
-					break;
-				}
-			}
-
-			if (isOutermost) {
-				const inner = parseExpression(expr.substring(1, expr.length - 1));
-				// Mark if this was a NOT expression that had explicit parentheses
-				if (inner.type === 'NOT') {
-					inner.hasParens = true;
-				}
-				return inner;
-			}
-		}
-
-		// Find the main operator (AND/OR) at the lowest depth
-		let depth = 0;
-		let mainOpIndex = -1;
-		let mainOp = null;
-
-		// Look for OR first (lower precedence)
-		for (let i = expr.length - 1; i >= 0; i--) {
-			if (expr[i] === ')') depth++;
-			else if (expr[i] === '(') depth--;
-			else if (depth === 0) {
-				if (expr.substring(i, i + 3) === ' OR') {
-					mainOpIndex = i;
-					mainOp = 'OR';
-					break;
-				} else if (expr.substring(i, i + 4) === ' AND' && mainOp === null) {
-					mainOpIndex = i;
-					mainOp = 'AND';
-				}
-			}
-		}
-
-		if (mainOpIndex !== -1) {
-			const left = expr.substring(0, mainOpIndex).trim();
-			const right = expr.substring(mainOpIndex + (mainOp === 'OR' ? 3 : 4)).trim();
-
-			return {
-				type: mainOp,
-				left: parseExpression(left),
-				right: parseExpression(right)
-			};
-		}
-
-		// If no operator found, it's a variable
-		return {
-			type: 'VAR',
-			name: expr
-		};
-	}
-
-	// Generate all variations of an AST
-	function generateASTVariations(ast) {
-		if (ast.type === 'VAR') {
-			return [ast];
-		}
-
-		if (ast.type === 'NOT') {
-			const operandVariations = generateASTVariations(ast.operand);
-			return operandVariations.map(operand => ({
-				type: 'NOT',
-				operand: operand,
-				hasParens: ast.hasParens || false // Preserve parentheses flag
-			}));
-		}
-
-		if (ast.type === 'AND' || ast.type === 'OR') {
-			const leftVariations = generateASTVariations(ast.left);
-			const rightVariations = generateASTVariations(ast.right);
-
-			const variations = [];
-
-			// Generate all combinations of left and right variations
-			for (const left of leftVariations) {
-				for (const right of rightVariations) {
-					// Original order
-					variations.push({
-						type: ast.type,
-						left: left,
-						right: right
-					});
-
-					// Commutative order (swap left and right)
-					variations.push({
-						type: ast.type,
-						left: right,
-						right: left
-					});
-				}
-			}
-
-			return variations;
-		}
-
-		return [ast];
-	}
-
-	// Convert AST back to string, preserving original parentheses structure
-	function astToString(ast) {
-		if (ast.type === 'VAR') {
-			return ast.name;
-		}
-
-		if (ast.type === 'NOT') {
-			const operandStr = astToString(ast.operand);
-
-			// Use parentheses if originally had them or if operand is complex
-			const needsParens = ast.hasParens || (ast.operand.type === 'AND' || ast.operand.type === 'OR');
-
-			if (needsParens) {
-				return `(NOT ${operandStr})`;
-			}
-			return `NOT ${operandStr}`;
-		}
-
-		if (ast.type === 'AND' || ast.type === 'OR') {
-			const leftStr = astToString(ast.left);
-			const rightStr = astToString(ast.right);
-
-			// Preserve parentheses structure - add parentheses around complex sub-expressions
-			let leftFinal = leftStr;
-			let rightFinal = rightStr;
-
-			// Add parentheses if sub-expression is complex (contains operators)
-			if (ast.left.type === 'AND' || ast.left.type === 'OR') {
-				leftFinal = `(${leftStr})`;
-			}
-			if (ast.right.type === 'AND' || ast.right.type === 'OR') {
-				rightFinal = `(${rightStr})`;
-			}
-
-			return `${leftFinal} ${ast.type} ${rightFinal}`;
-		}
-
-		return '';
-	}
-
-	try {
-		// Parse the expression
-		const ast = parseExpression(expression);
-
-		// Generate all variations
-		const astVariations = generateASTVariations(ast);
-
-		// Convert back to strings and remove duplicates
-		const stringVariations = astVariations.map(astToString);
-		const uniqueVariations = [...new Set(stringVariations)];
-
-		return uniqueVariations;
-	} catch (error) {
-		// Fallback to original expression if parsing fails
-		console.warn('Failed to parse expression:', expression, error);
-		return [expression];
-	}
-}
-
-// Name That Gate functionality
-function generateNameThatGateQuestion() {
-	const gates = ['AND', 'OR', 'NOT', 'NONE', 'NONE'];
-	nameThatGateCurrentGate = gates[Math.floor(Math.random() * gates.length)];
-
-	const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
-	if (!svgCanvas) {
-		console.error("SVG canvas element not found.");
-		return;
-	}
-
-	switch (nameThatGateCurrentGate) {
-		case 'AND':
-			circuitGenerator.generateCircuit('Q = A AND B', svgCanvas);
-			break;
-		case 'OR':
-			circuitGenerator.generateCircuit('Q = A OR B', svgCanvas);
-			break;
-		case 'NOT':
-			circuitGenerator.generateCircuit('Q = NOT A', svgCanvas);
-			break;
-		case 'NONE':
-			svgCanvas.innerHTML = drawNONEGate();
-			break;
-	}
-
-	// Reset option buttons
-	document.querySelectorAll('.options .btn').forEach(btn => {
-		btn.classList.remove('correct', 'incorrect');
-	});
-}
-
-function generateNameThatGateOptions() {
-	const optionsContainer = document.querySelector('#nameThatGateMode .options');
-	optionsContainer.innerHTML = '';
-
-	const gates = ['AND', 'OR', 'NOT', 'NONE'];
-	gates.forEach(gate => {
-		const button = document.createElement('button');
-		button.classList.add('btn', 'option');
-		button.textContent = gate;
-		button.onclick = () => submitAnswer(gate);
-		optionsContainer.appendChild(button);
-	});
-}
-
 // Needed for invalid gates
 function drawNONEGate() {
 	const incorrectGates = [{
@@ -1375,6 +518,125 @@ function checkExpressionAnswer() {
 
 	updateScoreDisplay();
 	showNextButton();
+}
+
+// Initialize the game when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+	document.addEventListener('keydown', handleEnterKey);
+
+	generateModeSelectorButtons();
+	generateNameThatGateOptions()
+	// Set the initial active button correctly
+	const initialModeButton = document.querySelector('.mode-selector .btn-select');
+	if (initialModeButton) {
+		setGameMode('nameThatGate', initialModeButton);
+	} else {
+		generateNameThatGateQuestion();
+	}
+	updateScoreDisplay();
+
+	preloadGateImages()
+
+});
+
+function setDifficultyLevel(level, clickedButton) {
+	const modeConfig = modeSettings[currentMode];
+	
+	if (!modeConfig) {
+		console.error(`Unknown mode: ${currentMode}`);
+		return;
+	}
+	
+	// Update difficulty level
+	modeSettings[currentMode].currentDifficulty = level;
+
+    // Update button states
+	updateDifficultyButtons(currentMode, clickedButton);
+	
+	// Generate new question (only if the mode has a generateQuestion function)
+	if (modeConfig.generateQuestion) {
+		modeConfig.generateQuestion();
+	}
+	
+	hideFeedback();
+	
+	// Update help if needed
+	if (modeConfig.updateHelp) {
+		modeConfig.updateHelp();
+	}
+	
+	// Reset UI state
+	resetUIState();
+}
+
+function updateDifficultyButtons(mode, clickedButton) {
+	const selector = `#${mode}Mode .btn-select`;
+	document.querySelectorAll(selector).forEach(btn => {
+		btn.classList.remove('active', 'difficulty-active');
+	});
+	clickedButton.classList.add('active', 'difficulty-active');
+}
+
+function submitAnswer(answer = '') {
+	if (answered) return;
+
+	if (currentMode === 'drawCircuit') {
+		checkCircuitAnswer();
+	} else if (currentMode === 'nameThatGate') {
+		checkNameThatGateAnswer(answer);
+	} else if (currentMode === 'writeExpression') {
+		checkExpressionAnswer();
+	} else if (currentMode === 'scenario') {
+		checkScenarioAnswer();
+	} else if (currentMode === 'truthTable') {
+		checkTruthTableAnswer();
+	}
+}
+
+// Name That Gate functionality
+function generateNameThatGateQuestion() {
+	const gates = ['AND', 'OR', 'NOT', 'NONE', 'NONE'];
+	nameThatGateCurrentGate = gates[Math.floor(Math.random() * gates.length)];
+
+	const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
+	if (!svgCanvas) {
+		console.error("SVG canvas element not found.");
+		return;
+	}
+
+	switch (nameThatGateCurrentGate) {
+		case 'AND':
+			circuitGenerator.generateCircuit('Q = A AND B', svgCanvas);
+			break;
+		case 'OR':
+			circuitGenerator.generateCircuit('Q = A OR B', svgCanvas);
+			break;
+		case 'NOT':
+			circuitGenerator.generateCircuit('Q = NOT A', svgCanvas);
+			break;
+		case 'NONE':
+			svgCanvas.innerHTML = drawNONEGate();
+			break;
+	}
+
+	// Reset option buttons
+	document.querySelectorAll('.options .btn').forEach(btn => {
+		btn.classList.remove('correct', 'incorrect');
+	});
+}
+
+function generateNameThatGateOptions() {
+	const optionsContainer = document.querySelector('#nameThatGateMode .options');
+	optionsContainer.innerHTML = '';
+
+	const gates = ['AND', 'OR', 'NOT', 'NONE'];
+	gates.forEach(gate => {
+		const button = document.createElement('button');
+		button.classList.add('btn', 'option');
+		button.textContent = gate;
+		button.onclick = () => submitAnswer(gate);
+		optionsContainer.appendChild(button);
+	});
 }
 
 // Scenario Mode functionality
@@ -3173,21 +2435,11 @@ function generateDrawCircuitQuestion() {
 
 }
 
-// Initialize the game when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-	document.addEventListener('keydown', handleEnterKey);
-
-	generateModeSelectorButtons();
-	generateNameThatGateOptions()
-	// Set the initial active button correctly
-	const initialModeButton = document.querySelector('.mode-selector .btn-select');
-	if (initialModeButton) {
-		setGameMode('nameThatGate', initialModeButton);
-	} else {
-		generateNameThatGateQuestion();
-	}
-	updateScoreDisplay();
-
-	preloadGateImages()
-
-});
+// Functions exposed to global scope for HTML onclick handlers. Temporary fix before refactoring to use event listeners?
+window.nextQuestion = nextQuestion;
+window.submitAnswer = submitAnswer;
+window.toggleHelpMode = toggleHelpMode;
+window.toggleIntermediateColumns = toggleIntermediateColumns;
+window.toggleExpertMode = toggleExpertMode;
+window.setGameMode = setGameMode;
+window.setDifficultyLevel = setDifficultyLevel;
