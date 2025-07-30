@@ -771,9 +771,10 @@ body {
 	font-weight: normal;
 }
 
-.help-checkbox {
+.help-checkbox, .other-checkbox {
 	margin-right: var(--spacing-xs);
 }
+
 
 .options-section {
 	display: flex;
