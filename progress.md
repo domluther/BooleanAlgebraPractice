@@ -50,36 +50,14 @@ Cleaned up app.js to focus on application bootstrap
 
 
 Phase 4: Constructor Standardization ✅
-Current Issue: DrawCircuit has different constructor signature
+DrawCircuit has different constructor signature. This was considered unimportant as it is functional.
 
 DrawCircuit: constructor(dependencies)
 All others: constructor(circuitGenerator, dependencies)
 
-Tasks:
-
-Update DrawCircuit constructor to match standard pattern
-Test that dependency injection works correctly for all modes
-Verify all modes initialize properly
-
 Remaining Work & Future Explorations
 
-Phase 5: HTML Generation Opportunities 🆕
-Goal: Move repetitive HTML structures from index.html to JavaScript generation
-Candidates for ui-setup.js generation:
-
-Selection Control Panels - The repetitive <div class="panel panel-accent-info"> blocks with difficulty dropdowns and options
-Help Sections - The standardized <div class="help-info"> blocks that appear across modes
-Input/Button Combinations - Submit button + input field patterns
-Mode Container Structure - The <div class="game-mode-container"> wrappers
-
-Benefits:
-
-Reduce HTML duplication
-Ensure consistent structure across modes
-Easier to modify common layouts
-Centralized control of UI patterns
-
-Phase 6: Supporting Files Review 🔍
+Phase 5: Supporting Files Review 🔍
 Files that need examination:
 
 navigation.js - Determine if this fits the new architecture
@@ -97,7 +75,6 @@ Consider lazy loading for game modes (performance optimization)
 
 Immediate Next Steps
 
-Analyze index.html - Identify specific HTML structures that would benefit from JavaScript generation
 Review navigation.js and score-manager.js - Determine their role in the new architecture
 
 

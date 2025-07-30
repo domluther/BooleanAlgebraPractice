@@ -1,12 +1,14 @@
 // app.js - Application bootstrap and initialization
 
-import { UIManager } from './ui-manager.js';
+import { SiteNavigation } from './navigation.js';
 import { GameManager } from './game-manager.js';
+import { UIManager } from './ui-manager.js';
 import { 
     generateModeSelectorButtons, 
     setupGlobalEventListeners, 
     initializeDefaultMode 
 } from './ui-setup.js';
+
 
 /**
  * Initializes the complete application.
@@ -25,6 +27,8 @@ function initializeApplication(gameManager) {
 
 // --- Application Entry Point ---
 document.addEventListener('DOMContentLoaded', () => {
+    const navigation = new SiteNavigation();;
+    navigation.init();
     // Create core application instances
     const uiManager = new UIManager();
     const gameManager = new GameManager(uiManager);
