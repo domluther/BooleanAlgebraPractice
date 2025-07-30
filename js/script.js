@@ -88,6 +88,8 @@ let gates = [];
 let wires = [];
 let inputs = [];
 let output;
+let selectedGate = null;
+let selectedWire = null;
 let nextId = 0;
 let draggingGate = null;
 let draggingOffset = {
@@ -163,13 +165,12 @@ function generateDifficultyDropdown(gameMode) {
 // UI
 function handleEnterKey(event) {
 	if (event.key === 'Enter') {
-		event.preventDefault();
+		event.preventDefault(); // Do I want this? Stops tabbing + pressing enter on buttons
 		if (answered) {
 			nextQuestion();
 			return;
 		} else {
 			if (currentMode === 'nameThatGate') {
-				console.log('Enter key pressed in nameThatGate mode – no action taken.');
 				return;
 			} else {
 				submitAnswer();
@@ -1073,7 +1074,6 @@ function addTerminals() {
 }
 
 function addCircuitModeEventListeners() {
-	console.log('🎯 ADDING EVENT LISTENERS - Starting');
 
 	// Remove any existing listeners to prevent duplicates
 	const canvasClone = canvas.cloneNode(true);
@@ -1081,12 +1081,10 @@ function addCircuitModeEventListeners() {
 	canvas = canvasClone;
 	ctx = canvas.getContext('2d');
 
-	console.log('🎯 ADDING EVENT LISTENERS - Canvas refreshed');
 
 	const toolboxGates = document.querySelectorAll('.gate[draggable="true"]');
 	toolboxGates.forEach(gate => {
 		gate.addEventListener('dragstart', (e) => {
-			console.log('🟢 TOOLBOX DRAGSTART - Gate:', e.currentTarget.id);
 			const targetGate = e.currentTarget;
 			e.dataTransfer.setData('text/plain', targetGate.id);
 
@@ -1099,19 +1097,15 @@ function addCircuitModeEventListeners() {
 
 	canvas.addEventListener('dragover', (e) => {
 		e.preventDefault();
-		console.log('🟡 CANVAS DRAGOVER - DataTransfer has data:', !!e.dataTransfer.getData('text/plain'));
 	});
 
 	canvas.addEventListener('drop', (e) => {
-		console.log('🔴 CANVAS DROP EVENT - Starting');
 		e.preventDefault();
 
 		// Guard clause to ensure drag originated from toolbox
 		const dragData = e.dataTransfer.getData('text/plain');
-		console.log('🔴 CANVAS DROP - Drag data:', dragData);
 
 		if (!dragData) {
-			console.log('🔴 CANVAS DROP - No drag data, returning early');
 			return;
 		}
 
@@ -1121,55 +1115,33 @@ function addCircuitModeEventListeners() {
 		const x = e.clientX - rect.left;
 		const y = e.clientY - rect.top;
 
-		console.log('🔴 CANVAS DROP - Adding gate:', {
-			type,
-			x,
-			y,
-			gateCount: gates.length
-		});
 		addGate(type, x, y);
-		console.log('🔴 CANVAS DROP - Gate added, new count:', gates.length);
 	});
 
 	canvas.addEventListener('mousedown', (e) => {
-		console.log('🔵 MOUSEDOWN - Starting', {
-			answered,
-			shiftKey: e.shiftKey,
-			button: e.button,
-			detail: e.detail,
-			eventType: e.type,
-			timeStamp: e.timeStamp,
-			currentDraggingGate: draggingGate ? draggingGate.id : 'none'
-		});
-
 		// Prevent multiple rapid-fire events
 		if (draggingGate) {
-			console.log('🔵 MOUSEDOWN - Already dragging gate, ignoring');
 			e.preventDefault();
 			e.stopPropagation();
 			return;
 		}
 
 		if (answered) {
-			console.log('🔵 MOUSEDOWN - Already answered, returning');
 			return;
 		}
 
 		const pos = getMousePos(e);
-		console.log('🔵 MOUSEDOWN - Position:', pos);
 
 		// Try to snap to a nearby node first
 		const snappedNode = getClickedNode(pos) || getNearbyNode(pos);
 
 		if (snappedNode) {
-			console.log('🔵 MOUSEDOWN - Found snapped node, starting wire');
 			wireStartNode = snappedNode;
 			clearSelections();
 		} else {
 			// Check if clicking on a wire first
 			const clickedWire = getClickedWire(pos);
 			if (clickedWire) {
-				console.log('🔵 MOUSEDOWN - Clicked on wire');
 				clearSelections();
 				selectedWire = clickedWire;
 				enableRemoveSelectedButton();
@@ -1180,18 +1152,11 @@ function addCircuitModeEventListeners() {
 			// Check if clicking on a gate
 			const clickedGate = getClickedGate(pos);
 			if (clickedGate) {
-				console.log('🔵 MOUSEDOWN - Clicked on gate:', {
-					gateId: clickedGate.id,
-					shiftKey: e.shiftKey
-				});
 
 				// If shift key is held, start dragging; otherwise, select
 				if (e.shiftKey) {
-					console.log('🔵 MOUSEDOWN - Starting drag mode for gate:', clickedGate.id);
-
 					// Additional safety check
 					if (draggingGate) {
-						console.log('🔵 MOUSEDOWN - ERROR: Already have draggingGate:', draggingGate.id);
 						e.preventDefault();
 						e.stopPropagation();
 						return;
@@ -1203,14 +1168,12 @@ function addCircuitModeEventListeners() {
 					e.preventDefault();
 					e.stopPropagation();
 				} else {
-					console.log('🔵 MOUSEDOWN - Selecting gate:', clickedGate.id);
 					clearSelections();
 					selectedGate = clickedGate;
 					enableRemoveSelectedButton();
 					draw();
 				}
 			} else {
-				console.log('🔵 MOUSEDOWN - Clicked on empty space');
 				disableRemoveSelectedButton();
 				clearSelections();
 				draw();
@@ -1220,10 +1183,6 @@ function addCircuitModeEventListeners() {
 
 	canvas.addEventListener('mousemove', (e) => {
 		if (draggingGate) {
-			// Only log occasionally to avoid spam
-			if (Math.random() < 0.01) { // 1% chance
-				console.log('🟠 MOUSEMOVE - Dragging gate:', draggingGate.id);
-			}
 			const pos = getMousePos(e);
 			draggingGate.x = pos.x - draggingOffset.x;
 			draggingGate.y = pos.y - draggingOffset.y;
@@ -1263,36 +1222,22 @@ function addCircuitModeEventListeners() {
 	});
 
 	canvas.addEventListener('mouseup', (e) => {
-		console.log('🟣 MOUSEUP - Starting', {
-			hasDraggingGate: !!draggingGate,
-			hasWireStartNode: !!wireStartNode,
-			gateCount: gates.length
-		});
-
 		if (wireStartNode) {
-			console.log('🟣 MOUSEUP - Processing wire connection');
 			const pos = getMousePos(e);
 			const endNode = getClickedNode(pos) || getNearbyNode(pos);
 			if (endNode && endNode !== wireStartNode && endNode.type !== wireStartNode.type) {
-				console.log('🟣 MOUSEUP - Adding wire connection');
 				addWire(wireStartNode, endNode);
 			}
 			wireStartNode = null;
-		}
-
-		if (draggingGate) {
-			console.log('🟣 MOUSEUP - Finishing gate drag for:', draggingGate.id);
 		}
 
 		draggingGate = null;
 		draw();
 		updateInterpretedExpression();
 
-		console.log('🟣 MOUSEUP - Finished, gate count:', gates.length);
 	});
 
 	document.getElementById('resetCircuitBtn').addEventListener('click', () => {
-		console.log('🔄 RESET BUTTON CLICKED');
 		if (answered) return;
 		resetUIState();
 		disableRemoveSelectedButton();
@@ -1302,21 +1247,11 @@ function addCircuitModeEventListeners() {
 
 	// Add event listener for remove selected button
 	document.getElementById('removeSelectedBtn').addEventListener('click', () => {
-		console.log('🗑️ REMOVE SELECTED BUTTON CLICKED');
 		removeSelected();
 	});
 }
 
 function addGate(type, x, y) {
-	console.log('➕ ADD GATE - Starting:', {
-		type,
-		x,
-		y,
-		currentGateCount: gates.length,
-		nextId
-	});
-	console.log('➕ ADD GATE - gateImages:', gateImages);
-
 	const gateWidth = 120;
 	const gateHeight = 54;
 	const newGate = {
@@ -1336,11 +1271,6 @@ function addGate(type, x, y) {
 			connectedTo: null
 		}
 	};
-
-	console.log('➕ ADD GATE - Created gate object:', {
-		id: newGate.id,
-		type: newGate.type
-	});
 
 	if (type === 'NOT') {
 		newGate.inputNodes.push({
@@ -1371,8 +1301,6 @@ function addGate(type, x, y) {
 	}
 
 	gates.push(newGate);
-	console.log('➕ ADD GATE - Gate added to array, new count:', gates.length);
-	console.log('➕ ADD GATE - All gate IDs:', gates.map(g => g.id));
 
 	clearSelections();
 	draw();
@@ -1485,7 +1413,6 @@ function preloadGateImages() {
 }
 
 function drawNodesForGate(gate) {
-	// console.log('Drawing nodes for gate:', gate);
 	gate.inputNodes.forEach(drawNode);
 	drawNode(gate.outputNode);
 }
@@ -1555,12 +1482,10 @@ function distanceToLine(point, lineStart, lineEnd) {
 
 function removeSelected() {
 	if (selectedGate) {
-		console.log('🗑️ REMOVING SELECTED GATE:', selectedGate.id);
 		removeGate(selectedGate);
 		selectedGate = null;
 		disableRemoveSelectedButton();
 	} else if (selectedWire) {
-		console.log('🗑️ REMOVING SELECTED WIRE');
 		removeWire(selectedWire);
 		selectedWire = null;
 		disableRemoveSelectedButton();
@@ -1570,9 +1495,6 @@ function removeSelected() {
 }
 
 function removeGate(gateToRemove) {
-	console.log('🗑️ REMOVE GATE - Starting removal of:', gateToRemove.id);
-	console.log('🗑️ REMOVE GATE - Current gate count:', gates.length);
-
 	// Remove all wires connected to this gate
 	wires = wires.filter(wire => {
 		const isConnectedToGate = wire.from.gateId === gateToRemove.id || wire.to.gateId === gateToRemove.id;
@@ -1598,9 +1520,6 @@ function removeGate(gateToRemove) {
 
 	// Remove the gate itself
 	gates = gates.filter(gate => gate.id !== gateToRemove.id);
-
-	console.log('🗑️ REMOVE GATE - Finished, new gate count:', gates.length);
-	console.log('🗑️ REMOVE GATE - Remaining gate IDs:', gates.map(g => g.id));
 }
 
 function removeWire(wireToRemove) {
@@ -1786,7 +1705,6 @@ function updateInterpretedExpression() {
 	);
 
 	if (gate) {
-		console.log(`Found standalone gate: ${gate.type}`);
 		const expression = buildExpression(gate.outputNode);
 		expressionElement.textContent = expression;
 	} else {
@@ -1795,8 +1713,6 @@ function updateInterpretedExpression() {
 }
 
 function buildExpression(node) {
-	console.log('buildExpression called for node:', node);
-
 	if (!node) {
 		return '?';
 	}
