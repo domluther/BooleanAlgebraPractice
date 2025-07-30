@@ -81,25 +81,23 @@ let truthTableMode;
 const circuitGenerator = new CircuitGenerator();
 
 // Global variables for draw circuit mode
-let canvas, ctx;
-let gates = [];
-let wires = [];
-let inputs = [];
-let output;
-let selectedGate = null;
-let selectedWire = null;
-let nextId = 0;
-let draggingGate = null;
-let draggingOffset = {
-	x: 0,
-	y: 0
+const drawCircuitState = {
+    canvas: null,
+    ctx: null,
+    gates: [],
+    wires: [],
+    inputs: [],
+    output: null,
+    selectedGate: null,
+    selectedWire: null,
+    nextId: 0,
+    draggingGate: null,
+    draggingOffset: { x: 0, y: 0 },
+    wireStartNode: null,
+    targetExpression: "",
+    parsedTargetExpression: {},
+    gateImages: {} // Moved from global scope
 };
-let wireStartNode = null;
-let targetExpression = "";
-let parsedTargetExpression = {};
-
-const gateImages = {};
-
 
 // Page generation
 function generateModeSelectorButtons() {
@@ -414,13 +412,18 @@ function submitAnswer(answer = '') {
 }
 
 // Circuit Drawing Mode functionality
+// REPLACE the existing functions with this entire updated block
+
+// Circuit Drawing Mode functionality
 function initDrawCircuitMode() {
-	canvas = document.getElementById('circuitCanvas');
-	if (!canvas) {
+	// Reference state object
+	drawCircuitState.canvas = document.getElementById('circuitCanvas');
+	if (!drawCircuitState.canvas) {
 		console.error("Canvas not found!");
 		return;
 	}
-	ctx = canvas.getContext('2d');
+	// Reference state object
+	drawCircuitState.ctx = drawCircuitState.canvas.getContext('2d');
 
 	generateDrawCircuitQuestion();
 	enableResetButton();
@@ -431,38 +434,37 @@ function initDrawCircuitMode() {
 }
 
 function setupCanvas() {
-	gates = [];
-	wires = [];
-	nextId = 0;
-	wireStartNode = null;
-	selectedGate = null;
-	selectedWire = null;
+	// Reference state object
+	drawCircuitState.gates = [];
+	drawCircuitState.wires = [];
+	drawCircuitState.nextId = 0;
+	drawCircuitState.wireStartNode = null;
+	drawCircuitState.selectedGate = null;
+	drawCircuitState.selectedWire = null;
 
 	// Hide feedback from previous question
 	document.getElementById('feedback').style.display = 'none';
 	document.getElementById('nextBtn').style.display = 'none';
 
 	addTerminals();
-
 	updateInterpretedExpression();
 }
 
 function addTerminals() {
-	const canvasHeight = canvas.height;
-	const canvasWidth = canvas.width;
+	// Reference state object
+	const canvasHeight = drawCircuitState.canvas.height;
+	const canvasWidth = drawCircuitState.canvas.width;
 
 	const terminalWidth = 60;
 	const terminalHeight = 40;
 
-	const inputCount = parsedTargetExpression.inputs.length;
+	// Reference state object
+	const inputCount = drawCircuitState.parsedTargetExpression.inputs.length;
 
-	// Adaptive margins based on number of inputs
-	// At 1 input: 25% margin → startY = 25% of canvas
-	// At 7 inputs: 10% margin → startY = 10% of canvas
 	const minMarginRatio = 0.10;
 	const maxMarginRatio = 0.25;
-	const clampedInputCount = Math.min(Math.max(inputCount, 1), 7); // clamp to [1, 7]
-	const t = (clampedInputCount - 1) / 6; // normalised between 0 (1 input) to 1 (7 inputs)
+	const clampedInputCount = Math.min(Math.max(inputCount, 1), 7);
+	const t = (clampedInputCount - 1) / 6;
 	const marginRatio = maxMarginRatio - (maxMarginRatio - minMarginRatio) * t;
 
 	const startY = canvasHeight * marginRatio;
@@ -471,16 +473,16 @@ function addTerminals() {
 
 	const spaceBetween = inputCount > 1 ? availableHeight / (inputCount - 1) : 0;
 
-	inputs = [];
+	// Reference state object
+	drawCircuitState.inputs = [];
 
 	for (let i = 0; i < inputCount; i++) {
-		const inputName = parsedTargetExpression.inputs[i];
+		// Reference state object
+		const inputName = drawCircuitState.parsedTargetExpression.inputs[i];
+		const centerY = inputCount > 1 ? startY + i * spaceBetween : (startY + endY) / 2;
 
-		const centerY = inputCount > 1 ?
-			startY + i * spaceBetween :
-			(startY + endY) / 2;
-
-		inputs.push({
+		// Reference state object
+		drawCircuitState.inputs.push({
 			id: `input-${inputName}`,
 			name: inputName,
 			x: 30,
@@ -496,15 +498,17 @@ function addTerminals() {
 			}
 		});
 	}
-
-	const outputName = parsedTargetExpression.output;
+	
+	// Reference state object
+	const outputName = drawCircuitState.parsedTargetExpression.output;
 	const outputCenterY = canvasHeight / 2;
 
-	output = {
+	// Reference state object
+	drawCircuitState.output = {
 		id: `output-${outputName}`,
 		name: outputName,
 		x: canvasWidth - 100,
-		y: outputCenterY - terminalHeight / 2, // top-left corner
+		y: outputCenterY - terminalHeight / 2,
 		width: terminalWidth,
 		height: terminalHeight,
 		inputNode: {
@@ -515,17 +519,15 @@ function addTerminals() {
 			connectedTo: null
 		}
 	};
-
 }
 
 function addCircuitModeEventListeners() {
-
-	// Remove any existing listeners to prevent duplicates
-	const canvasClone = canvas.cloneNode(true);
-	canvas.parentNode.replaceChild(canvasClone, canvas);
-	canvas = canvasClone;
-	ctx = canvas.getContext('2d');
-
+	// Use a clone to remove old listeners
+	// Reference state object
+	const canvasClone = drawCircuitState.canvas.cloneNode(true);
+	drawCircuitState.canvas.parentNode.replaceChild(canvasClone, drawCircuitState.canvas);
+	drawCircuitState.canvas = canvasClone;
+	drawCircuitState.ctx = drawCircuitState.canvas.getContext('2d');
 
 	const toolboxGates = document.querySelectorAll('.gate[draggable="true"]');
 	toolboxGates.forEach(gate => {
@@ -540,81 +542,72 @@ function addCircuitModeEventListeners() {
 		});
 	});
 
-	canvas.addEventListener('dragover', (e) => {
+	// Reference state object
+	drawCircuitState.canvas.addEventListener('dragover', (e) => {
 		e.preventDefault();
 	});
 
-	canvas.addEventListener('drop', (e) => {
+	// Reference state object
+	drawCircuitState.canvas.addEventListener('drop', (e) => {
 		e.preventDefault();
-
-		// Guard clause to ensure drag originated from toolbox
 		const dragData = e.dataTransfer.getData('text/plain');
-
-		if (!dragData) {
-			return;
-		}
+		if (!dragData) return;
 
 		const id = dragData;
 		const type = id.replace('drag-', '');
-		const rect = canvas.getBoundingClientRect();
+		// Reference state object
+		const rect = drawCircuitState.canvas.getBoundingClientRect();
 		const x = e.clientX - rect.left;
 		const y = e.clientY - rect.top;
-
 		addGate(type, x, y);
 	});
-
-	canvas.addEventListener('mousedown', (e) => {
-		// Prevent multiple rapid-fire events
-		if (draggingGate) {
+	
+	// Reference state object
+	drawCircuitState.canvas.addEventListener('mousedown', (e) => {
+		// Reference state object
+		if (drawCircuitState.draggingGate) {
 			e.preventDefault();
 			e.stopPropagation();
 			return;
 		}
-
-		if (answered) {
-			return;
-		}
+		if (answered) return;
 
 		const pos = getMousePos(e);
-
-		// Try to snap to a nearby node first
 		const snappedNode = getClickedNode(pos) || getNearbyNode(pos);
 
 		if (snappedNode) {
-			wireStartNode = snappedNode;
+			// Reference state object
+			drawCircuitState.wireStartNode = snappedNode;
 			clearSelections();
 		} else {
-			// Check if clicking on a wire first
 			const clickedWire = getClickedWire(pos);
 			if (clickedWire) {
 				clearSelections();
-				selectedWire = clickedWire;
+				// Reference state object
+				drawCircuitState.selectedWire = clickedWire;
 				enableRemoveSelectedButton();
 				draw();
 				return;
 			}
-
-			// Check if clicking on a gate
 			const clickedGate = getClickedGate(pos);
 			if (clickedGate) {
-
-				// If shift key is held, start dragging; otherwise, select
 				if (e.shiftKey) {
-					// Additional safety check
-					if (draggingGate) {
+					// Reference state object
+					if (drawCircuitState.draggingGate) {
 						e.preventDefault();
 						e.stopPropagation();
 						return;
 					}
-
-					draggingGate = clickedGate;
-					draggingOffset.x = pos.x - clickedGate.x;
-					draggingOffset.y = pos.y - clickedGate.y;
+					// Reference state object
+					drawCircuitState.draggingGate = clickedGate;
+					drawCircuitState.draggingOffset.x = pos.x - clickedGate.x;
+					drawCircuitState.draggingOffset.y = pos.y - clickedGate.y;
 					e.preventDefault();
 					e.stopPropagation();
 				} else {
 					clearSelections();
-					selectedGate = clickedGate;
+					// Reference state object
+					drawCircuitState.selectedGate = clickedGate;
 					enableRemoveSelectedButton();
 					draw();
 				}
@@ -625,61 +618,64 @@ function addCircuitModeEventListeners() {
 			}
 		}
 	});
-
-	canvas.addEventListener('mousemove', (e) => {
-		if (draggingGate) {
+	
+	// Reference state object
+	drawCircuitState.canvas.addEventListener('mousemove', (e) => {
+		// Reference state object
+		if (drawCircuitState.draggingGate) {
 			const pos = getMousePos(e);
-			draggingGate.x = pos.x - draggingOffset.x;
-			draggingGate.y = pos.y - draggingOffset.y;
-			updateGateNodes(draggingGate);
+			// Reference state object
+			drawCircuitState.draggingGate.x = pos.x - drawCircuitState.draggingOffset.x;
+			drawCircuitState.draggingGate.y = pos.y - drawCircuitState.draggingOffset.y;
+			updateGateNodes(drawCircuitState.draggingGate);
 			draw();
-		} else if (wireStartNode) {
+		// Reference state object
+		} else if (drawCircuitState.wireStartNode) {
 			const pos = getMousePos(e);
 			const nearbyNode = getNearbyNode(pos);
-
 			draw();
-
-			// Draw the wire being created
-			ctx.beginPath();
-			ctx.moveTo(wireStartNode.x, wireStartNode.y);
-
-			if (nearbyNode && nearbyNode !== wireStartNode && nearbyNode.type !== wireStartNode.type) {
-				// Snap to nearby compatible node
-				ctx.lineTo(nearbyNode.x, nearbyNode.y);
-				ctx.strokeStyle = '#27ae60'; // Green when snapping
-				ctx.lineWidth = 3;
-				ctx.stroke();
-
-				// Draw snap indicator around the target node (separate path)
-				ctx.beginPath();
-				ctx.arc(nearbyNode.x, nearbyNode.y, 10, 0, 2 * Math.PI);
-				ctx.strokeStyle = '#27ae60';
-				ctx.lineWidth = 2;
-				ctx.stroke();
+			
+			// Reference state object
+			drawCircuitState.ctx.beginPath();
+			drawCircuitState.ctx.moveTo(drawCircuitState.wireStartNode.x, drawCircuitState.wireStartNode.y);
+			
+			// Reference state object
+			if (nearbyNode && nearbyNode !== drawCircuitState.wireStartNode && nearbyNode.type !== drawCircuitState.wireStartNode.type) {
+				drawCircuitState.ctx.lineTo(nearbyNode.x, nearbyNode.y);
+				drawCircuitState.ctx.strokeStyle = '#27ae60';
+				drawCircuitState.ctx.lineWidth = 3;
+				drawCircuitState.ctx.stroke();
+				drawCircuitState.ctx.beginPath();
+				drawCircuitState.ctx.arc(nearbyNode.x, nearbyNode.y, 10, 0, 2 * Math.PI);
+				drawCircuitState.ctx.strokeStyle = '#27ae60';
+				drawCircuitState.ctx.lineWidth = 2;
+				drawCircuitState.ctx.stroke();
 			} else {
-				// Normal wire preview
-				ctx.lineTo(pos.x, pos.y);
-				ctx.strokeStyle = '#3498db';
-				ctx.lineWidth = 2;
-				ctx.stroke();
+				drawCircuitState.ctx.lineTo(pos.x, pos.y);
+				drawCircuitState.ctx.strokeStyle = '#3498db';
+				drawCircuitState.ctx.lineWidth = 2;
+				drawCircuitState.ctx.stroke();
 			}
 		}
 	});
 
-	canvas.addEventListener('mouseup', (e) => {
-		if (wireStartNode) {
+	// Reference state object
+	drawCircuitState.canvas.addEventListener('mouseup', (e) => {
+		// Reference state object
+		if (drawCircuitState.wireStartNode) {
 			const pos = getMousePos(e);
 			const endNode = getClickedNode(pos) || getNearbyNode(pos);
-			if (endNode && endNode !== wireStartNode && endNode.type !== wireStartNode.type) {
-				addWire(wireStartNode, endNode);
+			// Reference state object
+			if (endNode && endNode !== drawCircuitState.wireStartNode && endNode.type !== drawCircuitState.wireStartNode.type) {
+				addWire(drawCircuitState.wireStartNode, endNode);
 			}
-			wireStartNode = null;
+			// Reference state object
+			drawCircuitState.wireStartNode = null;
 		}
-
-		draggingGate = null;
+		// Reference state object
+		drawCircuitState.draggingGate = null;
 		draw();
 		updateInterpretedExpression();
-
 	});
 
 	document.getElementById('resetCircuitBtn').addEventListener('click', () => {
@@ -690,7 +686,6 @@ function addCircuitModeEventListeners() {
 		draw();
 	});
 
-	// Add event listener for remove selected button
 	document.getElementById('removeSelectedBtn').addEventListener('click', () => {
 		removeSelected();
 	});
@@ -700,18 +695,21 @@ function addGate(type, x, y) {
 	const gateWidth = 120;
 	const gateHeight = 54;
 	const newGate = {
-		id: nextId++,
+		// Reference state object
+		id: drawCircuitState.nextId++,
 		type: type,
 		x: x - gateWidth / 2,
 		y: y - gateHeight / 2,
 		width: gateWidth,
 		height: gateHeight,
-		image: gateImages[type],
+		// Reference state object
+		image: drawCircuitState.gateImages[type],
 		inputNodes: [],
 		outputNode: {
 			x: x + gateWidth / 2,
 			y: y,
-			gateId: nextId - 1,
+			// Reference state object
+			gateId: drawCircuitState.nextId - 1,
 			type: 'output',
 			connectedTo: null
 		}
@@ -726,7 +724,7 @@ function addGate(type, x, y) {
 			index: 0,
 			connectedTo: null
 		});
-	} else { // AND, OR
+	} else {
 		newGate.inputNodes.push({
 			x: x - gateWidth / 2,
 			y: y - 10,
@@ -744,9 +742,8 @@ function addGate(type, x, y) {
 			connectedTo: null
 		});
 	}
-
-	gates.push(newGate);
-
+	// Reference state object
+	drawCircuitState.gates.push(newGate);
 	clearSelections();
 	draw();
 }
@@ -754,106 +751,100 @@ function addGate(type, x, y) {
 function addWire(startNode, endNode) {
 	let fromNode = startNode.type === 'output' ? startNode : endNode;
 	let toNode = startNode.type === 'input' ? startNode : endNode;
-
-	wires = wires.filter(w => w.to !== toNode);
+	
+	// Reference state object
+	drawCircuitState.wires = drawCircuitState.wires.filter(w => w.to !== toNode);
 	if (toNode.connectedTo) {
 		const prevFromNode = findNodeByConnectionInfo(toNode.connectedTo);
 		if (prevFromNode) prevFromNode.connectedTo = null;
 	}
-
-	wires.push({
-		from: fromNode,
-		to: toNode
-	});
-	fromNode.connectedTo = {
-		gateId: toNode.gateId,
-		nodeIndex: toNode.index,
-		nodeType: 'input'
-	};
-	toNode.connectedTo = {
-		gateId: fromNode.gateId,
-		nodeIndex: fromNode.index,
-		nodeType: 'output'
-	};
+	
+	// Reference state object
+	drawCircuitState.wires.push({ from: fromNode, to: toNode });
+	fromNode.connectedTo = { gateId: toNode.gateId, nodeIndex: toNode.index, nodeType: 'input' };
+	toNode.connectedTo = { gateId: fromNode.gateId, nodeIndex: fromNode.index, nodeType: 'output' };
 }
 
 function draw() {
-	if (!ctx) return;
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	// Reference state object
+	if (!drawCircuitState.ctx) return;
+	drawCircuitState.ctx.clearRect(0, 0, drawCircuitState.canvas.width, drawCircuitState.canvas.height);
 
 	// Draw wires
-	wires.forEach(wire => {
-		ctx.beginPath();
-		ctx.moveTo(wire.from.x, wire.from.y);
-		ctx.lineTo(wire.to.x, wire.to.y);
-
-		// Highlight selected wire
-		if (selectedWire === wire) {
-			ctx.strokeStyle = '#e74c3c';
-			ctx.lineWidth = 4;
+	// Reference state object
+	drawCircuitState.wires.forEach(wire => {
+		drawCircuitState.ctx.beginPath();
+		drawCircuitState.ctx.moveTo(wire.from.x, wire.from.y);
+		drawCircuitState.ctx.lineTo(wire.to.x, wire.to.y);
+		
+		// Reference state object
+		if (drawCircuitState.selectedWire === wire) {
+			drawCircuitState.ctx.strokeStyle = '#e74c3c';
+			drawCircuitState.ctx.lineWidth = 4;
 		} else {
-			ctx.strokeStyle = '#333';
-			ctx.lineWidth = 2;
+			drawCircuitState.ctx.strokeStyle = '#333';
+			drawCircuitState.ctx.lineWidth = 2;
 		}
-
-		ctx.stroke();
+		drawCircuitState.ctx.stroke();
 	});
 
 	// Draw gates
-	gates.forEach(gate => {
-		// Highlight selected gate
+	// Reference state object
+	drawCircuitState.gates.forEach(gate => {
+		// Reference state object
 		if (gate.image && gate.image.complete) {
-			ctx.drawImage(gate.image, gate.x, gate.y, gate.width, gate.height);
-
-			// Optional: highlight border if selected
-			if (selectedGate === gate) {
-				ctx.strokeStyle = '#3498db';
-				ctx.lineWidth = 3;
-				ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
+			drawCircuitState.ctx.drawImage(gate.image, gate.x, gate.y, gate.width, gate.height);
+			// Reference state object
+			if (drawCircuitState.selectedGate === gate) {
+				drawCircuitState.ctx.strokeStyle = '#3498db';
+				drawCircuitState.ctx.lineWidth = 3;
+				drawCircuitState.ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
 			}
 		} else {
-			// Fallback while image is loading
-			ctx.fillStyle = selectedGate === gate ? '#3498db' : '#f0f0f0';
-			ctx.strokeStyle = selectedGate === gate ? '#2980b9' : '#333';
-			ctx.lineWidth = selectedGate === gate ? 3 : 1;
-			ctx.fillRect(gate.x, gate.y, gate.width, gate.height);
-			ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
-
-			ctx.fillStyle = selectedGate === gate ? '#fff' : '#000';
-			ctx.textAlign = 'center';
-			ctx.textBaseline = 'middle';
-			ctx.font = '16px Arial';
-			ctx.fillText(gate.type, gate.x + gate.width / 2, gate.y + gate.height / 2);
+            // Fallback drawing
+			// Reference state object
+			drawCircuitState.ctx.fillStyle = drawCircuitState.selectedGate === gate ? '#3498db' : '#f0f0f0';
+			drawCircuitState.ctx.strokeStyle = drawCircuitState.selectedGate === gate ? '#2980b9' : '#333';
+			drawCircuitState.ctx.lineWidth = drawCircuitState.selectedGate === gate ? 3 : 1;
+			drawCircuitState.ctx.fillRect(gate.x, gate.y, gate.width, gate.height);
+			drawCircuitState.ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
+			drawCircuitState.ctx.fillStyle = drawCircuitState.selectedGate === gate ? '#fff' : '#000';
+			drawCircuitState.ctx.textAlign = 'center';
+			drawCircuitState.ctx.textBaseline = 'middle';
+			drawCircuitState.ctx.font = '16px Arial';
+			drawCircuitState.ctx.fillText(gate.type, gate.x + gate.width / 2, gate.y + gate.height / 2);
 		}
-
 		drawNodesForGate(gate);
 	});
 
 	// Draw input/output terminals
-	[...inputs, output].forEach(io => {
-		ctx.fillStyle = '#d1e7dd';
-		ctx.strokeStyle = '#0f5132';
-		ctx.lineWidth = 1;
-		ctx.fillRect(io.x, io.y, io.width, io.height);
-		ctx.strokeRect(io.x, io.y, io.width, io.height);
-
-		ctx.fillStyle = '#000';
-		ctx.textAlign = 'center';
-		ctx.textBaseline = 'middle';
-		ctx.font = '16px Arial';
-		ctx.fillText(io.name, io.x + io.width / 2, io.y + io.height / 2);
+	// Reference state object
+	[...drawCircuitState.inputs, drawCircuitState.output].forEach(io => {
+		// Reference state object
+		drawCircuitState.ctx.fillStyle = '#d1e7dd';
+		drawCircuitState.ctx.strokeStyle = '#0f5132';
+		drawCircuitState.ctx.lineWidth = 1;
+		drawCircuitState.ctx.fillRect(io.x, io.y, io.width, io.height);
+		drawCircuitState.ctx.strokeRect(io.x, io.y, io.width, io.height);
+		drawCircuitState.ctx.fillStyle = '#000';
+		drawCircuitState.ctx.textAlign = 'center';
+		drawCircuitState.ctx.textBaseline = 'middle';
+		drawCircuitState.ctx.font = '16px Arial';
+		drawCircuitState.ctx.fillText(io.name, io.x + io.width / 2, io.y + io.height / 2);
 
 		if (io.outputNode) drawNode(io.outputNode);
 		if (io.inputNode) drawNode(io.inputNode);
 	});
 }
 
-// Stores PNG images for the canvas
+// NOTE: This function's name in the original script.js was `preloadGateImages`.
+// It should be updated to ensure the images are stored in the new state object.
 function preloadGateImages() {
 	['AND', 'OR', 'NOT'].forEach(type => {
 		const img = new Image();
 		img.src = `/img/png/${type.toLowerCase()}.png`;
-		gateImages[type] = img;
+		// Reference state object
+		drawCircuitState.gateImages[type] = img;
 	});
 }
 
@@ -863,26 +854,27 @@ function drawNodesForGate(gate) {
 }
 
 function drawNode(node) {
-	ctx.beginPath();
-	ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI);
-	ctx.fillStyle = node.connectedTo ? '#3498db' : '#fff';
-	ctx.strokeStyle = '#333';
-	ctx.lineWidth = 1;
-	ctx.fill();
-	ctx.stroke();
+	// Reference state object
+	drawCircuitState.ctx.beginPath();
+	drawCircuitState.ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI);
+	drawCircuitState.ctx.fillStyle = node.connectedTo ? '#3498db' : '#fff';
+	drawCircuitState.ctx.strokeStyle = '#333';
+	drawCircuitState.ctx.lineWidth = 1;
+	drawCircuitState.ctx.fill();
+	drawCircuitState.ctx.stroke();
 }
 
-// --- SELECTION AND REMOVAL FUNCTIONS ---
 function clearSelections() {
 	disableRemoveSelectedButton();
-	selectedGate = null;
-	selectedWire = null;
+	// Reference state object
+	drawCircuitState.selectedGate = null;
+	drawCircuitState.selectedWire = null;
 }
 
 function getClickedWire(pos) {
-	const tolerance = 5; // Distance tolerance for clicking on a wire
-
-	for (const wire of wires) {
+	const tolerance = 5;
+	// Reference state object
+	for (const wire of drawCircuitState.wires) {
 		const dist = distanceToLine(pos, wire.from, wire.to);
 		if (dist <= tolerance) {
 			return wire;
@@ -896,19 +888,11 @@ function distanceToLine(point, lineStart, lineEnd) {
 	const B = point.y - lineStart.y;
 	const C = lineEnd.x - lineStart.x;
 	const D = lineEnd.y - lineStart.y;
-
 	const dot = A * C + B * D;
 	const lenSq = C * C + D * D;
-
-	if (lenSq === 0) {
-		// Line is a point
-		return Math.sqrt(A * A + B * B);
-	}
-
+	if (lenSq === 0) return Math.sqrt(A * A + B * B);
 	let param = dot / lenSq;
-
 	let xx, yy;
-
 	if (param < 0) {
 		xx = lineStart.x;
 		yy = lineStart.y;
@@ -919,20 +903,21 @@ function distanceToLine(point, lineStart, lineEnd) {
 		xx = lineStart.x + param * C;
 		yy = lineStart.y + param * D;
 	}
-
 	const dx = point.x - xx;
 	const dy = point.y - yy;
 	return Math.sqrt(dx * dx + dy * dy);
 }
 
 function removeSelected() {
-	if (selectedGate) {
-		removeGate(selectedGate);
-		selectedGate = null;
+	// Reference state object
+	if (drawCircuitState.selectedGate) {
+		removeGate(drawCircuitState.selectedGate);
+		drawCircuitState.selectedGate = null;
 		disableRemoveSelectedButton();
-	} else if (selectedWire) {
-		removeWire(selectedWire);
-		selectedWire = null;
+	// Reference state object
+	} else if (drawCircuitState.selectedWire) {
+		removeWire(drawCircuitState.selectedWire);
+		drawCircuitState.selectedWire = null;
 		disableRemoveSelectedButton();
 	}
 	draw();
@@ -940,12 +925,10 @@ function removeSelected() {
 }
 
 function removeGate(gateToRemove) {
-	// Remove all wires connected to this gate
-	wires = wires.filter(wire => {
+	// Reference state object
+	drawCircuitState.wires = drawCircuitState.wires.filter(wire => {
 		const isConnectedToGate = wire.from.gateId === gateToRemove.id || wire.to.gateId === gateToRemove.id;
-
 		if (isConnectedToGate) {
-			// Clear connection references
 			if (wire.from.connectedTo && wire.from.gateId === gateToRemove.id) {
 				const connectedNode = findNodeByConnectionInfo(wire.from.connectedTo);
 				if (connectedNode) connectedNode.connectedTo = null;
@@ -954,36 +937,22 @@ function removeGate(gateToRemove) {
 				const connectedNode = findNodeByConnectionInfo(wire.to.connectedTo);
 				if (connectedNode) connectedNode.connectedTo = null;
 			}
-
-			// Clear the gate's node connections
 			gateToRemove.inputNodes.forEach(node => node.connectedTo = null);
 			gateToRemove.outputNode.connectedTo = null;
 		}
-
 		return !isConnectedToGate;
 	});
-
-	// Remove the gate itself
-	gates = gates.filter(gate => gate.id !== gateToRemove.id);
+	// Reference state object
+	drawCircuitState.gates = drawCircuitState.gates.filter(gate => gate.id !== gateToRemove.id);
 }
 
 function removeWire(wireToRemove) {
-	// Clear connection references
-	if (wireToRemove.from.connectedTo) {
-		wireToRemove.from.connectedTo = null;
-	}
-	if (wireToRemove.to.connectedTo) {
-		wireToRemove.to.connectedTo = null;
-	}
-
-	// Remove the wire
-	wires = wires.filter(wire => wire !== wireToRemove);
+	if (wireToRemove.from.connectedTo) wireToRemove.from.connectedTo = null;
+	if (wireToRemove.to.connectedTo) wireToRemove.to.connectedTo = null;
+	// Reference state object
+	drawCircuitState.wires = drawCircuitState.wires.filter(wire => wire !== wireToRemove);
 }
 
-/**
- * Checks if the user's circuit is logically equivalent to the target expression.
- * It does this by comparing the truth table of both expressions.
- */
 function checkCircuitAnswer() {
 	const userExprText = document.getElementById('interpretedExpression').textContent;
 	const feedback = document.getElementById('feedback');
@@ -996,18 +965,18 @@ function checkCircuitAnswer() {
 	}
 
 	const userExprParts = userExprText.split('=');
-	if (userExprParts.length < 2 || userExprParts[0].trim() !== parsedTargetExpression.output) {
-		feedback.textContent = `Incorrect. Your circuit outputs to ${userExprParts[0].trim()} but it should output to ${parsedTargetExpression.output}.`;
+	// Reference state object
+	if (userExprParts.length < 2 || userExprParts[0].trim() !== drawCircuitState.parsedTargetExpression.output) {
+		// Reference state object
+		feedback.textContent = `Incorrect. Your circuit outputs to ${userExprParts[0].trim()} but it should output to ${drawCircuitState.parsedTargetExpression.output}.`;
 		feedback.className = 'feedback incorrect';
 		feedback.style.display = 'block';
 		return;
 	}
 
-	const possibleAnswers = generateAllAcceptedAnswers(targetExpression);
-
-	const isCorrect = possibleAnswers.some(acceptedAnswer => {
-		return userExprText === acceptedAnswer;
-	});
+	// Reference state object
+	const possibleAnswers = generateAllAcceptedAnswers(drawCircuitState.targetExpression);
+	const isCorrect = possibleAnswers.some(acceptedAnswer => userExprText === acceptedAnswer);
 
 	if (isCorrect) {
 		feedback.textContent = 'Correct! The circuit matches the expression.';
@@ -1017,46 +986,37 @@ function checkCircuitAnswer() {
 		answered = true;
 		disableResetButton();
 	} else {
-		feedback.textContent = `Incorrect. Your circuit diagram (${userExprText}) does not match the target diagram (${targetExpression}).`;
+		// Reference state object
+		feedback.textContent = `Incorrect. Your circuit diagram (${userExprText}) does not match the target diagram (${drawCircuitState.targetExpression}).`;
 		feedback.className = 'feedback incorrect';
 	}
 	feedback.style.display = 'block';
 }
 
-// --- UTILITY AND LOGIC FUNCTIONS ---
 function parseExpression(expression) {
 	const parts = expression.split('=');
-	if (parts.length !== 2) return {
-		output: 'Q',
-		inputs: ['A', 'B']
-	}; // Default fallback
+	if (parts.length !== 2) return { output: 'Q', inputs: ['A', 'B'] };
 
 	const outputVar = parts[0].trim();
 	const rightSide = parts[1].trim();
-
 	const tokens = rightSide.split(/[^A-Z0-9_]/).filter(Boolean);
 	const booleanOperators = new Set(['NOT', 'AND', 'OR', 'NAND', 'NOR', 'XOR']);
-
 	const variables = tokens.filter(token => !booleanOperators.has(token));
 	const uniqueVariables = [...new Set(variables)].sort();
 
-	return {
-		output: outputVar,
-		inputs: uniqueVariables
-	};
+	return { output: outputVar, inputs: uniqueVariables };
 }
 
 function getMousePos(evt) {
-	const rect = canvas.getBoundingClientRect();
-	return {
-		x: evt.clientX - rect.left,
-		y: evt.clientY - rect.top
-	};
+	// Reference state object
+	const rect = drawCircuitState.canvas.getBoundingClientRect();
+	return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
 }
 
 function getClickedGate(pos) {
-	for (let i = gates.length - 1; i >= 0; i--) {
-		const gate = gates[i];
+	// Reference state object
+	for (let i = drawCircuitState.gates.length - 1; i >= 0; i--) {
+		const gate = drawCircuitState.gates[i];
 		if (pos.x > gate.x && pos.x < gate.x + gate.width && pos.y > gate.y && pos.y < gate.y + gate.height) {
 			return gate;
 		}
@@ -1066,9 +1026,10 @@ function getClickedGate(pos) {
 
 function getClickedNode(pos) {
 	const allNodes = [];
-	gates.forEach(g => allNodes.push(...g.inputNodes, g.outputNode));
-	inputs.forEach(i => allNodes.push(i.outputNode));
-	allNodes.push(output.inputNode);
+	// Reference state object
+	drawCircuitState.gates.forEach(g => allNodes.push(...g.inputNodes, g.outputNode));
+	drawCircuitState.inputs.forEach(i => allNodes.push(i.outputNode));
+	allNodes.push(drawCircuitState.output.inputNode);
 
 	for (const node of allNodes) {
 		const dist = Math.sqrt((pos.x - node.x) ** 2 + (pos.y - node.y) ** 2);
@@ -1078,11 +1039,12 @@ function getClickedNode(pos) {
 }
 
 function getNearbyNode(pos) {
-	const snapDistance = 20; // Distance within which to snap
+	const snapDistance = 20;
 	const allNodes = [];
-	gates.forEach(g => allNodes.push(...g.inputNodes, g.outputNode));
-	inputs.forEach(i => allNodes.push(i.outputNode));
-	allNodes.push(output.inputNode);
+	// Reference state object
+	drawCircuitState.gates.forEach(g => allNodes.push(...g.inputNodes, g.outputNode));
+	drawCircuitState.inputs.forEach(i => allNodes.push(i.outputNode));
+	allNodes.push(drawCircuitState.output.inputNode);
 
 	let closestNode = null;
 	let closestDistance = snapDistance;
@@ -1094,7 +1056,6 @@ function getNearbyNode(pos) {
 			closestDistance = dist;
 		}
 	}
-
 	return closestNode;
 }
 
@@ -1113,36 +1074,35 @@ function updateGateNodes(gate) {
 }
 
 function findNodeByConnectionInfo(connection) {
-	const {
-		gateId,
-		nodeIndex,
-		nodeType
-	} = connection;
+	const { gateId, nodeIndex, nodeType } = connection;
 	if (String(gateId).startsWith('input-')) {
-		const input = inputs.find(i => i.id === gateId);
+		// Reference state object
+		const input = drawCircuitState.inputs.find(i => i.id === gateId);
 		return input ? input.outputNode : null;
 	}
 	if (String(gateId).startsWith('output-')) {
-		return output.inputNode;
+		// Reference state object
+		return drawCircuitState.output.inputNode;
 	}
-	const gate = gates.find(g => g.id === gateId);
+	// Reference state object
+	const gate = drawCircuitState.gates.find(g => g.id === gateId);
 	if (!gate) return null;
 	return nodeType === 'input' ? gate.inputNodes[nodeIndex] : gate.outputNode;
 }
 
 function updateInterpretedExpression() {
 	const expressionElement = document.getElementById('interpretedExpression');
-
-	if (output?.inputNode?.connectedTo) {
-		// ✅ Q is connected → build expression from Q
-		const expression = buildExpression(output.inputNode);
-		const outputName = output.name || '?';
+	
+	// Reference state object
+	if (drawCircuitState.output?.inputNode?.connectedTo) {
+		const expression = buildExpression(drawCircuitState.output.inputNode);
+		const outputName = drawCircuitState.output.name || '?';
 		expressionElement.textContent = `${outputName} = ${expression}`;
 		return;
 	}
 
-	// ❌ Q is not connected → look for a fully connected gate
-	const gate = gates.find(gate =>
+	// Reference state object
+	const gate = drawCircuitState.gates.find(gate =>
 		gate.outputNode &&
 		gate.outputNode.connectedTo == null &&
 		gate.inputNodes.length > 0 &&
@@ -1150,7 +1110,7 @@ function updateInterpretedExpression() {
 	);
 
 	if (gate) {
-		const expression = buildExpression(gate.outputNode);
+		const expression = buildExpressionFromGate(gate);
 		expressionElement.textContent = expression;
 	} else {
 		expressionElement.textContent = '';
@@ -1158,66 +1118,47 @@ function updateInterpretedExpression() {
 }
 
 function buildExpression(node) {
-	if (!node) {
-		return '?';
-	}
+	if (!node) return '?';
 
-	// 🔁 If it's an output node, find its gate and recurse
 	if (node.type === 'output') {
-		const gate = gates.find(g => g.id === node.gateId);
-		if (!gate) {
-			return '?';
-		}
-
+		// Reference state object
+		const gate = drawCircuitState.gates.find(g => g.id === node.gateId);
+		if (!gate) return '?';
 		return buildExpressionFromGate(gate);
 	}
 
-	// 🔁 If it's an input node, follow its connection
-	if (!node.connectedTo) {
-		return '?';
-	}
+	if (!node.connectedTo) return '?';
 
 	const sourceGateId = node.connectedTo.gateId;
-
 	if (String(sourceGateId).startsWith('input-')) {
-		const input = inputs.find(i => i.id === sourceGateId);
-		const inputName = input ? input.name : '?';
-		return inputName;
+		// Reference state object
+		const input = drawCircuitState.inputs.find(i => i.id === sourceGateId);
+		return input ? input.name : '?';
 	}
 
-	const sourceGate = gates.find(g => g.id === sourceGateId);
-	if (!sourceGate) {
-		return '?';
-	}
-
+	// Reference state object
+	const sourceGate = drawCircuitState.gates.find(g => g.id === sourceGateId);
+	if (!sourceGate) return '?';
 	return buildExpressionFromGate(sourceGate);
 }
 
 function buildExpressionFromGate(gate) {
-
 	const inputsExpr = gate.inputNodes.map(inputNode => {
 		let expr = buildExpression(inputNode);
-
-		// Wrap if it contains any binary operator
 		if (expr.includes(' AND ') || expr.includes(' OR ') || expr.includes(' XOR ')) {
 			expr = `(${expr})`;
 		}
-
-		// Wrap NOT expressions as well (we'll identify them as starting with "NOT ")
 		if (expr.startsWith('NOT ')) {
 			expr = `(${expr})`;
 		}
-
 		return expr;
 	});
-
 	let finalExpr;
 	if (gate.type === 'NOT') {
 		finalExpr = `NOT ${inputsExpr[0]}`;
 	} else {
 		finalExpr = `${inputsExpr[0]} ${gate.type} ${inputsExpr[1]}`;
 	}
-
 	return finalExpr;
 }
 
@@ -1254,19 +1195,18 @@ function disableRemoveSelectedButton() {
 }
 
 function generateDrawCircuitQuestion() {
-	// Generate a random expression based on the selected difficulty level
 	const levelKey = `level${modeSettings.drawCircuit.currentDifficulty}`;
 	const expressions = expressionDatabase[levelKey];
+	
+	// Reference state object
+	drawCircuitState.targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
+	document.getElementById('circuitTargetExpression').innerHTML = `<div class="expression-text">${drawCircuitState.targetExpression}</div>`;
+	drawCircuitState.parsedTargetExpression = parseExpression(drawCircuitState.targetExpression);
 
-	targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
-	document.getElementById('circuitTargetExpression').innerHTML = `<div class="expression-text">${targetExpression}</div>`;
-
-	parsedTargetExpression = parseExpression(targetExpression);
-
-	setupCanvas()
+	setupCanvas();
 	draw();
-
 }
+// End of Draw Circuit functions
 
 // Functions exposed to global scope for HTML onclick handlers. Temporary fix before refactoring to use event listeners?
 window.nextQuestion = nextQuestion;
