@@ -4,6 +4,7 @@ import { generateAllAcceptedAnswers } from './expression-utils.js';
 import { ExpressionWriting } from './expression-writing.js';
 import { NameThatGate } from './name-that-gate.js';
 import { Scenario } from './scenario.js';
+import { TruthTable } from './truth-table.js';
 
 let score = 0;
 let totalQuestions = 0;
@@ -36,10 +37,14 @@ const modeSettings = {
 	truthTable: {
 		label: 'Truth Tables',
 		levels: 4, // But level 4 is very hard
+		// The class now manages its own difficulty state.
+		// This property is kept for now to generate the dropdown.
 		currentDifficulty: 1,
-		generateQuestion: generateTruthTableQuestion,
-		updateHelp: () => {},
-		initialize: generateTruthTableQuestion
+		// Delegate initialization and question generation to the class instance
+		initialize: () => truthTableMode.initialize(),
+		generateQuestion: () => truthTableMode.generateQuestion(),
+		// The class now handles its own internal state, so no updateHelp needed here.
+		updateHelp: () => {}, 
 	},
 	drawCircuit: {
 		label: 'Draw Circuit',
@@ -69,17 +74,11 @@ const modeSettings = {
 let nameThatGateMode;
 let expressionWritingMode;
 let scenarioMode;
+let truthTableMode;
 // TODO: (Phase 3) Add instances for other modes as they are refactored
 
 // Create the circuit generator instance
 const circuitGenerator = new CircuitGenerator();
-
-// Global variables for truth table mode
-let showIntermediateColumns = false;
-let currentTruthTableExpression = '';
-let currentTruthTableData = [];
-let truthTableInputs = [];
-let expertMode = false;
 
 // Global variables for draw circuit mode
 let canvas, ctx;
@@ -258,13 +257,7 @@ function nextQuestion() {
 	} else if (currentMode === 'scenario') {
 		scenarioMode.generateQuestion();
 	} else if (currentMode === 'truthTable') {
-		generateTruthTableQuestion();
-		// Reset all select elements
-		document.querySelectorAll('.truth-table-select').forEach(select => {
-			select.value = '';
-			select.disabled = false;
-			select.classList.remove('correct', 'incorrect', 'unanswered');
-		});
+	    truthTableMode.generateQuestion();
 	} else if (currentMode === 'drawCircuit') {
 		initDrawCircuitMode();
 	} else {
@@ -351,14 +344,14 @@ document.addEventListener('DOMContentLoaded', () => {
 			setAnswered: (val) => { answered = val; },
 			incrementScore: () => { score++; },
 			incrementTotalQuestions: () => { totalQuestions++; }
-		}
+		},
+		resetUIState, // only used by truth table mode?
 	};
 	// Pass the dependencies when creating the instance
 	nameThatGateMode = new NameThatGate(circuitGenerator, commonDependencies);
-
     expressionWritingMode = new ExpressionWriting(circuitGenerator, commonDependencies);
-
     scenarioMode = new Scenario(circuitGenerator, commonDependencies);
+	truthTableMode = new TruthTable(circuitGenerator, commonDependencies); 
 
 	generateModeSelectorButtons();
 
@@ -389,7 +382,9 @@ function setDifficultyLevel(level, clickedButton) {
     // Delegate difficulty change to the class if it's the active mode
 	if (currentMode === 'writeExpression') {
         expressionWritingMode.setDifficulty(level);
-    } else if (modeConfig.generateQuestion) { // Fallback for unre-factored modes
+	} else if (currentMode === 'truthTable') { // ADD THIS BLOCK
+		truthTableMode.setDifficulty(level);
+	} else if (modeConfig.generateQuestion) { // Fallback for unre-factored modes
 		modeConfig.generateQuestion();
 	}
 	
@@ -414,556 +409,8 @@ function submitAnswer(answer = '') {
 	} else if (currentMode === 'scenario') {
 		scenarioMode.checkAnswer();
 	} else if (currentMode === 'truthTable') {
-		checkTruthTableAnswer();
+		truthTableMode.checkAnswer();
 	}
-}
-
-// Start of Truth Table Mode functionality
-function toggleIntermediateColumns() {
-	showIntermediateColumns = document.getElementById('showIntermediateColumns').checked;
-
-	// Don't generate a new question, just update the current table display
-	if (currentTruthTableExpression) {
-		const truthTableContainer = document.getElementById('truthTableContainer');
-
-		// Re-parse the current expression
-		const parsedData = parseExpressionForTruthTable(currentTruthTableExpression);
-		const intermediateExpressions = parsedData.intermediateExpressions;
-
-		// Recalculate the truth table data with/without intermediate columns
-		const inputCombinations = generateInputCombinations(truthTableInputs);
-		currentTruthTableData = inputCombinations.map(combination => {
-			const result = {
-				...combination
-			};
-
-			// Calculate intermediate values if they exist
-			if (showIntermediateColumns && intermediateExpressions.length > 0) {
-				intermediateExpressions.forEach((expr, index) => {
-					result[`intermediate_${index}`] = evaluateExpression(expr, combination);
-				});
-			}
-
-			// Calculate final output
-			result.Q = evaluateExpression(currentTruthTableExpression.split(' = ')[1], combination);
-
-			return result;
-		});
-
-		// Regenerate only the table HTML, preserving user inputs
-		const currentUserInputs = {};
-		document.querySelectorAll('.truth-table-select').forEach(select => {
-			const rowIndex = select.dataset.row;
-			const columnName = select.dataset.column;
-			const inputKey = `${rowIndex}_${columnName}`;
-			currentUserInputs[inputKey] = select.value;
-		});
-
-		generateTruthTableHTML(truthTableContainer, truthTableInputs, intermediateExpressions);
-
-		// Restore user inputs
-		document.querySelectorAll('.truth-table-select').forEach(select => {
-			const rowIndex = select.dataset.row;
-			const columnName = select.dataset.column;
-			const inputKey = `${rowIndex}_${columnName}`;
-			if (currentUserInputs[inputKey]) {
-				select.value = currentUserInputs[inputKey];
-			}
-		});
-	}
-}
-
-function toggleExpertMode() {
-	expertMode = document.getElementById('expertMode').checked;
-
-	// Regenerate the current question with expert mode settings
-	if (currentTruthTableExpression) {
-		const truthTableContainer = document.getElementById('truthTableContainer');
-
-		// Re-parse the current expression
-		const parsedData = parseExpressionForTruthTable(currentTruthTableExpression);
-		const intermediateExpressions = parsedData.intermediateExpressions;
-
-		// Generate fresh table - no state preservation when toggling expert mode
-		generateTruthTableHTML(truthTableContainer, truthTableInputs, intermediateExpressions);
-
-		// Reset any visual feedback from previous attempts
-		document.querySelectorAll('.truth-table-select').forEach(select => {
-			select.classList.remove('correct', 'incorrect', 'unanswered', 'optional-unanswered');
-			select.disabled = false;
-		});
-
-		// Reset answered state and show submit button
-        resetUIState()
-        
-	}
-}
-
-function generateTruthTableQuestion() {
-	const expressionDisplay = document.getElementById('truthTableExpression');
-	const truthTableContainer = document.getElementById('truthTableContainer');
-	const truthTableCircuitContainer = document.getElementById('truthTableLogicDiagramDisplay');
-
-	// Get expressions for current difficulty level
-	const expressions = expressionDatabase[`level${modeSettings.truthTable.currentDifficulty}`];
-
-	// Pick a random expression
-	currentTruthTableExpression = expressions[Math.floor(Math.random() * expressions.length)];
-
-	// Display the expression
-	expressionDisplay.innerHTML = `<div class="expression-text">${currentTruthTableExpression}</div>`;
-	circuitGenerator.generateCircuit(currentTruthTableExpression, truthTableCircuitContainer);
-
-	// Parse the expression to get inputs and intermediate expressions
-	const parsedData = parseExpressionForTruthTable(currentTruthTableExpression);
-	truthTableInputs = parsedData.inputs;
-	const intermediateExpressions = parsedData.intermediateExpressions;
-
-	// Generate all possible input combinations
-	const inputCombinations = generateInputCombinations(truthTableInputs);
-
-	// Calculate correct outputs for all combinations
-	currentTruthTableData = inputCombinations.map(combination => {
-		const result = {
-			...combination
-		};
-
-		// Calculate intermediate values if they exist
-		if (showIntermediateColumns && intermediateExpressions.length > 0) {
-			intermediateExpressions.forEach((expr, index) => {
-				result[`intermediate_${index}`] = evaluateExpression(expr, combination);
-			});
-		}
-
-		// Calculate final output
-		result.Q = evaluateExpression(currentTruthTableExpression.split(' = ')[1], combination);
-		return result;
-	});
-
-	// Generate the HTML for the truth table
-	generateTruthTableHTML(truthTableContainer, truthTableInputs, intermediateExpressions);
-}
-
-function parseExpressionForTruthTable(expression) {
-	// Remove "Q = " from the beginning
-	const rightSide = expression.split(' = ')[1];
-
-	// More robust approach: split by operators and extract variables
-	// First, replace operators with separators
-	let cleanExpression = rightSide
-		.replace(/\bAND\b/g, ' | ')
-		.replace(/\bOR\b/g, ' | ')
-		.replace(/\bNOT\b/g, ' | ')
-		.replace(/[()]/g, ' | ');
-
-	// Split by separators and filter for single letter variables
-	const tokens = cleanExpression.split('|').map(token => token.trim()).filter(token => token.length > 0);
-
-	const inputs = [...new Set(tokens.filter(token =>
-		token.length === 1 && token.match(/[A-Z]/)
-	))].sort();
-
-	// For intermediate expressions, we'll identify sub-expressions in parentheses
-	const intermediateExpressions = [];
-
-	if (showIntermediateColumns) {
-		// Find expressions in parentheses that aren't negated entire expressions
-		const parenthesesMatches = rightSide.match(/\([^()]+\)/g) || [];
-		parenthesesMatches.forEach(match => {
-			const cleaned = match.slice(1, -1); // Remove outer parentheses
-			if (!intermediateExpressions.includes(cleaned)) {
-				intermediateExpressions.push(cleaned);
-			}
-		});
-	}
-
-	return {
-		inputs,
-		intermediateExpressions
-	};
-}
-
-function generateInputCombinations(inputs) {
-	const numInputs = inputs.length;
-	const numCombinations = Math.pow(2, numInputs);
-	const combinations = [];
-
-	for (let i = 0; i < numCombinations; i++) {
-		const combination = {};
-		for (let j = 0; j < numInputs; j++) {
-			combination[inputs[j]] = Boolean((i >> (numInputs - 1 - j)) & 1);
-		}
-		combinations.push(combination);
-	}
-
-	return combinations;
-}
-
-function evaluateExpression(expression, values) {
-	try {
-		// Replace variable names with their boolean values
-		let evalExpression = expression;
-
-		// Replace variables with their values
-		Object.keys(values).forEach(variable => {
-			const regex = new RegExp(`\\b${variable}\\b`, 'g');
-			evalExpression = evalExpression.replace(regex, values[variable]);
-		});
-
-		// Replace boolean operators with JavaScript equivalents
-		evalExpression = evalExpression
-			.replace(/\bAND\b/g, '&&')
-			.replace(/\bOR\b/g, '||')
-			.replace(/\bNOT\b/g, '!');
-
-		// Evaluate the expression
-		return eval(evalExpression);
-	} catch (error) {
-		console.error('Error evaluating expression:', expression, error);
-		return false;
-	}
-}
-
-function generateTruthTableHTML(container, inputs, intermediateExpressions) {
-	let tableHTML = '<table class="truth-table"><thead><tr>';
-
-	// Input column headers
-	inputs.forEach(input => {
-		tableHTML += `<th class="input-header">${input}</th>`;
-	});
-
-	// Intermediate column headers (if enabled)
-	if (showIntermediateColumns && intermediateExpressions.length > 0) {
-		intermediateExpressions.forEach((expr, index) => {
-			tableHTML += `<th class="intermediate-header" title="${expr}">${expr.length > 10 ? expr.substring(0, 10) + '...' : expr}</th>`;
-		});
-	}
-
-	// Output column header
-	tableHTML += '<th class="output-header">Q</th>';
-	tableHTML += '</tr></thead><tbody>';
-
-	// Generate table rows
-	currentTruthTableData.forEach((row, rowIndex) => {
-		tableHTML += '<tr>';
-
-		// Input columns
-		inputs.forEach(input => {
-			if (expertMode) {
-				// In expert mode, input columns are editable dropdowns
-				tableHTML += `<td class="input-cell">
-                    <select class="truth-table-select input-select expert-input" data-row="${rowIndex}" data-column="${input}">
-                        <option value="">?</option>
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                    </select>
-                </td>`;
-			} else {
-				// In normal mode, input columns are read-only
-				const value = row[input] ? 1 : 0;
-				tableHTML += `<td class="input-cell">${value}</td>`;
-			}
-		});
-
-		// Intermediate columns (user input - optional in normal mode, required in expert mode)
-		if (showIntermediateColumns && intermediateExpressions.length > 0) {
-			intermediateExpressions.forEach((expr, index) => {
-				const selectClass = expertMode ? 'expert-intermediate' : '';
-				tableHTML += `<td class="intermediate-cell">
-                    <select class="truth-table-select intermediate-select ${selectClass}" data-row="${rowIndex}" data-column="intermediate_${index}">
-                        <option value="">?</option>
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                    </select>
-                </td>`;
-			});
-		}
-
-		// Output column (user input - required)
-		const outputSelectClass = expertMode ? 'expert-output' : '';
-		tableHTML += `<td class="output-cell">
-            <select class="truth-table-select output-select ${outputSelectClass}" data-row="${rowIndex}" data-column="Q">
-                <option value="">?</option>
-                <option value="0">0</option>
-                <option value="1">1</option>
-            </select>
-        </td>`;
-
-		tableHTML += '</tr>';
-	});
-
-	tableHTML += '</tbody></table>';
-	container.innerHTML = tableHTML;
-}
-
-function checkTruthTableAnswer() {
-	if (answered) return;
-
-	answered = true;
-	totalQuestions++;
-
-	hideSubmitButton();
-
-	if (expertMode) {
-		checkTruthTableExpertModeAnswer();
-	} else {
-		checkTruthTableNormalModeAnswer();
-	}
-
-	updateScoreDisplay();
-	showNextButton();
-}
-
-function checkTruthTableNormalModeAnswer() {
-	// Get all user inputs - both output and intermediate columns
-	const outputSelects = document.querySelectorAll('.output-select');
-	const intermediateSelects = document.querySelectorAll('.intermediate-select');
-
-	let outputCorrect = 0;
-	let outputTotal = 0;
-	let allOutputAnswered = true;
-
-	// Check output column (Q) - this is what counts for scoring
-	outputSelects.forEach(select => {
-		const rowIndex = parseInt(select.dataset.row);
-		const userValue = select.value;
-
-		if (userValue === '') {
-			allOutputAnswered = false;
-			select.classList.add('unanswered');
-			return;
-		}
-
-		outputTotal++;
-		const correctValue = currentTruthTableData[rowIndex].Q ? '1' : '0';
-		if (userValue === correctValue) {
-			outputCorrect++;
-			select.classList.add('correct');
-		} else {
-			select.classList.add('incorrect');
-		}
-
-		// Disable the select to prevent further changes
-		select.disabled = true;
-	});
-
-	// Check intermediate columns (optional - for feedback only, not scoring)
-	intermediateSelects.forEach(select => {
-		const rowIndex = parseInt(select.dataset.row);
-		const columnName = select.dataset.column;
-		const userValue = select.value;
-
-		// Only check if user provided an answer
-		if (userValue !== '') {
-			const correctValue = currentTruthTableData[rowIndex][columnName] ? '1' : '0';
-
-			if (userValue === correctValue) {
-				select.classList.add('correct');
-			} else {
-				select.classList.add('incorrect');
-			}
-		} else {
-			// If not answered, just mark as optional (no highlighting)
-			select.classList.add('optional-unanswered');
-		}
-
-		// Disable the select to prevent further changes
-		select.disabled = true;
-	});
-
-	if (!allOutputAnswered) {
-		showFeedback('Please answer all rows in the output column (Q). Try again or move on.', 'incorrect');
-        resetUIState();
-
-		// Re-enable all selects
-		document.querySelectorAll('.truth-table-select').forEach(select => {
-			select.disabled = false;
-			select.classList.remove('unanswered');
-		});
-		return;
-	}
-
-	// Score is based only on output column (Q)
-	if (outputCorrect === outputTotal) {
-		score++;
-		showFeedback('Correct! Perfect truth table!', 'correct');
-	} else {
-		showFeedback(`Output column: ${outputCorrect}/${outputTotal} correct. Review the highlighted answers.`, 'incorrect');
-	}
-}
-
-function checkTruthTableExpertModeAnswer() {
-	// In expert mode, all fields must be filled and the entire table must be correct
-	const allSelects = document.querySelectorAll('.truth-table-select');
-	const userRows = [];
-	const numRows = currentTruthTableData.length;
-
-	// Collect user answers row by row
-	for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
-		const userRow = {};
-		let allFieldsFilled = true;
-
-		// Get input values
-		truthTableInputs.forEach(input => {
-			const select = document.querySelector(`[data-row="${rowIndex}"][data-column="${input}"]`);
-			if (select && select.value !== '') {
-				userRow[input] = select.value === '1';
-			} else {
-				allFieldsFilled = false;
-			}
-		});
-
-		// Get intermediate values if they exist
-		if (showIntermediateColumns) {
-			const parsedData = parseExpressionForTruthTable(currentTruthTableExpression);
-			const intermediateExpressions = parsedData.intermediateExpressions;
-
-			intermediateExpressions.forEach((expr, index) => {
-				const select = document.querySelector(`[data-row="${rowIndex}"][data-column="intermediate_${index}"]`);
-				if (select && select.value !== '') {
-					userRow[`intermediate_${index}`] = select.value === '1';
-				} else {
-					allFieldsFilled = false;
-				}
-			});
-		}
-
-		// Get output value
-		const outputSelect = document.querySelector(`[data-row="${rowIndex}"][data-column="Q"]`);
-		if (outputSelect && outputSelect.value !== '') {
-			userRow.Q = outputSelect.value === '1';
-		} else {
-			allFieldsFilled = false;
-		}
-
-		if (!allFieldsFilled) {
-			showFeedback('Expert Mode: All fields in the truth table must be filled. Continue or move on.', 'incorrect');
-            resetUIState();
-            
-
-			// Highlight unfilled fields
-			allSelects.forEach(select => {
-				if (select.value === '') {
-					select.classList.add('unanswered');
-				} else {
-					select.classList.remove('unanswered');
-				}
-			});
-			return;
-		}
-
-		userRows.push({
-			rowIndex,
-			data: userRow
-		});
-	}
-
-	// Use order-independent validation
-	const validationResult = validateExpertModeAnswers(userRows, currentTruthTableData);
-
-	// Disable all selects
-	allSelects.forEach(select => {
-		select.disabled = true;
-	});
-
-	// Apply visual feedback
-	allSelects.forEach(select => {
-		const rowIndex = parseInt(select.dataset.row);
-		const columnName = select.dataset.column;
-
-		const matchedCorrectIndex = validationResult.rowMatches[rowIndex];
-		if (matchedCorrectIndex !== -1) {
-			// This user row matched a correct row
-			const correctRow = currentTruthTableData[matchedCorrectIndex];
-			let correctValue;
-
-			if (columnName.startsWith('intermediate_')) {
-				correctValue = correctRow[columnName];
-			} else {
-				correctValue = correctRow[columnName];
-			}
-
-			const userValue = select.value === '1';
-			if (userValue === correctValue) {
-				select.classList.add('correct');
-			} else {
-				select.classList.add('incorrect');
-			}
-		} else {
-			// This user row didn't match any correct row
-			select.classList.add('incorrect');
-		}
-	});
-
-	if (validationResult.isCorrect) {
-		score++;
-		showFeedback('Expert Mode: Perfect! All rows are correct!', 'correct');
-	} else {
-		showFeedback(`Expert Mode: ${validationResult.correctRows}/${numRows} rows correct. Each row must match the inputs and outputs exactly.`, 'incorrect');
-	}
-}
-
-function validateExpertModeAnswers(userRows, correctData) {
-	const numRows = correctData.length;
-	const usedCorrectRows = new Set();
-	const rowMatches = new Array(numRows).fill(-1);
-	let correctRows = 0;
-
-	// Try to match each user row to a unique correct row
-	for (let i = 0; i < userRows.length; i++) {
-		const userRow = userRows[i];
-
-		// Find a matching correct row that hasn't been used yet
-		for (let j = 0; j < correctData.length; j++) {
-			if (usedCorrectRows.has(j)) continue;
-
-			const correctRow = correctData[j];
-
-			// Check if this user row matches this correct row
-			let matches = true;
-
-			// Check input columns
-			for (const input of truthTableInputs) {
-				if (userRow.data[input] !== correctRow[input]) {
-					matches = false;
-					break;
-				}
-			}
-
-			// Check intermediate columns if they exist
-			if (matches && showIntermediateColumns) {
-				const parsedData = parseExpressionForTruthTable(currentTruthTableExpression);
-				const intermediateExpressions = parsedData.intermediateExpressions;
-
-				for (let idx = 0; idx < intermediateExpressions.length; idx++) {
-					const columnName = `intermediate_${idx}`;
-					if (userRow.data[columnName] !== correctRow[columnName]) {
-						matches = false;
-						break;
-					}
-				}
-			}
-
-			// Check output column
-			if (matches && userRow.data.Q !== correctRow.Q) {
-				matches = false;
-			}
-
-			if (matches) {
-				// Found a match!
-				usedCorrectRows.add(j);
-				rowMatches[userRow.rowIndex] = j;
-				correctRows++;
-				break;
-			}
-		}
-	}
-
-	return {
-		isCorrect: correctRows === numRows,
-		correctRows: correctRows,
-		rowMatches: rowMatches
-	};
 }
 
 // Circuit Drawing Mode functionality
@@ -1825,7 +1272,5 @@ function generateDrawCircuitQuestion() {
 window.nextQuestion = nextQuestion;
 window.submitAnswer = submitAnswer;
 window.toggleHelpMode = toggleHelpMode;
-window.toggleIntermediateColumns = toggleIntermediateColumns;
-window.toggleExpertMode = toggleExpertMode;
 window.setGameMode = setGameMode;
 window.setDifficultyLevel = setDifficultyLevel;
