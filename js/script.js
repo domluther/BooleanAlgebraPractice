@@ -35,7 +35,7 @@ const modeSettings = {
 	},
 	truthTable: {
 		label: 'Truth Tables',
-		levels: 3,
+		levels: 4, // But level 4 is very hard
 		currentDifficulty: 1,
 		generateQuestion: generateTruthTableQuestion,
 		updateHelp: () => {},
@@ -418,7 +418,7 @@ function submitAnswer(answer = '') {
 	}
 }
 
-// Truth Table Mode functionality
+// Start of Truth Table Mode functionality
 function toggleIntermediateColumns() {
 	showIntermediateColumns = document.getElementById('showIntermediateColumns').checked;
 
