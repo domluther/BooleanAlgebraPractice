@@ -41,7 +41,7 @@ Phase 1: Extract Utilities
 
 Phase 2: Extract Game Modes (in progress)
 
-✅Start with simpler modes (Name That Gate, Expression Writing, Scenario)
+✅Start with simpler modes (Name That Gate, Expression Writing, Scenario + Truth Table)
 Move each mode's functions to dedicated files
 Ensure proper module exports/imports
 

@@ -14,7 +14,6 @@ export class TruthTable {
         this.circuitGenerator = circuitGenerator;
         this.ui = dependencies.ui;
         this.state = dependencies.state;
-        this.resetUIState = dependencies.resetUIState; // Specific dependency for this mode
 
         // State specific to Truth Table mode
         this.currentExpression = '';
@@ -80,7 +79,7 @@ export class TruthTable {
             });
 
             // Reset answered state and show submit button
-            this.resetUIState();
+            this.ui.resetUIState();
         }
     }
 
@@ -112,7 +111,7 @@ export class TruthTable {
         this._generateTableHTML();
 
         // Ensure UI is ready for a new question
-        this.resetUIState();
+        this.ui.resetUIState();
         document.querySelectorAll('.truth-table-select').forEach(select => {
             select.value = '';
             select.disabled = false;
@@ -328,7 +327,7 @@ export class TruthTable {
 
         if (!allOutputAnswered) {
             this.ui.showFeedback('Please answer all rows in the output column (Q).', 'incorrect');
-            this.resetUIState();
+            this.ui.resetUIState();
             document.querySelectorAll('.truth-table-select').forEach(s => {
                 s.disabled = false;
                 s.classList.remove('unanswered');
@@ -372,7 +371,7 @@ export class TruthTable {
         
         if (!allFieldsFilled) {
             this.ui.showFeedback('Expert Mode: All fields must be filled.', 'incorrect');
-            this.resetUIState();
+            this.ui.resetUIState();
             allSelects.forEach(s => s.classList.toggle('unanswered', s.value === ''));
             return;
         }
