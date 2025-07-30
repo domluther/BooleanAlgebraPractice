@@ -22,8 +22,6 @@ export class Scenario {
      */
     initialize() {
         this.generateQuestion();
-        // Use the injected UI function
-        this.ui.hideSubmitButton();
     }
 
         /**

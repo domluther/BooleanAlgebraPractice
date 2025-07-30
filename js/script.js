@@ -22,12 +22,12 @@ const modeSettings = {
 		// This property is kept for now to generate the dropdown, but the source of truth is the class.
 		// TODO: (Phase 3) - The UI generation should ask the mode for its current difficulty.
 		currentDifficulty: 1, 
-		generateQuestion: () => expressionWritingMode.generateQuestion(),
+		generateQuestion: () => expressionWritingMode.generateQuestion(), 
+		// The class's updateHelpDisplay method now reads the checkbox itself.
+		// Used in toggleHelpMode and setGameMode + setDifficultyLevel.
 		updateHelp: () => expressionWritingMode.updateHelpDisplay(),
 		initialize: () => expressionWritingMode.initialize(),
 		help: {
-			// The class's updateHelpDisplay method now reads the checkbox itself.
-			updateFunction: () => expressionWritingMode.updateHelpDisplay(),
 			// The class manages its own help state. This is kept for compatibility with toggleHelpMode.
 			// TODO: (Phase 3) - Refactor toggleHelpMode to interact with the class directly.
 			enabled: false 
@@ -60,7 +60,6 @@ const modeSettings = {
 		updateHelp: () => scenarioMode.updateHelpDisplay(),
 		initialize: () => scenarioMode.initialize(),
 		help: {
-			updateFunction: () => scenarioMode.updateHelpDisplay(),
 			enabled: false
 		}
 	}
@@ -225,9 +224,8 @@ function toggleHelpMode() {
 	// Generate IDs based on the gameMode
 	const checkboxId = `${currentMode}DebugMode`;
 	const helpInfoId = `${currentMode}HelpInfo`;
-	const modeVariable = `${currentMode}HelpMode`;
 	
-	const { updateFunction } = modeConfig.help;
+	const { updateHelp } = modeConfig;
 	// Update the mode variable based on checkbox state
 	modeConfig.help.enabled = document.getElementById(checkboxId).checked;
 	const helpInfoElement = document.getElementById(helpInfoId);
@@ -235,8 +233,8 @@ function toggleHelpMode() {
 	if (modeConfig.help.enabled) {
 		helpInfoElement.style.display = 'block';
 		// Call update function if it exists
-		if (updateFunction) {
-			updateFunction();
+		if (updateHelp) {
+			updateHelp();
 		}
 	} else {
 		helpInfoElement.style.display = 'none';
@@ -318,8 +316,8 @@ function setGameMode(mode, clickedButton) {
 		if (helpElement) {
 			helpElement.style.display = 'block';
 			// Call update function if it exists
-			if (modeConfig.help.updateFunction) {
-				modeConfig.help.updateFunction();
+			if (modeConfig.updateHelp) {
+				modeConfig.updateHelp();
 			}
 		}
 	}
