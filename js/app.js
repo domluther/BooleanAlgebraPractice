@@ -18,7 +18,6 @@ function initializeUI(gameManager) {
 
     // Attach event listeners for any help toggles
     document.querySelectorAll('.help-toggle .help-checkbox').forEach(checkbox => {
-		console.log('checkbox', checkbox);
         checkbox.addEventListener('change', () => gameManager.toggleHelp());
     });
 
@@ -41,7 +40,6 @@ function initializeUI(gameManager) {
     const initialModeButton = document.querySelector('.mode-selector .btn-select');
     if (initialModeButton) {
         // Retrieve the mode key from a data attribute
-        const initialModeKey = 'nameThatGate'; // Set a default
         initialModeButton.click(); // Simulate a click to set the initial mode
     }
 }
