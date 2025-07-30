@@ -1,7 +1,5 @@
 // truth-table.js
 
-// TODO: (Phase 3) - These should be managed by a central game manager
-// and passed as dependencies, not imported directly by each mode module.
 import { expressionDatabase } from './data.js';
 
 export class TruthTable {

@@ -29,7 +29,7 @@ export class DrawCircuit {
         this.help = { enabled: false };
         
         // Preload images once on instantiation
-        this.preloadGateImages();
+        this._preloadGateImages();
     }
 
     /**
@@ -45,12 +45,12 @@ export class DrawCircuit {
         this.ctx = this.canvas.getContext('2d');
 
         this.generateQuestion();
-        this.enableResetButton();
-        this.disableRemoveSelectedButton();
+        this._enableResetButton();
+        this._disableRemoveSelectedButton();
 
         // Add event listeners specific to this mode
-        this.addCircuitModeEventListeners();
-        this.draw();
+        this._addCircuitModeEventListeners();
+        this._draw();
     }
     
     /**
@@ -71,10 +71,10 @@ export class DrawCircuit {
         
         this.targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
         document.getElementById('circuitTargetExpression').innerHTML = `<div class="expression-text">${this.targetExpression}</div>`;
-        this.parsedTargetExpression = this.parseExpression(this.targetExpression);
+        this.parsedTargetExpression = this._parseExpression(this.targetExpression);
 
-        this.setupCanvas();
-        this.draw();
+        this._setupCanvas();
+        this._draw();
         this.updateHelpDisplay(); // Ensure help is updated for new question
     }
     
@@ -107,7 +107,7 @@ export class DrawCircuit {
             this.ui.showNextButton();
             this.ui.hideSubmitButton();
             this.state.setAnswered(true);
-            this.disableResetButton();
+            this._disableResetButton();
         } else {
             this.ui.showFeedback(`Incorrect. Your circuit diagram (${userExprText}) does not match the target diagram (${this.targetExpression}).`, 'incorrect');
         }
@@ -116,9 +116,27 @@ export class DrawCircuit {
     }
     
     /**
+     * Toggles the visibility of the help information panel.
+     */
+    updateHelpDisplay() {
+        const helpCheckbox = document.getElementById('drawCircuitDebugMode');
+        this.help.enabled = helpCheckbox ? helpCheckbox.checked : false;
+        
+        const helpInfoDiv = document.getElementById('drawCircuitHelpInfo');
+        if (helpInfoDiv) {
+            helpInfoDiv.style.display = this.help.enabled ? 'block' : 'none';
+        }
+        
+        // Update the content of the help display if it's enabled
+        if (this.help.enabled) {
+            this._updateInterpretedExpression();
+        }
+    }
+
+    /**
      * Resets the canvas to its initial state for the current question.
      */
-    setupCanvas() {
+    _setupCanvas() {
         this.gates = [];
         this.wires = [];
         this.nextId = 0;
@@ -130,14 +148,14 @@ export class DrawCircuit {
         document.getElementById('feedback').style.display = 'none';
         document.getElementById('nextBtn').style.display = 'none';
 
-        this.addTerminals();
-        this.updateInterpretedExpression();
+        this._addTerminals();
+        this._updateInterpretedExpression();
     }
 
     /**
      * Adds the input and output terminals (A, B, Q, etc.) to the canvas.
      */
-    addTerminals() {
+    _addTerminals() {
         const canvasHeight = this.canvas.height;
         const canvasWidth = this.canvas.width;
         const terminalWidth = 60;
@@ -181,7 +199,7 @@ export class DrawCircuit {
     /**
      * Sets up all the event listeners for the canvas (drag/drop, mouse events).
      */
-    addCircuitModeEventListeners() {
+    _addCircuitModeEventListeners() {
         // EFFICIENCY: (Phase 3) Re-cloning the canvas to clear listeners is a blunt instrument.
         // A more efficient approach would be to use AbortController signals or store listener references
         // and remove them explicitly, avoiding DOM manipulation.
@@ -207,55 +225,55 @@ export class DrawCircuit {
             if (!id) return;
             const type = id.replace('drag-', '');
             const rect = this.canvas.getBoundingClientRect();
-            this.addGate(type, e.clientX - rect.left, e.clientY - rect.top);
+            this._addGate(type, e.clientX - rect.left, e.clientY - rect.top);
         });
         
         // Canvas mouse listeners for interaction (wiring, moving, selecting)
         this.canvas.addEventListener('mousedown', (e) => {
             if (this.draggingGate || this.state.getAnswered()) return;
 
-            const pos = this.getMousePos(e);
-            const snappedNode = this.getClickedNode(pos) || this.getNearbyNode(pos);
+            const pos = this._getMousePos(e);
+            const snappedNode = this._getClickedNode(pos) || this._getNearbyNode(pos);
 
             if (snappedNode) {
                 this.wireStartNode = snappedNode;
-                this.clearSelections();
+                this._clearSelections();
             } else {
-                const clickedWire = this.getClickedWire(pos);
+                const clickedWire = this._getClickedWire(pos);
                 if (clickedWire) {
-                    this.clearSelections();
+                    this._clearSelections();
                     this.selectedWire = clickedWire;
-                    this.enableRemoveSelectedButton();
+                    this._enableRemoveSelectedButton();
                 } else {
-                    const clickedGate = this.getClickedGate(pos);
+                    const clickedGate = this._getClickedGate(pos);
                     if (clickedGate) {
                         if (e.shiftKey) { // Dragging gate
                             this.draggingGate = clickedGate;
                             this.draggingOffset = { x: pos.x - clickedGate.x, y: pos.y - clickedGate.y };
                         } else { // Selecting gate
-                            this.clearSelections();
+                            this._clearSelections();
                             this.selectedGate = clickedGate;
-                            this.enableRemoveSelectedButton();
+                            this._enableRemoveSelectedButton();
                         }
                     } else {
-                        this.clearSelections(); // Clicked on empty space
+                        this._clearSelections(); // Clicked on empty space
                     }
                 }
             }
-            this.draw();
+            this._draw();
         });
         
         this.canvas.addEventListener('mousemove', (e) => {
             if (this.draggingGate) {
-                const pos = this.getMousePos(e);
+                const pos = this._getMousePos(e);
                 this.draggingGate.x = pos.x - this.draggingOffset.x;
                 this.draggingGate.y = pos.y - this.draggingOffset.y;
-                this.updateGateNodes(this.draggingGate);
-                this.draw();
+                this._updateGateNodes(this.draggingGate);
+                this._draw();
             } else if (this.wireStartNode) {
-                const pos = this.getMousePos(e);
-                const nearbyNode = this.getNearbyNode(pos);
-                this.draw(); // Redraw canvas first
+                const pos = this._getMousePos(e);
+                const nearbyNode = this._getNearbyNode(pos);
+                this._draw(); // Redraw canvas first
                 
                 // Then draw the "live" wire on top
                 this.ctx.beginPath();
@@ -279,35 +297,35 @@ export class DrawCircuit {
 
         this.canvas.addEventListener('mouseup', (e) => {
             if (this.wireStartNode) {
-                const endNode = this.getClickedNode(this.getMousePos(e)) || this.getNearbyNode(this.getMousePos(e));
+                const endNode = this._getClickedNode(this._getMousePos(e)) || this._getNearbyNode(this._getMousePos(e));
                 if (endNode && endNode !== this.wireStartNode && endNode.type !== this.wireStartNode.type) {
-                    this.addWire(this.wireStartNode, endNode);
+                    this._addWire(this.wireStartNode, endNode);
                 }
                 this.wireStartNode = null;
             }
             this.draggingGate = null;
-            this.draw();
-            this.updateInterpretedExpression();
+            this._draw();
+            this._updateInterpretedExpression();
         });
 
         // Button listeners
         document.getElementById('resetCircuitBtn').addEventListener('click', () => {
             if (this.state.getAnswered()) return;
             this.ui.resetUIState();
-            this.disableRemoveSelectedButton();
-            this.setupCanvas();
-            this.draw();
+            this._disableRemoveSelectedButton();
+            this._setupCanvas();
+            this._draw();
         });
 
         document.getElementById('removeSelectedBtn').addEventListener('click', () => {
-            this.removeSelected();
+            this._removeSelected();
         });
     }
     
     /**
      * Main drawing function. Clears and redraws the entire canvas based on the current state.
      */
-    draw() {
+    _draw() {
         if (!this.ctx) return;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -331,7 +349,7 @@ export class DrawCircuit {
                     this.ctx.strokeRect(gate.x, gate.y, gate.width, gate.height);
                 }
             }
-            this.drawNodesForGate(gate);
+            this._drawNodesForGate(gate);
         });
 
         // Draw terminals
@@ -346,32 +364,14 @@ export class DrawCircuit {
             this.ctx.textBaseline = 'middle';
             this.ctx.font = '16px Arial';
             this.ctx.fillText(io.name, io.x + io.width / 2, io.y + io.height / 2);
-            if (io.outputNode) this.drawNode(io.outputNode);
-            if (io.inputNode) this.drawNode(io.inputNode);
+            if (io.outputNode) this._drawNode(io.outputNode);
+            if (io.inputNode) this._drawNode(io.inputNode);
         });
-    }
-
-    /**
-     * Toggles the visibility of the help information panel.
-     */
-    updateHelpDisplay() {
-        const helpCheckbox = document.getElementById('drawCircuitDebugMode');
-        this.help.enabled = helpCheckbox ? helpCheckbox.checked : false;
-        
-        const helpInfoDiv = document.getElementById('drawCircuitHelpInfo');
-        if (helpInfoDiv) {
-            helpInfoDiv.style.display = this.help.enabled ? 'block' : 'none';
-        }
-        
-        // Update the content of the help display if it's enabled
-        if (this.help.enabled) {
-            this.updateInterpretedExpression();
-        }
     }
 
     // HELPER METHODS (Internal logic for the class)
 
-    preloadGateImages() {
+    _preloadGateImages() {
         ['AND', 'OR', 'NOT'].forEach(type => {
             const img = new Image();
             img.src = `/img/png/${type.toLowerCase()}.png`;
@@ -379,7 +379,7 @@ export class DrawCircuit {
         });
     }
 
-    addGate(type, x, y) {
+    _addGate(type, x, y) {
         const gateWidth = 120, gateHeight = 54;
         const newGate = {
             id: this.nextId++, type: type, x: x - gateWidth / 2, y: y - gateHeight / 2,
@@ -395,18 +395,18 @@ export class DrawCircuit {
             newGate.inputNodes.push({ x: x - gateWidth / 2, y: y + 10, gateId: newGate.id, type: 'input', index: 1, connectedTo: null });
         }
         this.gates.push(newGate);
-        this.clearSelections();
-        this.draw();
+        this._clearSelections();
+        this._draw();
     }
 
-    addWire(startNode, endNode) {
+    _addWire(startNode, endNode) {
         let fromNode = startNode.type === 'output' ? startNode : endNode;
         let toNode = startNode.type === 'input' ? startNode : endNode;
         
         // Remove any existing wire connected to the destination input node
         this.wires = this.wires.filter(w => w.to !== toNode);
         if (toNode.connectedTo) {
-            const prevFromNode = this.findNodeByConnectionInfo(toNode.connectedTo);
+            const prevFromNode = this._findNodeByConnectionInfo(toNode.connectedTo);
             if (prevFromNode) prevFromNode.connectedTo = null;
         }
         
@@ -415,50 +415,50 @@ export class DrawCircuit {
         toNode.connectedTo = { gateId: fromNode.gateId, nodeIndex: fromNode.index, nodeType: 'output' };
     }
 
-    removeSelected() {
+    _removeSelected() {
         if (this.selectedGate) {
-            this.removeGate(this.selectedGate);
+            this._removeGate(this.selectedGate);
             this.selectedGate = null;
         } else if (this.selectedWire) {
-            this.removeWire(this.selectedWire);
+            this._removeWire(this.selectedWire);
             this.selectedWire = null;
         }
-        this.disableRemoveSelectedButton();
-        this.draw();
-        this.updateInterpretedExpression();
+        this._disableRemoveSelectedButton();
+        this._draw();
+        this._updateInterpretedExpression();
     }
     
-    removeGate(gateToRemove) {
+    _removeGate(gateToRemove) {
         this.wires = this.wires.filter(wire => {
             const isConnected = wire.from.gateId === gateToRemove.id || wire.to.gateId === gateToRemove.id;
             if (isConnected) { // Disconnect nodes on the other side of the wire
-                if (wire.to.connectedTo) this.findNodeByConnectionInfo(wire.to.connectedTo).connectedTo = null;
-                if (wire.from.connectedTo) this.findNodeByConnectionInfo(wire.from.connectedTo).connectedTo = null;
+                if (wire.to.connectedTo) this._findNodeByConnectionInfo(wire.to.connectedTo).connectedTo = null;
+                if (wire.from.connectedTo) this._findNodeByConnectionInfo(wire.from.connectedTo).connectedTo = null;
             }
             return !isConnected;
         });
         this.gates = this.gates.filter(gate => gate.id !== gateToRemove.id);
     }
     
-    removeWire(wireToRemove) {
+    _removeWire(wireToRemove) {
         if (wireToRemove.from.connectedTo) wireToRemove.from.connectedTo = null;
         if (wireToRemove.to.connectedTo) wireToRemove.to.connectedTo = null;
         this.wires = this.wires.filter(wire => wire !== wireToRemove);
     }
 
-    updateInterpretedExpression() {
+    _updateInterpretedExpression() {
         const expressionElement = document.getElementById('interpretedExpression');
         if (!expressionElement) return;
 
         let expression = '?';
         if (this.output?.inputNode?.connectedTo) {
-            expression = this.buildExpression(this.output.inputNode);
+            expression = this._buildExpression(this.output.inputNode);
         }
         const outputName = this.output?.name || '?';
         expressionElement.textContent = `${outputName} = ${expression}`;
     }
 
-    buildExpression(node) {
+    _buildExpression(node) {
         if (!node || !node.connectedTo) return '?';
 
         const sourceGateId = node.connectedTo.gateId;
@@ -471,12 +471,12 @@ export class DrawCircuit {
         if (!sourceGate) return '?';
 
         // Recurse from the gate's output node
-        return this.buildExpressionFromGate(sourceGate);
+        return this._buildExpressionFromGate(sourceGate);
     }
 
-    buildExpressionFromGate(gate) {
+    _buildExpressionFromGate(gate) {
         const inputsExpr = gate.inputNodes.map(inputNode => {
-            let expr = this.buildExpression(inputNode);
+            let expr = this._buildExpression(inputNode);
             // Add parentheses for correct order of operations
             if (expr.includes(' AND ') || expr.includes(' OR ') || expr.includes(' XOR ') || expr.startsWith('NOT ')) {
                 expr = `(${expr})`;
@@ -486,7 +486,7 @@ export class DrawCircuit {
         return (gate.type === 'NOT') ? `NOT ${inputsExpr[0]}` : `${inputsExpr[0]} ${gate.type} ${inputsExpr[1]}`;
     }
 
-    parseExpression(expression) {
+    _parseExpression(expression) {
         const parts = expression.split('=');
         if (parts.length !== 2) return { output: 'Q', inputs: ['A', 'B'] }; // Default fallback
         const outputVar = parts[0].trim();
@@ -497,19 +497,19 @@ export class DrawCircuit {
         return { output: outputVar, inputs: [...new Set(variables)].sort() };
     }
 
-    getMousePos(evt) {
+    _getMousePos(evt) {
         const rect = this.canvas.getBoundingClientRect();
         return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
     }
     
-    getClickedGate(pos) {
+    _getClickedGate(pos) {
         // Iterate backwards to select the top-most gate
         return this.gates.slice().reverse().find(gate => 
             pos.x > gate.x && pos.x < gate.x + gate.width && pos.y > gate.y && pos.y < gate.y + gate.height
         );
     }
 
-    getAllNodes() {
+    _getAllNodes() {
         const allNodes = [];
         this.gates.forEach(g => allNodes.push(...g.inputNodes, g.outputNode));
         this.inputs.forEach(i => allNodes.push(i.outputNode));
@@ -517,17 +517,15 @@ export class DrawCircuit {
         return allNodes;
     }
 
-    getClickedNode(pos) {
-        return this.getAllNodes().find(node => Math.sqrt((pos.x - node.x) ** 2 + (pos.y - node.y) ** 2) < 6);
+    _getClickedNode(pos) {
+        return this._getAllNodes().find(node => Math.sqrt((pos.x - node.x) ** 2 + (pos.y - node.y) ** 2) < 6);
     }
 
-    getNearbyNode(pos) {
-        // EFFICIENCY: (Phase 3) For a very large number of nodes, a spatial hashing or quadtree
-        // structure would be much faster for finding the nearest node than this linear search.
+    _getNearbyNode(pos) {
         let closestNode = null;
         let closestDistance = 20; // Snap distance
 
-        for (const node of this.getAllNodes()) {
+        for (const node of this._getAllNodes()) {
             const dist = Math.sqrt((pos.x - node.x) ** 2 + (pos.y - node.y) ** 2);
             if (dist < closestDistance) {
                 closestNode = node;
@@ -537,12 +535,12 @@ export class DrawCircuit {
         return closestNode;
     }
     
-    getClickedWire(pos) {
+    _getClickedWire(pos) {
         const tolerance = 5;
-        return this.wires.find(wire => this.distanceToLine(pos, wire.from, wire.to) <= tolerance);
+        return this.wires.find(wire => this._distanceToLine(pos, wire.from, wire.to) <= tolerance);
     }
     
-    distanceToLine(point, lineStart, lineEnd) {
+    _distanceToLine(point, lineStart, lineEnd) {
         const A = point.x - lineStart.x;
         const B = point.y - lineStart.y;
         const C = lineEnd.x - lineStart.x;
@@ -556,7 +554,7 @@ export class DrawCircuit {
         return Math.sqrt((point.x - xx) ** 2 + (point.y - yy) ** 2);
     }
     
-    updateGateNodes(gate) {
+    _updateGateNodes(gate) {
         const centerX = gate.x + gate.width / 2;
         const centerY = gate.y + gate.height / 2;
         gate.outputNode.x = gate.x + gate.width;
@@ -573,7 +571,7 @@ export class DrawCircuit {
         }
     }
     
-    findNodeByConnectionInfo(connection) {
+    _findNodeByConnectionInfo(connection) {
         const { gateId, nodeIndex, nodeType } = connection;
         if (String(gateId).startsWith('input-')) {
             const input = this.inputs.find(i => i.id === gateId);
@@ -587,7 +585,7 @@ export class DrawCircuit {
         return nodeType === 'input' ? gate.inputNodes[nodeIndex] : gate.outputNode;
     }
 
-    drawNode(node) {
+    _drawNode(node) {
         this.ctx.beginPath();
         this.ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI);
         this.ctx.fillStyle = node.connectedTo ? '#3498db' : '#fff';
@@ -597,18 +595,18 @@ export class DrawCircuit {
         this.ctx.stroke();
     }
     
-    drawNodesForGate(gate) {
-        gate.inputNodes.forEach(node => this.drawNode(node));
-        this.drawNode(gate.outputNode);
+    _drawNodesForGate(gate) {
+        gate.inputNodes.forEach(node => this._drawNode(node));
+        this._drawNode(gate.outputNode);
     }
     
-    clearSelections() {
+    _clearSelections() {
         this.selectedGate = null;
         this.selectedWire = null;
-        this.disableRemoveSelectedButton();
+        this._disableRemoveSelectedButton();
     }
 
-    enableButton(buttonId) {
+    _enableButton(buttonId) {
         const btn = document.getElementById(buttonId);
         if (btn) {
             btn.disabled = false;
@@ -616,7 +614,7 @@ export class DrawCircuit {
         }
     }
     
-    disableButton(buttonId) {
+    _disableButton(buttonId) {
         const btn = document.getElementById(buttonId);
         if (btn) {
             btn.disabled = true;
@@ -624,8 +622,8 @@ export class DrawCircuit {
         }
     }
     
-    enableResetButton() { this.enableButton('resetCircuitBtn'); }
-    disableResetButton() { this.disableButton('resetCircuitBtn'); }
-    enableRemoveSelectedButton() { this.enableButton('removeSelectedBtn'); }
-    disableRemoveSelectedButton() { this.disableButton('removeSelectedBtn'); }
+    _enableResetButton() { this._enableButton('resetCircuitBtn'); }
+    _disableResetButton() { this._disableButton('resetCircuitBtn'); }
+    _enableRemoveSelectedButton() { this._enableButton('removeSelectedBtn'); }
+    _disableRemoveSelectedButton() { this._disableButton('removeSelectedBtn'); }
 }

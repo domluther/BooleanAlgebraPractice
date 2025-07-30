@@ -1,7 +1,5 @@
 // expression-writing.js
 
-// TODO: (Phase 3) - data and utils should be managed by a central game manager
-// and passed as dependencies, not imported directly by each mode module.
 import { expressionDatabase } from './data.js';
 import { generateAllAcceptedAnswers } from './expression-utils.js';
 
@@ -15,8 +13,7 @@ export class ExpressionWriting {
         this.currentAcceptedAnswers = [];
         this.currentDifficulty = 1;
 
-        // This 'help' object mirrors the structure in script.js's modeSettings.
-        // TODO: (Phase 3) - This should be simplified and managed by a central UI manager.
+        // Help mode state
         this.help = { enabled: false };
     }
 
@@ -94,7 +91,6 @@ export class ExpressionWriting {
         }
 
         this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
-;
         this.ui.showNextButton();
     }
     
@@ -102,7 +98,7 @@ export class ExpressionWriting {
      * Updates the help display with the list of accepted answers if help mode is enabled.
      */
     updateHelpDisplay() {
-        // The class is responsible for checking the state of its own help checkbox.
+        // Check the state of the help checkbox for this mode
         const helpCheckbox = document.getElementById('writeExpressionDebugMode');
         this.help.enabled = helpCheckbox ? helpCheckbox.checked : false;
         

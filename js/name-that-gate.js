@@ -1,7 +1,5 @@
 // name-that-gate.js
 
-// TODO: (Phase 3) - Pass dependencies like UI functions via the constructor
-// instead of relying on them being in the global scope. This will improve testability.
 export class NameThatGate {
     constructor(circuitGenerator, dependencies) {
         this.circuitGenerator = circuitGenerator;
@@ -10,8 +8,6 @@ export class NameThatGate {
         this.state = dependencies.state;
         this.currentGate = '';
         this.reason = '';
-        // TODO: (Phase 3) - Each mode should manage its own state instead of relying on
-        // global variables like 'score', 'totalQuestions', and 'answered'.
     }
 
     /**
@@ -66,7 +62,7 @@ export class NameThatGate {
                 this.circuitGenerator.generateCircuit('Q = NOT A', svgCanvas);
                 break;
             case 'NONE':
-                svgCanvas.innerHTML = this._drawNONEGate();
+                svgCanvas.innerHTML = this._drawInvalidGate();
                 break;
         }
 
@@ -130,7 +126,7 @@ export class NameThatGate {
      * Generates and returns the SVG for an invalid or non-GCSE gate.
      * @private
      */
-    _drawNONEGate() {
+    _drawInvalidGate() {
         const incorrectGates = [{
                 svg: `<circle cx="55" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/><path d="M 61 30 L 61 90 L 108 60 Z" fill="none" stroke="#333" stroke-width="2"/><line x1="30" y1="60" x2="50" y2="60" stroke="#333" stroke-width="2"/><line x1="108" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/><text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text><text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`,
                 reason: "The bubble is on the wrong side. It should be at the output."
