@@ -339,8 +339,8 @@ function hideAllHelpInfo() {
 document.addEventListener('DOMContentLoaded', () => {
 	document.addEventListener('keydown', handleEnterKey);
 
-	// Define the dependencies object that the NameThatGate module needs
-	const nameThatGateDependencies = {
+	// Define the dependencies object that the modes need
+	const commonDependencies = {
 		ui: {
 			showFeedback,
 			showNextButton,
@@ -355,40 +355,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	};
 	// Pass the dependencies when creating the instance
-	nameThatGateMode = new NameThatGate(circuitGenerator, nameThatGateDependencies);
+	nameThatGateMode = new NameThatGate(circuitGenerator, commonDependencies);
 
-	const expressionWritingDependencies = {
-        ui: {
-            showFeedback,
-            showNextButton,
-            hideSubmitButton,
-            updateScoreDisplay,
-        },
-        state: {
-            getAnswered: () => answered,
-            setAnswered: (val) => { answered = val; },
-            incrementScore: () => { score++; },
-            incrementTotalQuestions: () => { totalQuestions++; }
-        }
-    };
-    expressionWritingMode = new ExpressionWriting(circuitGenerator, expressionWritingDependencies);
+    expressionWritingMode = new ExpressionWriting(circuitGenerator, commonDependencies);
 
-
-	const scenarioDependencies = {
-        ui: {
-            showFeedback,
-            showNextButton,
-            hideSubmitButton,
-            updateScoreDisplay,
-        },
-        state: {
-            getAnswered: () => answered,
-            setAnswered: (val) => { answered = val; },
-            incrementScore: () => { score++; },
-            incrementTotalQuestions: () => { totalQuestions++; }
-        }
-    };
-    scenarioMode = new Scenario(circuitGenerator, scenarioDependencies);
+    scenarioMode = new Scenario(circuitGenerator, commonDependencies);
 
 	generateModeSelectorButtons();
 
