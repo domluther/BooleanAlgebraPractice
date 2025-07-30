@@ -1,0 +1,128 @@
+// app.js (formerly script.js)
+
+import { UIManager } from './ui-manager.js';
+import { GameManager } from './game-manager.js';
+
+// TODO: (Phase 3) - A dedicated UI initialization module could handle this,
+// leaving app.js even cleaner.
+function initializeUI(gameManager) {
+    // Generate static UI elements like mode selectors
+    generateModeSelectorButtons(gameManager);
+
+    // Wire up event listeners to the GameManager instance
+    document.getElementById('nextBtn').addEventListener('click', () => gameManager.nextQuestion());
+    document.querySelectorAll('#generateRandomBtn').forEach(btn => {
+        btn.addEventListener('click', () => gameManager.nextQuestion());
+    });
+    document.getElementById('submitBtn').addEventListener('click', () => gameManager.submitAnswer());
+
+    // Attach event listeners for any help toggles
+    document.querySelectorAll('.help-toggle .help-checkbox').forEach(checkbox => {
+		console.log('checkbox', checkbox);
+        checkbox.addEventListener('change', () => gameManager.toggleHelp());
+    });
+
+    // Handle 'Enter' key press for submitting or moving to the next question
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault(); // Prevents default form submission or button activation
+
+        if (gameManager.answered) {
+            gameManager.nextQuestion();
+        } else {
+            // In 'nameThatGate' mode, there's no text input to submit.
+            if (gameManager.currentMode !== 'nameThatGate') {
+                gameManager.submitAnswer();
+            }
+        }
+    });
+
+    // Set the initial game mode
+    const initialModeButton = document.querySelector('.mode-selector .btn-select');
+    if (initialModeButton) {
+        // Retrieve the mode key from a data attribute
+        const initialModeKey = 'nameThatGate'; // Set a default
+        initialModeButton.click(); // Simulate a click to set the initial mode
+    }
+}
+
+// TODO: (Phase 3) - This UI generation logic should be moved to a dedicated
+// UI setup script or class. Keeping it here for now during transition.
+function generateModeSelectorButtons(gameManager) {
+    const container = document.getElementById('modeSelector');
+    container.innerHTML = ''; // Clear existing buttons
+
+    for (const [modeKey, mode] of Object.entries(gameManager.modeSettings)) {
+        const button = document.createElement('button');
+        button.className = 'btn btn-select';
+        button.dataset.mode = modeKey; // Store mode key in a data attribute
+        button.innerText = mode.label;
+
+        button.onclick = () => {
+            // Update active button styling
+            document.querySelectorAll('.mode-selector .btn-select').forEach(btn => btn.classList.remove('active', 'mode-active'));
+            button.classList.add('active', 'mode-active');
+            
+            // Hide all game mode containers and help sections
+            document.querySelectorAll('.game-mode-container').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.help-info').forEach(el => el.style.display = 'none');
+            
+            // Show the relevant container for the selected mode
+            const activeContainer = document.getElementById(modeKey + 'Mode');
+            if (activeContainer) {
+                activeContainer.style.display = 'block';
+            }
+            
+            generateDifficultyDropdown(gameManager, modeKey);
+            gameManager.setGameMode(modeKey);
+        };
+        container.appendChild(button);
+    }
+}
+
+
+// TODO: (Phase 3) - This should also be part of a dedicated UI setup module.
+function generateDifficultyDropdown(gameManager, gameMode) {
+    const config = gameManager.modeSettings[gameMode];
+    const container = document.querySelector(`#${gameMode}Mode .difficulty-section`);
+
+    if (!config || config.levels === 0) {
+        if (container) container.innerHTML = '';
+        return;
+    }
+
+    const levelLookup = { 1: 'Easy', 2: 'Medium', 3: 'Hard', 4: 'Expert' };
+    container.innerHTML = ''; // Clear previous content
+
+    const label = document.createElement('label');
+    label.className = 'difficulty-heading';
+    label.textContent = 'Difficulty:';
+    label.setAttribute('for', `${gameMode}-difficulty-select`);
+    container.appendChild(label);
+
+    const select = document.createElement('select');
+    select.className = 'difficulty-select';
+    select.id = `${gameMode}-difficulty-select`;
+
+    for (let i = 1; i <= config.levels; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = levelLookup[i] || `Level ${i}`;
+        select.appendChild(option);
+    }
+
+    select.addEventListener('change', function() {
+        gameManager.setDifficulty(parseInt(this.value));
+    });
+
+    container.appendChild(select);
+}
+
+
+// --- Application Entry Point ---
+document.addEventListener('DOMContentLoaded', () => {
+    const uiManager = new UIManager();
+    const gameManager = new GameManager(uiManager);
+
+    initializeUI(gameManager);
+});
