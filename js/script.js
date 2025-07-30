@@ -1,6 +1,8 @@
 import { CircuitGenerator } from './circuit-generator.js';
 import { expressionDatabase } from './data.js';
 import { generateAllAcceptedAnswers } from './expression-utils.js';
+import { ExpressionWriting } from './expression-writing.js';
+import { NameThatGate } from './name-that-gate.js';
 
 let score = 0;
 let totalQuestions = 0;
@@ -10,21 +12,24 @@ const modeSettings = {
 	nameThatGate: {
 		label: 'Name That Gate',
 		levels: 0,
-		initialize: () => {
-			generateNameThatGateQuestion();
-			hideSubmitButton();
-		}
+		initialize: () => nameThatGateMode.initialize()
 	},
 	writeExpression: {
 		label: 'Expression Writing',
 		levels: 4,
-		currentDifficulty: 1,
-		generateQuestion: generateExpressionQuestion,
-		updateHelp: () => updateHelpDisplayForExpressionMode(),
-		initialize: generateExpressionQuestion,
+		// The mode class now manages its own difficulty state.
+		// This property is kept for now to generate the dropdown, but the source of truth is the class.
+		// TODO: (Phase 3) - The UI generation should ask the mode for its current difficulty.
+		currentDifficulty: 1, 
+		generateQuestion: () => expressionWritingMode.generateQuestion(),
+		updateHelp: () => expressionWritingMode.updateHelpDisplay(),
+		initialize: () => expressionWritingMode.initialize(),
 		help: {
-			updateFunction: updateHelpDisplayForExpressionMode,
-			enabled: false
+			// The class's updateHelpDisplay method now reads the checkbox itself.
+			updateFunction: () => expressionWritingMode.updateHelpDisplay(),
+			// The class manages its own help state. This is kept for compatibility with toggleHelpMode.
+			// TODO: (Phase 3) - Refactor toggleHelpMode to interact with the class directly.
+			enabled: false 
 		}
 	},
 	truthTable: {
@@ -60,14 +65,13 @@ const modeSettings = {
 	}
 };
 
-// Global variables for name that gate mode
-let nameThatGateCurrentGate = '';
-let nameThatGateReason = '';
+// Game Mode Instances
+let nameThatGateMode;
+let expressionWritingMode;
+// TODO: (Phase 3) Add instances for other modes as they are refactored
 
-// Global variables for expression writing mode
-let currentExpression = '';
-let currentAcceptedAnswers = [];
-
+// Create the circuit generator instance
+const circuitGenerator = new CircuitGenerator();
 
 // Global variables for truth table mode
 let showIntermediateColumns = false;
@@ -97,8 +101,6 @@ let currentScenario = '';
 let currentScenarioAcceptedAnswers = [];
 const gateImages = {};
 
-// Create the circuit generator instance
-const circuitGenerator = new CircuitGenerator();
 
 // Page generation
 function generateModeSelectorButtons() {
@@ -250,12 +252,10 @@ function resetUIState() {
 function nextQuestion() {
     resetUIState();
 	if (currentMode === 'nameThatGate') {
-		generateNameThatGateQuestion();
+		nameThatGateMode.generateQuestion();
 	} else if (currentMode === 'writeExpression') {
-		generateExpressionQuestion();
-		if (modeSettings.writeExpression.help.enabled) {
-			updateHelpDisplayForExpressionMode();
-		}
+        // The class's generateQuestion method now handles all setup, including help display.
+		expressionWritingMode.generateQuestion();
 	} else if (currentMode === 'scenario') {
 		generateScenarioQuestion();
 		if (modeSettings.scenario.help.enabled) {
@@ -338,194 +338,49 @@ function hideAllHelpInfo() {
 	});
 }
 
-// Needed for invalid gates
-function drawNONEGate() {
-	const incorrectGates = [{
-			// NOT gate with inversion bubble before the triangle (backwards NOT)
-			svg: `
-                <circle cx="55" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
-                <path d="M 61 30 L 61 90 L 108 60 Z" fill="none" stroke="#333" stroke-width="2"/>
-                <line x1="30" y1="60" x2="50" y2="60" stroke="#333" stroke-width="2"/>
-                <line x1="108" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-                <text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
-                <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>
-            `,
-			reason: "The bubble is on the wrong side. It should be at the output."
-		},
-		{
-			// AND gate rotated 180 degrees (curved side on left, straight on right)
-			svg: `
-                <path d="M 83 35 A 25 25 0 0 0 83 85 L 108 85 L 108 35 Z" fill="none" stroke="#333" stroke-width="2"/>
-                <line x1="30" y1="50" x2="60" y2="50" stroke="#333" stroke-width="2"/>
-                <line x1="30" y1="70" x2="60" y2="70" stroke="#333" stroke-width="2"/>
-                <line x1="108" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-                <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
-                <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
-                <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>
-            `,
-			reason: "It is a backwards AND gate. The curved side should be on the right."
-		},
-		{
-			// NAND gate (AND with inversion bubble)
-			svg: `
-                <path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="#333" stroke-width="2"/>
-                <circle cx="120" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
-                <line x1="30" y1="50" x2="60" y2="50" stroke="#333" stroke-width="2"/>
-                <line x1="30" y1="70" x2="60" y2="70" stroke="#333" stroke-width="2"/>
-                <line x1="125" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-                <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
-                <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
-                <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>
-            `,
-			reason: "The bubble makes it a NAND gate, used at A-Level."
-		},
-		{
-			// XOR gate (OR with extra curved line at input)
-			svg: `
-                <path d="M 55 35 Q 70 60 55 85" fill="none" stroke="#333" stroke-width="2"/>
-                <path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="#333" stroke-width="2"/>
-                <line x1="30" y1="50" x2="60" y2="50" stroke="#333" stroke-width="2"/>
-                <line x1="30" y1="70" x2="60" y2="70" stroke="#333" stroke-width="2"/>
-                <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-                <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
-                <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
-                <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>
-            `,
-			reason: "The extra curved line makes it an XOR gate, used at A-Level."
-		}
-	];
-
-	// Select a random incorrect gate
-	const randomIndex = Math.floor(Math.random() * incorrectGates.length);
-	const selectedGate = incorrectGates[randomIndex];
-
-	nameThatGateReason = selectedGate.reason;
-
-	const completeGateSVG = `
-    <svg width="200" height="120" viewBox="0 0 200 120">
-        ${selectedGate.svg}
-    </svg>`
-	return completeGateSVG;
-}
-
-function checkNameThatGateAnswer(answer) {
-	if (answered) return;
-
-	answered = true;
-	totalQuestions++;
-
-	const nameThatGateButtons = document.querySelectorAll('#nameThatGateMode .options .btn');
-
-	if (answer === nameThatGateCurrentGate) {
-		score++;
-		nameThatGateButtons.forEach(btn => {
-			if (btn.textContent === answer) {
-				btn.classList.add('correct');
-			}
-		});
-		let message = 'Correct! Well done!';
-		if (nameThatGateCurrentGate === 'NONE') {
-			message = `Correct! This is not a GCSE logic gate. ${nameThatGateReason}`;
-		}
-		showFeedback(message, 'correct');
-	} else {
-		nameThatGateButtons.forEach(btn => {
-			if (btn.textContent === answer) {
-				btn.classList.add('incorrect');
-			} else if (btn.textContent === nameThatGateCurrentGate) {
-				btn.classList.add('correct');
-			}
-		});
-		let message = `Incorrect! The correct answer is ${nameThatGateCurrentGate}!`;
-		if (nameThatGateCurrentGate === 'NONE') {
-			message = `Incorrect! This is not a GCSE logic gate. ${nameThatGateReason}`;
-		}
-		showFeedback(message, 'incorrect');
-	}
-
-	updateScoreDisplay();
-	showNextButton();
-}
-
-// Expression Writing Mode functionality
-function updateHelpDisplayForExpressionMode() {
-	if (modeSettings.writeExpression.help.enabled) {
-		const acceptedAnswersDiv = document.getElementById('expressionAcceptedAnswers');
-		if (currentAcceptedAnswers && currentAcceptedAnswers.length > 0) {
-			acceptedAnswersDiv.innerHTML = currentAcceptedAnswers.map(answer =>
-				`<div>${answer}</div>`
-			).join('');
-		} else {
-			acceptedAnswersDiv.innerHTML = '<div>No accepted answers generated</div>';
-		}
-	}
-}
-
-function generateExpressionQuestion() {
-	const logicDiagramDisplay = document.getElementById('logicDiagramDisplay');
-	const levelKey = `level${modeSettings.writeExpression.currentDifficulty}`;
-	const expressions = expressionDatabase[levelKey];
-
-	currentExpression = expressions[Math.floor(Math.random() * expressions.length)];
-	circuitGenerator.generateCircuit(currentExpression, logicDiagramDisplay);
-
-	currentAcceptedAnswers = generateAllAcceptedAnswers(currentExpression);
-
-	if (modeSettings.writeExpression.help.enabled) {
-		updateHelpDisplayForExpressionMode();
-	}
-
-	document.getElementById('expressionInput').value = '';
-}
-
-// Normalises user answer and compares it against accepted answers
-function checkExpressionAnswer() {
-	if (answered) return;
-
-	const userAnswer = document.getElementById('expressionInput').value.trim().toUpperCase();
-
-	answered = true;
-	totalQuestions++;
-
-	hideSubmitButton();
-
-	// More comprehensive normalization function
-	function normalizeExpression(expr) {
-		return expr
-			.replace(/\s+/g, ' ') // Collapse multiple spaces to single space
-			.replace(/\s*\(\s*/g, '(') // Remove spaces around opening parentheses
-			.replace(/\s*\)\s*/g, ')') // Remove spaces around closing parentheses  
-			.replace(/\s*(AND|OR|NOT)\s*/g, ' $1 ') // Ensure single space around operators
-			.replace(/\s+/g, ' ') // Collapse any remaining multiple spaces
-			.trim(); // Remove leading/trailing spaces
-	}
-
-	// Normalize the user answer for comparison
-	const normalizedUser = normalizeExpression(userAnswer);
-
-	// Check if user answer matches any of the accepted answers
-	const isCorrect = currentAcceptedAnswers.some(acceptedAnswer => {
-		const normalizedAccepted = normalizeExpression(acceptedAnswer.toUpperCase());
-		return normalizedUser === normalizedAccepted;
-	});
-
-	if (isCorrect) {
-		score++;
-		showFeedback('Correct! Excellent work!', 'correct');
-	} else {
-		showFeedback(`Incorrect. The correct answer is: ${currentExpression}`, 'incorrect');
-	}
-
-	updateScoreDisplay();
-	showNextButton();
-}
-
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
 	document.addEventListener('keydown', handleEnterKey);
 
+	// Define the dependencies object that the NameThatGate module needs
+	const nameThatGateDependencies = {
+		ui: {
+			showFeedback,
+			hideFeedback,
+			showNextButton,
+			hideNextButton,
+			updateScoreDisplay,
+			hideSubmitButton
+		},
+		state: {
+			getAnswered: () => answered,
+			setAnswered: (val) => { answered = val; },
+			incrementScore: () => { score++; },
+			incrementTotalQuestions: () => { totalQuestions++; }
+		}
+	};
+	// Pass the dependencies when creating the instance
+	nameThatGateMode = new NameThatGate(circuitGenerator, nameThatGateDependencies);
+
+	const expressionWritingDependencies = {
+        ui: {
+            showFeedback,
+            showNextButton,
+            hideSubmitButton,
+            updateScoreDisplay,
+        },
+        state: {
+            getAnswered: () => answered,
+            setAnswered: (val) => { answered = val; },
+            incrementScore: () => { score++; },
+            incrementTotalQuestions: () => { totalQuestions++; }
+        }
+    };
+    expressionWritingMode = new ExpressionWriting(circuitGenerator, expressionWritingDependencies);
+
+
 	generateModeSelectorButtons();
-	generateNameThatGateOptions()
+
 	// Set the initial active button correctly
 	const initialModeButton = document.querySelector('.mode-selector .btn-select');
 	if (initialModeButton) {
@@ -550,11 +405,10 @@ function setDifficultyLevel(level, clickedButton) {
 	// Update difficulty level
 	modeSettings[currentMode].currentDifficulty = level;
 
-    // Update button states
-	updateDifficultyButtons(currentMode, clickedButton);
-	
-	// Generate new question (only if the mode has a generateQuestion function)
-	if (modeConfig.generateQuestion) {
+    // Delegate difficulty change to the class if it's the active mode
+	if (currentMode === 'writeExpression') {
+        expressionWritingMode.setDifficulty(level);
+    } else if (modeConfig.generateQuestion) { // Fallback for unre-factored modes
 		modeConfig.generateQuestion();
 	}
 	
@@ -569,74 +423,18 @@ function setDifficultyLevel(level, clickedButton) {
 	resetUIState();
 }
 
-function updateDifficultyButtons(mode, clickedButton) {
-	const selector = `#${mode}Mode .btn-select`;
-	document.querySelectorAll(selector).forEach(btn => {
-		btn.classList.remove('active', 'difficulty-active');
-	});
-	clickedButton.classList.add('active', 'difficulty-active');
-}
-
 function submitAnswer(answer = '') {
 	if (answered) return;
 
 	if (currentMode === 'drawCircuit') {
 		checkCircuitAnswer();
-	} else if (currentMode === 'nameThatGate') {
-		checkNameThatGateAnswer(answer);
 	} else if (currentMode === 'writeExpression') {
-		checkExpressionAnswer();
+		expressionWritingMode.checkAnswer(); // Delegate to the class method
 	} else if (currentMode === 'scenario') {
 		checkScenarioAnswer();
 	} else if (currentMode === 'truthTable') {
 		checkTruthTableAnswer();
 	}
-}
-
-// Name That Gate functionality
-function generateNameThatGateQuestion() {
-	const gates = ['AND', 'OR', 'NOT', 'NONE', 'NONE'];
-	nameThatGateCurrentGate = gates[Math.floor(Math.random() * gates.length)];
-
-	const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
-	if (!svgCanvas) {
-		console.error("SVG canvas element not found.");
-		return;
-	}
-
-	switch (nameThatGateCurrentGate) {
-		case 'AND':
-			circuitGenerator.generateCircuit('Q = A AND B', svgCanvas);
-			break;
-		case 'OR':
-			circuitGenerator.generateCircuit('Q = A OR B', svgCanvas);
-			break;
-		case 'NOT':
-			circuitGenerator.generateCircuit('Q = NOT A', svgCanvas);
-			break;
-		case 'NONE':
-			svgCanvas.innerHTML = drawNONEGate();
-			break;
-	}
-
-	// Reset option buttons
-	document.querySelectorAll('.options .btn').forEach(btn => {
-		btn.classList.remove('correct', 'incorrect');
-	});
-}
-
-function generateNameThatGateOptions() {
-	const optionsContainer = document.querySelector('#nameThatGateMode .options');
-	optionsContainer.innerHTML = '';
-
-	const gates = ['AND', 'OR', 'NOT', 'NONE'];
-	gates.forEach(gate => {
-		const button = document.createElement('button');
-		button.classList.add('btn', 'option');
-		button.textContent = gate;
-		button.onclick = () => submitAnswer(gate);
-		optionsContainer.appendChild(button);
-	});
 }
 
 // Scenario Mode functionality

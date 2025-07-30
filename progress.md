@@ -37,11 +37,11 @@ Phase 1: Extract Utilities
 
 ✅ Move CircuitGenerator class to its own file
 ✅ Move static data (expression database) to separate file
-🔄 NEXT: Extract expression parsing/validation functions
+✅ Extract expression parsing/validation functions
 
-Phase 2: Extract Game Modes (upcoming)
+Phase 2: Extract Game Modes (in progress)
 
-Start with simpler modes (Name That Gate, Expression Writing)
+✅Start with simpler modes (Name That Gate, Expression Writing)
 Move each mode's functions to dedicated files
 Ensure proper module exports/imports
 
