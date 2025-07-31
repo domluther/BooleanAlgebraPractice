@@ -36,7 +36,7 @@
 	--text-secondary: #4a5568;
 	--text-muted: #718096;
 	--text-light: #e2e8f0;
-	--text-accent: #90cdf4;
+	--text-accent: #66b3ff;
 
 	/* ----- Feedback Colors ----- */
 	--success-bg: #c6f6d5;
@@ -140,13 +140,17 @@ body {
 
 .footer a {
 	color: var(--text-accent);
-	text-decoration: none;
+	text-decoration: underline;
+	/* filter: brightness(1.5); */
 	transition: var(--transition-fast);
 }
 
-.footer a:hover {
+.footer a:hover,
+.footer a:focus {
 	color: #ffffff;
 	text-decoration: underline;
+	outline: 2px solid #66b3ff; 
+	outline-offset: 2px;
 }
 
 
@@ -407,11 +411,7 @@ body {
 }
 
 .btn-select.active.mode-active {
-	background: #4CAF50;
-}
-
-.btn-select.active.difficulty-active {
-	background: #2196F3;
+	background: #2E7D32;
 }
 
 /* ----- Score System & Modal ----- */
