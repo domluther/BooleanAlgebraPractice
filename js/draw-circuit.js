@@ -93,13 +93,6 @@ export class DrawCircuit {
             return;
         }
 
-        // EFFICIENCY: (Phase 3) Does this ever get triggered? Can it be removed?
-        // const userExprParts = userExprText.split('=');
-        // if (userExprParts.length < 2 || userExprParts[0].trim() !== this.parsedTargetExpression.output) {
-        //     this.ui.showFeedback(`Incorrect. Your circuit outputs to ${userExprParts[0].trim()} but it should output to ${this.parsedTargetExpression.output}.`, 'incorrect');
-        //     return;
-        // }
-
         const possibleAnswers = generateAllAcceptedAnswers(this.targetExpression);
         const isCorrect = possibleAnswers.some(acceptedAnswer => userExprText === acceptedAnswer);
         
@@ -111,7 +104,8 @@ export class DrawCircuit {
             this.state.setAnswered(true);
             this._disableResetButton();
         } else {
-            this.ui.showFeedback(`Incorrect. Your circuit diagram (${userExprText}) does not match the target diagram (${this.targetExpression}).`, 'incorrect');
+            this.ui.showFeedback(`Incorrect. Your circuit diagram (${userExprText}) does not match the target expression (${this.targetExpression}). Check your gates & wires or move on.`, 'incorrect');
+            this.ui.showNextButton();
         }
     }
     
