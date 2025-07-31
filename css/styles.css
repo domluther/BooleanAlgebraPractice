@@ -127,6 +127,7 @@ body {
 
 .content {
 	padding: var(--spacing-xl);
+	min-height: 450px
 }
 
 .footer {
@@ -709,6 +710,7 @@ body {
 
 .mark-btn-container .btn {
 	margin: 0 var(--spacing-xs);
+	display: none;
 }
 
 /* ============================================= */
