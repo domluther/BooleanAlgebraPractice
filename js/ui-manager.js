@@ -87,11 +87,9 @@ export class UIManager {
     }
 
     showScoreModal(scoreManager) {
-        console.log('showing score modal');
         if (!this.scoreModal) return;
 
         const stats = scoreManager.getStatistics();
-        console.log('Score stats:', stats);
         this.populateScoreModal(stats, scoreManager);
         this.scoreModal.style.display = 'flex';
         
@@ -193,9 +191,44 @@ export class UIManager {
     }
 
     populateScoreModal(stats, scoreManager) {
-        const { totalAttempts, totalPoints, currentLevel, nextLevel, progressToNext, scores } = stats;
-        console.log(stats)
-        console.log(stats.stats)
+        const { totalAttempts, totalPoints, accuracy, currentLevel, nextLevel, progressToNext, scores } = stats;
+        
+        // Populate level info
+        const levelInfo = document.getElementById('levelInfo');
+        if (levelInfo) {
+            const progressHTML = nextLevel ? `
+                <div class="level-progress">
+                    <div class="progress-info">
+                        <span>Progress to ${nextLevel.emoji} ${nextLevel.title}</span>
+                        <span>${progressToNext.remaining} points needed</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progressToNext.percentage}%"></div>
+                    </div>
+                </div>
+            ` : `
+                <div class="level-progress">
+                    <div class="progress-info">
+                        <span>🏆 Maximum level reached!</span>
+                        <span>You're at the top!</span>
+                    </div>
+                </div>
+            `;
+
+            levelInfo.innerHTML = `
+                <div class="current-level">
+                    <div class="level-display">
+                        <div class="level-emoji">${currentLevel.emoji}</div>
+                        <div class="level-details">
+                            <div class="level-title">${currentLevel.title}</div>
+                            <div class="level-description">${currentLevel.description}</div>
+                        </div>
+                    </div>
+                </div>
+                ${progressHTML}
+            `;
+        }
+
         // Update overall stats
         const statGrid = document.getElementById('statGrid');
         if (statGrid) {
@@ -205,23 +238,17 @@ export class UIManager {
                     <div class="stat-label">Total Attempts</div>
                 </div>
                 <div class="stat-item">
+                    <div class="stat-value">${accuracy}%</div>
+                    <div class="stat-label">Overall Accuracy</div>
+                </div>
+                <div class="stat-item">
                     <div class="stat-value">${totalPoints}</div>
                     <div class="stat-label">Total Points</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value">${currentLevel.emoji}</div>
-                    <div class="stat-label">${currentLevel.title}</div>
-                </div>
-                ${nextLevel ? `
-                <div class="stat-item">
-                    <div class="stat-value">${Math.round(progressToNext.percentage)}%</div>
-                    <div class="stat-label">Progress to ${nextLevel.title}</div>
-                </div>
-                ` : '<div class="stat-item"><div class="stat-value">🏆</div><div class="stat-label">Max Level!</div></div>'}
             `;
         }
 
-        // Populate individual scores and mode statistics
+        // Populate individual scores
         this.populateIndividualScores(scores, scoreManager);
     }
 

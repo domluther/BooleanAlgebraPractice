@@ -39,8 +39,9 @@ function generateModeSelectorButtons(gameManager) {
                 activeContainer.style.display = 'block';
             }
             
-            generateDifficultyDropdown(gameManager, modeKey);
+            // Mode must be set before generating difficulty dropdown to get correct level
             gameManager.setGameMode(modeKey);
+            generateDifficultyDropdown(gameManager, modeKey);
         };
         container.appendChild(button);
     }
@@ -52,7 +53,6 @@ function generateModeSelectorButtons(gameManager) {
  * @param {string} gameMode - The current game mode key.
  */
 function generateDifficultyDropdown(gameManager, gameMode) {
-    console.log(`Generating difficulty dropdown for mode: ${gameMode}`);
     const config = gameManager.modeSettings[gameMode];
     const container = document.querySelector(`#${gameMode}Mode .difficulty-section`);
 
@@ -77,6 +77,9 @@ function generateDifficultyDropdown(gameManager, gameMode) {
         const option = document.createElement('option');
         option.value = i;
         option.textContent = difficultyLabels[i] || `Level ${i}`;
+        if (i === gameManager.getCurrentDifficulty()) {
+            option.selected = true; // Set the current difficulty as selected
+        }
         select.appendChild(option);
     }
 

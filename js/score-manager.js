@@ -14,15 +14,23 @@ export class ScoreManager {
             { threshold: 500, title: "Mallard Gate Master", emoji: "🦆✨", description: "Soaring above with elegant Boolean solutions!" },
             { threshold: 1000, title: "Golden Logic Goose", emoji: "🪿👑", description: "The legendary gate guru of the digital pond!" }
         ];
-        console.log(this.scores);
         
         // Mode-based scoring configuration
         this.modeScoring = {
-            'nameThatGate': { basePoints: 10, difficultyMultiplier: 1 },
-            'writeExpression': { basePoints: 15, difficultyMultiplier: 1.5 },
-            'truthTable': { basePoints: 20, difficultyMultiplier: 2 },
-            'drawCircuit': { basePoints: 25, difficultyMultiplier: 2.5 },
-            'scenario': { basePoints: 30, difficultyMultiplier: 3 }
+            'nameThatGate': { basePoints: 1, difficultyMultiplier: 1 },
+            'writeExpression': { basePoints: 3, difficultyMultiplier: 1.5 },
+            'truthTable': { basePoints: 4, difficultyMultiplier: 2 },
+            'drawCircuit': { basePoints: 3, difficultyMultiplier: 2.5 },
+            'scenario': { basePoints: 3, difficultyMultiplier: 3 }
+        };
+
+        // Hardcoded scoring for specific modes by level
+        this.modeScoringCalculated = {
+            'nameThatGate': { 1: 1 },
+            'writeExpression': { 1: 3, 2: 5, 3: 7, 4: 10},
+            'truthTable': { 1: 4, 2: 8, 3: 12, 4: 20},
+            'drawCircuit': { 1: 3, 2: 6, 3: 10, 4: 15},
+            'scenario': { 1: 3, 2: 5, 3: 8}
         };
     }
 
@@ -48,14 +56,14 @@ export class ScoreManager {
 
     calculatePoints(mode, difficulty, isCorrect) {
         if (!isCorrect) return 0;
-        
-        const config = this.modeScoring[mode] || { basePoints: 10, difficultyMultiplier: 1 };
-        return Math.round(config.basePoints * (1 + (difficulty - 1) * config.difficultyMultiplier));
+        // return this.modeScoringCalculated[mode]?.[difficulty] || 1;        
+        const config = this.modeScoring[mode] || { basePoints: 2, difficultyMultiplier: 1 };
+        return Math.floor(config.basePoints * ((1 + (difficulty - 1)) * config.difficultyMultiplier));
     }
 
     recordScore(mode, difficulty, isCorrect) {
         const points = this.calculatePoints(mode, difficulty, isCorrect);
-        
+        console.log(`Recording score for mode: ${mode}, difficulty: ${difficulty}, isCorrect: ${isCorrect}, points: ${points}`);
         if (!this.scores[mode]) {
             this.scores[mode] = {
                 attempts: 0,
@@ -97,6 +105,13 @@ export class ScoreManager {
         }, 0);
     }
 
+    getAccuracy() {
+        const totalAttempts = Object.values(this.scores).reduce((sum, score) => sum + score.attempts, 0);
+        const totalCorrect = Object.values(this.scores).reduce((sum, score) => sum + score.correct, 0);
+        
+        if (totalAttempts === 0) return 0;
+        return Math.round((totalCorrect / totalAttempts) * 100);
+    }
     getCurrentLevel() {
         const points = this.getTotalPoints();
         let currentLevel = this.levels[0];
@@ -125,11 +140,13 @@ export class ScoreManager {
         
         const totalAttempts = Object.values(this.scores).reduce((sum, score) => sum + score.attempts, 0);
         const totalCorrect = Object.values(this.scores).reduce((sum, score) => sum + score.correct, 0);
+        const accuracy = this.getAccuracy();
         
         return {
             totalAttempts,
             totalCorrect,
             totalPoints,
+            accuracy,
             currentLevel,
             nextLevel,
             scores: this.scores,

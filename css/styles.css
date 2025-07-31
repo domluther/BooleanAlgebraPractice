@@ -856,6 +856,105 @@ body {
 	color: var(--text-muted);
 }
 
+/* ===== LEVEL SYSTEM ===== */
+.level-info {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 25px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.current-level {
+    margin-bottom: var(--spacing-lg);
+}
+
+.level-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.level-emoji {
+    font-size: 3em;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.level-details {
+    text-align: left;
+}
+
+.level-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: var(--spacing-xs);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.level-description {
+    font-size: 1em;
+    opacity: 0.9;
+    font-style: italic;
+}
+
+.level-progress {
+    background: rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(10px);
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+    font-size: 0.9em;
+}
+
+.progress-bar {
+    background: rgba(255, 255, 255, 0.2);
+    height: 8px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #4CAF50, #81C784);
+    height: 100%;
+    border-radius: var(--radius-sm);
+    transition: width 0.5s ease;
+}
+
+.level-maxed {
+    background: rgba(255, 215, 0, 0.2);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 2px solid rgba(255, 215, 0, 0.5);
+}
+
+.max-level-message {
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    color: #FFD700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
 /* ----- Scenario Mode Specifics ----- */
 .scenario-content {
 	max-width: 100%;

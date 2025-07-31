@@ -184,19 +184,22 @@
 		<div id="scoreModal" class="score-modal-overlay">
 			<div class="score-modal">
 				<div class="score-modal-header">
-					<h2> Your Progress</h2>
+					<h2>🏆 Your Progress</h2>
 					<button class="close-modal"></button>
 				</div>
 				<div class="score-modal-content">
+					<div id="levelInfo" class="level-info">
+                		<!-- Level information will be populated by JavaScript -->
+            		</div>
 					<div class="overall-stats">
-						<h3>Overall Statistics</h3>
+						<h3>📈 Overall Statistics</h3>
 						<div id="statGrid" class="stat-grid">
 							<!-- Populated by JavaScript -->
 						</div>
 					</div>
 					<div id="programStats" class="program-stats">
-						<h3>Individual Scores</h3>
-						<div id="programList">
+						<h3>📋  Mode Scores</h3>
+						<div id="programList" class="program-list">
 							<!-- Populated by JavaScript -->
 						</div>
 					</div>
@@ -205,7 +208,7 @@
 					</div>
 				</div>
 				<div class="score-modal-footer">
-					<button class="reset-scores-btn">Reset All Scores</button>
+					<button class="reset-scores-btn">🔄 Reset All Scores</button>
 					<button class="close-modal-btn">Close</button>
 				</div>
 			</div>
