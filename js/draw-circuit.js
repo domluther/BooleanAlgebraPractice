@@ -25,6 +25,9 @@ export class DrawCircuit {
         this.gateImages = {};
         this.currentDifficulty = 1;
 
+        // Used instead of cloning canvas to clear event listeners
+        this.abortController = null;
+
         // Help mode state
         this.help = { enabled: false };
         
@@ -74,6 +77,7 @@ export class DrawCircuit {
         this.parsedTargetExpression = this._parseExpression(this.targetExpression);
 
         this._setupCanvas();
+        this._addCircuitModeEventListeners();
         this._draw();
         this.updateHelpDisplay(); // Ensure help is updated for new question
     }
@@ -196,13 +200,14 @@ export class DrawCircuit {
      * Sets up all the event listeners for the canvas (drag/drop, mouse events).
      */
     _addCircuitModeEventListeners() {
-        // EFFICIENCY: (Phase 3) Re-cloning the canvas to clear listeners is a blunt instrument.
-        // A more efficient approach would be to use AbortController signals or store listener references
-        // and remove them explicitly, avoiding DOM manipulation.
-        const canvasClone = this.canvas.cloneNode(true);
-        this.canvas.parentNode.replaceChild(canvasClone, this.canvas);
-        this.canvas = canvasClone;
-        this.ctx = this.canvas.getContext('2d');
+        // Clean up any existing listeners
+        if (this.abortController) {
+            this.abortController.abort();
+        }
+        
+        // Create new AbortController
+        this.abortController = new AbortController();
+        const signal = this.abortController.signal;
 
         // Toolbox gate drag listeners
         document.querySelectorAll('.gate[draggable="true"]').forEach(gate => {
@@ -210,7 +215,7 @@ export class DrawCircuit {
                 e.dataTransfer.setData('text/plain', e.currentTarget.id);
                 const svg = e.currentTarget.querySelector('img');
                 if (svg) e.dataTransfer.setDragImage(svg, svg.width / 2, svg.height / 2);
-            });
+            }, { signal });
         });
 
         // Canvas drop listener
@@ -222,7 +227,7 @@ export class DrawCircuit {
             const type = id.replace('drag-', '');
             const rect = this.canvas.getBoundingClientRect();
             this._addGate(type, e.clientX - rect.left, e.clientY - rect.top);
-        });
+        }, { signal });
         
         // Canvas mouse listeners for interaction (wiring, moving, selecting)
         this.canvas.addEventListener('mousedown', (e) => {
@@ -257,7 +262,7 @@ export class DrawCircuit {
                 }
             }
             this._draw();
-        });
+        }, { signal });
         
         this.canvas.addEventListener('mousemove', (e) => {
             if (this.draggingGate) {
@@ -289,7 +294,7 @@ export class DrawCircuit {
                     this.ctx.stroke();
                 }
             }
-        });
+        }, { signal });
 
         this.canvas.addEventListener('mouseup', (e) => {
             if (this.wireStartNode) {
@@ -302,7 +307,7 @@ export class DrawCircuit {
             this.draggingGate = null;
             this._draw();
             this._updateInterpretedExpression();
-        });
+        }, { signal });
 
         // Button listeners
         document.getElementById('resetCircuitBtn').addEventListener('click', () => {
@@ -311,11 +316,11 @@ export class DrawCircuit {
             this._disableRemoveSelectedButton();
             this._setupCanvas();
             this._draw();
-        });
+        }, {signal});
 
         document.getElementById('removeSelectedBtn').addEventListener('click', () => {
             this._removeSelected();
-        });
+        }, { signal });
     }
     
     /**
