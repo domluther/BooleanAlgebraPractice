@@ -2,10 +2,12 @@
 
 // Used in expression mode, scenario mode and draw circuit mode
 export function generateAllAcceptedAnswers(baseExpression) {
-	const answers = new Set([baseExpression]);
+	// Ensuring the base expression is in uppercase for consistency
+	const capitalisedBaseExpression = baseExpression.toUpperCase();
+	const answers = new Set([capitalisedBaseExpression]);
 
-	const parts = baseExpression.split(' = ');
-	if (parts.length !== 2) return [baseExpression];
+	const parts = capitalisedBaseExpression.split(' = ');
+	if (parts.length !== 2) return [capitalisedBaseExpression];
 
 	// Output on left, expression on right
 	const leftSide = parts[0];

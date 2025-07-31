@@ -1,12 +1,9 @@
 # BooleanAlgebraPractice
 
 TODO
-- Scoring needs thought - last thing to do?
 - Layout of difficulty level + toggles - especially on truth table when multiple toggles
-- Name that gate buttons
 - More intermediate columns in truth table mode eg Q = (A AND (NOT B)) OR C only makes NOT B - I think it's just first level.  May cause issues for level 4 truth tables
 - What do I want when people get questions wrong? Can they try again? Truth Table hiding feedback issues due to resetUIState
-- Circuit generator turned Q = (B or C) OR A  into a straight line cos lower case or. Make it so it's capitalised?
 - Hard + mode - Randomise input outputs so not always A B C Q?
 
 

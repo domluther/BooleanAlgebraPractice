@@ -131,7 +131,9 @@ export class CircuitGenerator {
 		this.wireId = 0;
 		this.variablePositions = new Map(); // Reset for each circuit generation
 
-		const ast = this.parseExpression(expression);
+		// Ensuring the base expression is in uppercase for consistency
+		const capitalisedExpression = expression.toUpperCase();
+		const ast = this.parseExpression(capitalisedExpression);
 		const layout = this.layoutNodes(ast);
 		const svg = this.renderSVG(layout, container);
 
