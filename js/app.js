@@ -3,9 +3,9 @@ import { UIManager } from './ui-manager.js';
 import { ScoreManager } from './score-manager.js';
 import { SiteNavigation } from './navigation.js';
 import { 
-    generateModeSelectorButtons, 
     setupGlobalEventListeners, 
-    initializeDefaultMode 
+    initializeDefaultMode, 
+    generateStaticUI
 } from './ui-setup.js';
 
 /**
@@ -14,7 +14,7 @@ import {
  */
 function initializeApplication(gameManager) {
     // Generate static UI elements
-    generateModeSelectorButtons(gameManager);
+    generateStaticUI(gameManager);
     
     // Set up global event listeners
     setupGlobalEventListeners(gameManager);
@@ -32,6 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreManager = new ScoreManager('boolean-algebra-practice');
     const uiManager = new UIManager();
     const gameManager = new GameManager(uiManager, scoreManager);
+
+    // Set score button name on start up
+    uiManager.updateScoreButton(scoreManager.getStatistics());
 
     // Initialize the application
     initializeApplication(gameManager);

@@ -72,10 +72,10 @@ export class UIManager {
     updateScoreButton(stats) {
         if (!this.scoreButton) return;
 
-        const { currentLevel, progressToNext } = stats;
+        const { currentLevel } = stats;
         
         // Show current level instead of percentage
-        this.scoreButton.textContent = `${currentLevel.emoji} ${currentLevel.title}`;
+        this.scoreButton.textContent = `${currentLevel.emoji} ${currentLevel.title} (${stats.totalPoints} pts)`;
         
         // Update button class based on level
         this.scoreButton.className = 'score-button';

@@ -7,7 +7,12 @@ import { difficultyLabels, appSettings } from './config.js';
  * Generates the mode selector buttons based on available game modes.
  * @param {GameManager} gameManager - The game manager instance.
  */
-export function generateModeSelectorButtons(gameManager) {
+export function generateStaticUI(gameManager){
+    generateModeSelectorButtons(gameManager);
+    generateDifficultyDropdown(gameManager, gameManager.currentMode);
+}
+
+function generateModeSelectorButtons(gameManager) {
     const container = document.querySelector(appSettings.selectors.modeSelector);
     container.innerHTML = ''; // Clear existing buttons
 
@@ -46,7 +51,8 @@ export function generateModeSelectorButtons(gameManager) {
  * @param {GameManager} gameManager - The game manager instance.
  * @param {string} gameMode - The current game mode key.
  */
-export function generateDifficultyDropdown(gameManager, gameMode) {
+function generateDifficultyDropdown(gameManager, gameMode) {
+    console.log(`Generating difficulty dropdown for mode: ${gameMode}`);
     const config = gameManager.modeSettings[gameMode];
     const container = document.querySelector(`#${gameMode}Mode .difficulty-section`);
 
