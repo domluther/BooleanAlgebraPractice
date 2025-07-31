@@ -1,12 +1,7 @@
-/**
- * Score Manager for GCSE CS Practice Sites
- * Handles scoring, levels, and progress tracking across all sites
- * Duck-themed level system for consistent branding
- */
-
-class ScoreManager {
-    constructor(siteKey = 'template-site') {
-        this.siteKey = siteKey; // Unique identifier for this site's scores
+// score-manager.js - Refactored for clean architecture
+export class ScoreManager {
+    constructor(siteKey = 'boolean-algebra-practice') {
+        this.siteKey = siteKey;
         this.storageKey = `gcse-cs-scores-${this.siteKey}`;
         this.scores = this.loadScores();
         
@@ -19,8 +14,20 @@ class ScoreManager {
             { threshold: 500, title: "Mallard Gate Master", emoji: "🦆✨", description: "Soaring above with elegant Boolean solutions!" },
             { threshold: 1000, title: "Golden Logic Goose", emoji: "🪿👑", description: "The legendary gate guru of the digital pond!" }
         ];
+        console.log(this.scores);
+        
+        // Mode-based scoring configuration
+        this.modeScoring = {
+            'nameThatGate': { basePoints: 10, difficultyMultiplier: 1 },
+            'writeExpression': { basePoints: 15, difficultyMultiplier: 1.5 },
+            'truthTable': { basePoints: 20, difficultyMultiplier: 2 },
+            'drawCircuit': { basePoints: 25, difficultyMultiplier: 2.5 },
+            'scenario': { basePoints: 30, difficultyMultiplier: 3 }
+        };
     }
 
+    // === DATA LAYER (Pure data operations) ===
+    
     loadScores() {
         try {
             const stored = localStorage.getItem(this.storageKey);
@@ -39,51 +46,54 @@ class ScoreManager {
         }
     }
 
-    recordScore(itemKey, score, maxScore = 100) {
-        const percentage = Math.round((score / maxScore) * 100);
+    calculatePoints(mode, difficulty, isCorrect) {
+        if (!isCorrect) return 0;
         
-        if (!this.scores[itemKey]) {
-            this.scores[itemKey] = {
+        const config = this.modeScoring[mode] || { basePoints: 10, difficultyMultiplier: 1 };
+        return Math.round(config.basePoints * (1 + (difficulty - 1) * config.difficultyMultiplier));
+    }
+
+    recordScore(mode, difficulty, isCorrect) {
+        const points = this.calculatePoints(mode, difficulty, isCorrect);
+        
+        if (!this.scores[mode]) {
+            this.scores[mode] = {
                 attempts: 0,
-                bestScore: 0,
-                totalScore: 0
+                correct: 0,
+                totalPoints: 0,
+                bestStreak: 0,
+                currentStreak: 0
             };
         }
 
-        this.scores[itemKey].attempts++;
-        this.scores[itemKey].totalScore += percentage;
+        this.scores[mode].attempts++;
         
-        if (percentage > this.scores[itemKey].bestScore) {
-            this.scores[itemKey].bestScore = percentage;
+        if (isCorrect) {
+            this.scores[mode].correct++;
+            this.scores[mode].totalPoints += points;
+            this.scores[mode].currentStreak++;
+            if (this.scores[mode].currentStreak > this.scores[mode].bestStreak) {
+                this.scores[mode].bestStreak = this.scores[mode].currentStreak;
+            }
+        } else {
+            this.scores[mode].currentStreak = 0;
         }
 
         this.saveScores();
-        this.updateScoreButton();
+        return {
+            points,
+            totalPoints: this.getTotalPoints(),
+            currentLevel: this.getCurrentLevel(),
+            nextLevel: this.getNextLevel()
+        };
     }
 
-    getScore(itemKey) {
-        return this.scores[itemKey] || { attempts: 0, bestScore: 0, totalScore: 0 };
-    }
 
-    getScoreDisplay(itemKey) {
-        const score = this.getScore(itemKey);
-        if (score.attempts === 0) {
-            return { text: 'Not Attempted', className: 'score-na' };
-        }
-
-        const best = score.bestScore;
-        let className = 'score-poor';
-        
-        if (best >= 90) className = 'score-excellent';
-        else if (best >= 70) className = 'score-good';
-        else if (best >= 50) className = 'score-fair';
-
-        return { text: `${best}%`, className };
-    }
-
+    // === STATISTICS CALCULATIONS ===
+    
     getTotalPoints() {
         return Object.values(this.scores).reduce((total, score) => {
-            return total + score.bestScore;
+            return total + (score.totalPoints || 0);
         }, 0);
     }
 
@@ -92,7 +102,7 @@ class ScoreManager {
         let currentLevel = this.levels[0];
         
         for (const level of this.levels) {
-            if (points >= level.minPoints) {
+            if (points >= level.threshold) {
                 currentLevel = level;
             } else {
                 break;
@@ -108,146 +118,48 @@ class ScoreManager {
         return currentIndex < this.levels.length - 1 ? this.levels[currentIndex + 1] : null;
     }
 
-    updateScoreButton() {
-        const button = document.getElementById('scoreButton');
-        if (!button) return;
-
-        const totalAttempts = Object.values(this.scores).reduce((sum, score) => sum + score.attempts, 0);
+    getStatistics() {
         const totalPoints = this.getTotalPoints();
-        const averageScore = totalAttempts > 0 ? Math.round(totalPoints / totalAttempts) : 0;
-
-        button.textContent = `📊 Scores (${averageScore}%)`;
-
-        // Update button class based on performance
-        button.className = 'score-button';
-        if (averageScore >= 90) button.classList.add('excellent');
-        else if (averageScore >= 70) button.classList.add('good');
-        else if (averageScore >= 50) button.classList.add('fair');
-        else if (totalAttempts > 0) button.classList.add('needs-work');
-    }
-
-    showScoreModal() {
-        const modal = document.getElementById('scoreModal');
-        if (!modal) return;
-
-        this.populateScoreModal();
-        modal.style.display = 'flex';
-        
-        // Add click outside to close
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                this.hideScoreModal();
-            }
-        });
-    }
-
-    hideScoreModal() {
-        const modal = document.getElementById('scoreModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    }
-
-    populateScoreModal() {
-        this.populateOverallStats();
-        this.populateIndividualScores();
-    }
-
-    populateOverallStats() {
-        const statGrid = document.getElementById('statGrid');
-        if (!statGrid) return;
-
-        const totalAttempts = Object.values(this.scores).reduce((sum, score) => sum + score.attempts, 0);
-        const totalPoints = this.getTotalPoints();
-        const averageScore = totalAttempts > 0 ? Math.round(totalPoints / totalAttempts) : 0;
         const currentLevel = this.getCurrentLevel();
-
-        statGrid.innerHTML = `
-            <div class="stat-item">
-                <div class="stat-value">${totalAttempts}</div>
-                <div class="stat-label">Total Attempts</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${averageScore}%</div>
-                <div class="stat-label">Average Score</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${totalPoints}</div>
-                <div class="stat-label">Total Points</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${currentLevel.emoji}</div>
-                <div class="stat-label">${currentLevel.title}</div>
-            </div>
-        `;
-    }
-
-    populateIndividualScores() {
-        const programList = document.getElementById('programList');
-        const noScores = document.getElementById('noScores');
-        if (!programList || !noScores) return;
-
-        const scoreEntries = Object.entries(this.scores);
+        const nextLevel = this.getNextLevel();
         
-        if (scoreEntries.length === 0) {
-            programList.style.display = 'none';
-            noScores.style.display = 'block';
-            return;
-        }
-
-        programList.style.display = 'block';
-        noScores.style.display = 'none';
-
-        programList.innerHTML = scoreEntries.map(([key, score]) => {
-            const displayScore = this.getScoreDisplay(key);
-            return `
-                <div class="program-item">
-                    <div class="program-info">
-                        <div class="program-name">${this.formatItemName(key)}</div>
-                        <div class="program-details">${score.attempts} attempts • Average: ${Math.round(score.totalScore / score.attempts)}%</div>
-                    </div>
-                    <div class="program-score ${displayScore.className}">${displayScore.text}</div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    formatItemName(key) {
-        // Convert key to readable name (override in site-specific implementations)
-        return key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const totalAttempts = Object.values(this.scores).reduce((sum, score) => sum + score.attempts, 0);
+        const totalCorrect = Object.values(this.scores).reduce((sum, score) => sum + score.correct, 0);
+        
+        return {
+            totalAttempts,
+            totalCorrect,
+            totalPoints,
+            currentLevel,
+            nextLevel,
+            scores: this.scores,
+            progressToNext: nextLevel ? {
+                current: totalPoints,
+                required: nextLevel.threshold,
+                remaining: nextLevel.threshold - totalPoints,
+                percentage: Math.min(100, (totalPoints / nextLevel.threshold) * 100)
+            } : null
+        };
     }
 
     resetAllScores() {
-        if (confirm('Are you sure you want to reset all scores? This cannot be undone.')) {
-            this.scores = {};
-            this.saveScores();
-            this.updateScoreButton();
-            this.populateScoreModal();
-        }
+        this.scores = {};
+        this.saveScores();
     }
 
-    // Method to enable score system display
-    enableScoreSystem() {
-        const scoreButton = document.querySelector('.score-button');
-        const levelInfo = document.querySelector('.level-info');
-        
-        if (scoreButton) scoreButton.style.display = 'block';
-        if (levelInfo) levelInfo.style.display = 'block';
-        
-        this.updateScoreButton();
+    formatModeName(mode) {
+        const modeNames = {
+            'nameThatGate': 'Name That Gate',
+            'writeExpression': 'Write Expression', 
+            'truthTable': 'Truth Table',
+            'drawCircuit': 'Draw Circuit',
+            'scenario': 'Scenario'
+        };
+        return modeNames[mode] || mode;
     }
-
-    // Method to disable score system display
-    disableScoreSystem() {
-        const scoreButton = document.querySelector('.score-button');
-        const levelInfo = document.querySelector('.level-info');
-        
-        if (scoreButton) scoreButton.style.display = 'none';
-        if (levelInfo) levelInfo.style.display = 'none';
+    // === UTILITY METHODS ===
+    
+    formatItemName(key) {
+        return key.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
-}
-
-// Export for use in other modules if needed
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ScoreManager;
 }

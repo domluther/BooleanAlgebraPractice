@@ -5,7 +5,8 @@ export class UIManager {
         this.nextBtn = document.getElementById('nextBtn');
         this.submitBtn = document.getElementById('submitBtn');
         this.scoreDisplay = document.getElementById('scoreDisplay');
-    }
+        this.scoreButton = document.getElementById('scoreButton');
+        this.scoreModal = document.getElementById('scoreModal');    }
 
     /**
      * Displays a feedback message to the user.
@@ -59,15 +60,6 @@ export class UIManager {
     }
 
     /**
-     * Updates the score display text.
-     * @param {number} score - The current score.
-     * @param {number} totalQuestions - The total number of questions answered.
-     */
-    updateScoreDisplay(score, totalQuestions) {
-        this.scoreDisplay.textContent = `${score}/${totalQuestions}`;
-    }
-
-    /**
      * Resets the main UI state for a new question.
      * @param {string} currentMode - The current game mode.
      */
@@ -76,4 +68,161 @@ export class UIManager {
         this.hideNextButton();
         this.showSubmitButton(currentMode);
     }
+
+    updateScoreButton(stats) {
+        if (!this.scoreButton) return;
+
+        const { currentLevel, progressToNext } = stats;
+        
+        // Show current level instead of percentage
+        this.scoreButton.textContent = `${currentLevel.emoji} ${currentLevel.title}`;
+        
+        // Update button class based on level
+        this.scoreButton.className = 'score-button';
+        if (currentLevel.threshold >= 1000) this.scoreButton.classList.add('legendary');
+        else if (currentLevel.threshold >= 500) this.scoreButton.classList.add('master');
+        else if (currentLevel.threshold >= 200) this.scoreButton.classList.add('advanced');
+        else if (currentLevel.threshold >= 75) this.scoreButton.classList.add('intermediate');
+        else this.scoreButton.classList.add('beginner');
+    }
+
+    showScoreModal(scoreManager) {
+        console.log('showing score modal');
+        if (!this.scoreModal) return;
+
+        const stats = scoreManager.getStatistics();
+        console.log('Score stats:', stats);
+        this.populateScoreModal(stats, scoreManager);
+        this.scoreModal.style.display = 'flex';
+        
+        // Add click outside to close
+        this.scoreModal.addEventListener('click', (e) => {
+            if (e.target === this.scoreModal) {
+                this.hideScoreModal();
+            }
+        });
+    }
+
+    // Add these methods to your UIManager class
+
+    /**
+     * Hides the score modal.
+     */
+    hideScoreModal() {
+        if (this.scoreModal) {
+            this.scoreModal.style.display = 'none';
+        }
+    }
+
+    /**
+     * Populates the individual scores section of the modal.
+     * @param {Object} scores - The scores object from ScoreManager
+     * @param {ScoreManager} scoreManager - The score manager instance for formatting
+     */
+    populateIndividualScores(scores, scoreManager) {
+        const programList = document.getElementById('programList');
+        const noScores = document.getElementById('noScores');
+        if (!programList || !noScores) return;
+
+        const scoreEntries = Object.entries(scores);
+        
+        if (scoreEntries.length === 0) {
+            programList.style.display = 'none';
+            noScores.style.display = 'block';
+            return;
+        }
+
+        programList.style.display = 'block';
+        noScores.style.display = 'none';
+
+        programList.innerHTML = scoreEntries.map(([mode, score]) => {
+            const accuracy = score.attempts > 0 ? Math.round((score.correct / score.attempts) * 100) : 0;
+            
+            return `
+                <div class="program-item">
+                    <div class="program-info">
+                        <div class="program-name">${scoreManager.formatModeName(mode)}</div>
+                        <div class="program-details">
+                            ${score.attempts} attempts • ${score.correct} correct (${accuracy}%) • Best streak: ${score.bestStreak}
+                        </div>
+                    </div>
+                    <div class="program-score">
+                        <div class="score-points">${score.totalPoints} pts</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Gets display information for a score (similar to original ScoreManager).
+     * @param {Object} score - Score object with bestScore property
+     * @returns {Object} Display object with text and className
+     */
+    getScoreDisplay(score) {
+        if (score.attempts === 0) {
+            return { text: 'Not Attempted', className: 'score-na' };
+        }
+
+        const best = score.bestScore;
+        let className = 'score-poor';
+        
+        // Adjust thresholds for point-based system instead of percentage
+        if (best >= 50) className = 'score-excellent';      // High points
+        else if (best >= 30) className = 'score-good';       // Good points  
+        else if (best >= 15) className = 'score-fair';       // Fair points
+        // else stays 'score-poor' for low points
+
+        return { text: `${best} pts`, className };
+    }
+
+    /**
+     * Formats mode names for display.
+     * @param {string} mode - The mode key
+     * @returns {string} Formatted mode name
+     */
+    formatModeName(mode) {
+        const modeNames = {
+            'nameThatGate': 'Name That Gate',
+            'writeExpression': 'Write Expression', 
+            'truthTable': 'Truth Table',
+            'drawCircuit': 'Draw Circuit',
+            'scenario': 'Scenario'
+        };
+        return modeNames[mode] || mode;
+    }
+
+    populateScoreModal(stats, scoreManager) {
+        const { totalAttempts, totalPoints, currentLevel, nextLevel, progressToNext, scores } = stats;
+        console.log(stats)
+        console.log(stats.stats)
+        // Update overall stats
+        const statGrid = document.getElementById('statGrid');
+        if (statGrid) {
+            statGrid.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${totalAttempts}</div>
+                    <div class="stat-label">Total Attempts</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${totalPoints}</div>
+                    <div class="stat-label">Total Points</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${currentLevel.emoji}</div>
+                    <div class="stat-label">${currentLevel.title}</div>
+                </div>
+                ${nextLevel ? `
+                <div class="stat-item">
+                    <div class="stat-value">${Math.round(progressToNext.percentage)}%</div>
+                    <div class="stat-label">Progress to ${nextLevel.title}</div>
+                </div>
+                ` : '<div class="stat-item"><div class="stat-value">🏆</div><div class="stat-label">Max Level!</div></div>'}
+            `;
+        }
+
+        // Populate individual scores and mode statistics
+        this.populateIndividualScores(scores, scoreManager);
+    }
+
 }

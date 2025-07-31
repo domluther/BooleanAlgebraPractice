@@ -8,8 +8,9 @@ import { CircuitGenerator } from './circuit-generator.js';
  * between different game modules and the UI manager.
  */
 export class GameManager {
-    constructor(uiManager) {
+    constructor(uiManager, scoreManager) {
         this.uiManager = uiManager;
+        this.scoreManager = scoreManager;
         this.circuitGenerator = new CircuitGenerator();
 
         // Import configuration
@@ -71,8 +72,21 @@ export class GameManager {
         return {
             getAnswered: () => this.answered,
             setAnswered: (val) => { this.answered = val; },
-            incrementScore: () => { this.score++; },
-            incrementTotalQuestions: () => { this.totalQuestions++; },
+
+            // Simple scoring method - just pass mode result
+            recordResult: (isCorrect) => {
+                const result = this.scoreManager.recordScore(
+                    this.currentMode, 
+                    this.getCurrentDifficulty(), 
+                    isCorrect
+                );
+                
+                // Update score button display
+                this.uiManager.updateScoreButton(this.scoreManager.getStatistics());
+                
+                return result;
+            },
+
             getScore: () => this.score,
             getTotalQuestions: () => this.totalQuestions,
         };
@@ -99,8 +113,6 @@ export class GameManager {
         } else {
             console.warn(`Mode ${modeKey} does not have an initialize method.`);
         }
-        
-        this.uiManager.updateScoreDisplay(this.score, this.totalQuestions);
     }
 
     /**
@@ -112,6 +124,11 @@ export class GameManager {
             this.activeModeInstance.setDifficulty(level);
             this.resetSessionState();
         }
+    }
+    
+    getCurrentDifficulty() {
+        // Return current difficulty level for the active mode
+        return this.activeModeInstance?.currentDifficulty || 1;
     }
     
     /**

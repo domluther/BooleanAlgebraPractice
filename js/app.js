@@ -1,14 +1,12 @@
-// app.js - Application bootstrap and initialization
-
-import { SiteNavigation } from './navigation.js';
 import { GameManager } from './game-manager.js';
 import { UIManager } from './ui-manager.js';
+import { ScoreManager } from './score-manager.js';
+import { SiteNavigation } from './navigation.js';
 import { 
     generateModeSelectorButtons, 
     setupGlobalEventListeners, 
     initializeDefaultMode 
 } from './ui-setup.js';
-
 
 /**
  * Initializes the complete application.
@@ -27,11 +25,13 @@ function initializeApplication(gameManager) {
 
 // --- Application Entry Point ---
 document.addEventListener('DOMContentLoaded', () => {
-    const navigation = new SiteNavigation();;
+    const navigation = new SiteNavigation();
     navigation.init();
-    // Create core application instances
+    
+    // Create core application instances with proper dependency injection
+    const scoreManager = new ScoreManager('boolean-algebra-practice');
     const uiManager = new UIManager();
-    const gameManager = new GameManager(uiManager);
+    const gameManager = new GameManager(uiManager, scoreManager);
 
     // Initialize the application
     initializeApplication(gameManager);

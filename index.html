@@ -15,7 +15,7 @@
 				</nav>
 				<h1>🦆 Boolean Algebra Practice 🦆</h1>
 				<p>Master Logic Gates & Truth Tables</p>
-				<button id="scoreButton" class="score-button" onclick="window.scoreManager.showScoreModal()"> Scores (0%)</button>
+				<button id="scoreButton" class="score-button">📊 Scores (0%)</button>
 			</div>
 			<div class="content">
 				<div id="modeSelector" class="mode-selector">
@@ -177,10 +177,6 @@
 					<button id="submitBtn" class="btn btn-success">✅ Mark My Answer</button>
 					<button id="nextBtn" class="btn btn-nav">Next Question</button>
 				</div>
-				<div class="score">
-					<p>Score: <span id="scoreDisplay">0/0</span>
-					</p>
-				</div>
 			</div>
 			<div class="footer"> Copyright <a href="https://mrluthercodes.netlify.app/" target="_blank">Mr Luther</a> 2025 </div>
 		</div>
@@ -189,7 +185,7 @@
 			<div class="score-modal">
 				<div class="score-modal-header">
 					<h2> Your Progress</h2>
-					<button class="close-modal" onclick="window.scoreManager.hideScoreModal()"></button>
+					<button class="close-modal"></button>
 				</div>
 				<div class="score-modal-content">
 					<div class="overall-stats">
@@ -209,16 +205,11 @@
 					</div>
 				</div>
 				<div class="score-modal-footer">
-					<button class="reset-scores-btn" onclick="window.scoreManager.resetAllScores()">Reset All Scores</button>
-					<button class="close-modal-btn" onclick="window.scoreManager.hideScoreModal()">Close</button>
+					<button class="reset-scores-btn">Reset All Scores</button>
+					<button class="close-modal-btn">Close</button>
 				</div>
 			</div>
 		</div>
 		<script type="module" src="js/app.js"></script>
-		<script src="js/score-manager.js"></script>
-		<script>
-			// Initialize the score manager globally
-			window.scoreManager = new ScoreManager();
-		</script>
 	</body>
 </html>

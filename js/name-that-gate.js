@@ -81,11 +81,12 @@ export class NameThatGate {
         // Use the injected state functions
         if (this.state.getAnswered()) return;
         this.state.setAnswered(true);
-        this.state.incrementTotalQuestions();
         const nameThatGateButtons = document.querySelectorAll('#nameThatGateMode .options .btn');
 
-        if (selectedAnswer === this.currentGate) {
-            this.state.incrementScore();
+        const isCorrect = selectedAnswer === this.currentGate;
+        this.state.recordResult(isCorrect);
+
+        if (isCorrect) {
             nameThatGateButtons.forEach(btn => {
                 if (btn.textContent === selectedAnswer) {
                     btn.classList.add('correct');
@@ -116,9 +117,6 @@ export class NameThatGate {
             btn.classList.add('disabled');
         });
 
-        // Use injected UI functions
-        this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
-;
         this.ui.showNextButton();
     }
 

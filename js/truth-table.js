@@ -125,7 +125,6 @@ export class TruthTable {
         if (this.state.getAnswered()) return;
 
         this.state.setAnswered(true);
-        this.state.incrementTotalQuestions();
         this.ui.hideSubmitButton();
 
         if (this.expertMode) {
@@ -134,8 +133,6 @@ export class TruthTable {
             this._checkNormalModeAnswer();
         }
 
-        this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
-;
         this.ui.showNextButton();
     }
     
@@ -334,8 +331,9 @@ export class TruthTable {
             return;
         }
 
-        if (outputCorrect === outputSelects.length) {
-            this.state.incrementScore();
+        const isCorrect = outputCorrect === outputSelects.length;
+        this.state.recordResult(isCorrect)
+        if (isCorrect) {
             this.ui.showFeedback('Correct! Perfect truth table!', 'correct');
         } else {
             this.ui.showFeedback(`Output column: ${outputCorrect}/${outputSelects.length} correct. Review the highlighted answers.`, 'incorrect');
@@ -396,8 +394,8 @@ export class TruthTable {
             }
         });
 
+        this.state.recordResult(validationResult.isCorrect)
         if (validationResult.isCorrect) {
-            this.state.incrementScore();
             this.ui.showFeedback('Expert Mode: Perfect! All rows are correct!', 'correct');
         } else {
             this.ui.showFeedback(`Expert Mode: ${validationResult.correctRows}/${numRows} rows correct.`, 'incorrect');

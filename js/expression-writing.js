@@ -62,8 +62,6 @@ export class ExpressionWriting {
         const userAnswer = document.getElementById('expressionInput').value.trim().toUpperCase();
 
         this.state.setAnswered(true);
-        this.state.incrementTotalQuestions();
-
         this.ui.hideSubmitButton();
 
         const normalizeExpression = (expr) => {
@@ -83,14 +81,12 @@ export class ExpressionWriting {
             return normalizedUser === normalizedAccepted;
         });
 
+        this.state.recordResult(isCorrect)
         if (isCorrect) {
-            this.state.incrementScore();
             this.ui.showFeedback('Correct! Excellent work!', 'correct');
         } else {
             this.ui.showFeedback(`Incorrect. The correct answer is: ${this.currentExpression}`, 'incorrect');
         }
-
-        this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
         this.ui.showNextButton();
     }
     

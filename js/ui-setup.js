@@ -99,6 +99,8 @@ export function setupGlobalEventListeners(gameManager) {
         checkbox.addEventListener('change', () => gameManager.toggleHelp());
     });
 
+    setupScoreEventListeners(gameManager);
+
     // Global keyboard shortcuts
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Enter') return;
@@ -113,6 +115,41 @@ export function setupGlobalEventListeners(gameManager) {
             }
         }
     });
+}
+
+function setupScoreEventListeners(gameManager) {
+    // Score button to open modal
+    const scoreButton = document.getElementById('scoreButton');
+    if (scoreButton) {
+        scoreButton.addEventListener('click', () => {
+            gameManager.uiManager.showScoreModal(gameManager.scoreManager);
+        });
+    }
+
+    // Modal close buttons (both X button and Close button)
+    const closeButtons = document.querySelectorAll('.close-modal, .close-modal-btn');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            gameManager.uiManager.hideScoreModal();
+        });
+    });
+
+    // Reset scores button
+    const resetButton = document.querySelector('.reset-scores-btn');
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all scores? This cannot be undone.')) {
+                gameManager.scoreManager.resetAllScores();
+                gameManager.uiManager.updateScoreButton(gameManager.scoreManager.getStatistics());
+                
+                // Refresh modal if it's currently open
+                const modal = document.getElementById('scoreModal');
+                if (modal && modal.style.display === 'flex') {
+                    gameManager.uiManager.showScoreModal(gameManager.scoreManager);
+                }
+            }
+        });
+    }
 }
 
 /**

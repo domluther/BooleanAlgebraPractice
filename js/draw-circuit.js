@@ -99,10 +99,8 @@ export class DrawCircuit {
         const possibleAnswers = generateAllAcceptedAnswers(this.targetExpression);
         const isCorrect = possibleAnswers.some(acceptedAnswer => userExprText === acceptedAnswer);
         
-        this.state.incrementTotalQuestions();
-
+        this.state.recordResult(isCorrect)
         if (isCorrect) {
-            this.state.incrementScore();
             this.ui.showFeedback('Correct! The circuit matches the expression.', 'correct');
             this.ui.showNextButton();
             this.ui.hideSubmitButton();
@@ -111,8 +109,6 @@ export class DrawCircuit {
         } else {
             this.ui.showFeedback(`Incorrect. Your circuit diagram (${userExprText}) does not match the target diagram (${this.targetExpression}).`, 'incorrect');
         }
-        this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
-;
     }
     
     /**

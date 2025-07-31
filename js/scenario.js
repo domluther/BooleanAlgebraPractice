@@ -295,8 +295,6 @@ export class Scenario {
         const userAnswer = document.getElementById('scenarioInput').value.trim().toUpperCase();
 
         this.state.setAnswered(true);
-        this.state.incrementTotalQuestions();
-
         this.ui.hideSubmitButton();
 
         // Use the same normalization function as the regular expression mode
@@ -319,15 +317,13 @@ export class Scenario {
             return normalizedUser === normalizedAccepted;
         });
 
+        this.state.recordResult(isCorrect);
         if (isCorrect) {
-            this.state.incrementScore();
             this.ui.showFeedback('Correct! Excellent work!', 'correct');
         } else {
             this.ui.showFeedback(`Incorrect. The correct answer is: ${this.currentExpression}`, 'incorrect');
         }
 
-        this.ui.updateScoreDisplay(this.state.getScore(), this.state.getTotalQuestions());
-;
         this.ui.showNextButton();
     }
 
