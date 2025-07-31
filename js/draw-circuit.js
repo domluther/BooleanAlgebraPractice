@@ -225,34 +225,49 @@ export class DrawCircuit {
         
         // Canvas mouse listeners for interaction (wiring, moving, selecting)
         this.canvas.addEventListener('mousedown', (e) => {
-            if (this.draggingGate || this.state.getAnswered()) return;
+            if (this.state.getAnswered()) return;
 
             const pos = this._getMousePos(e);
             const snappedNode = this._getClickedNode(pos) || this._getNearbyNode(pos);
 
             if (snappedNode) {
+                // Starting a wire connection
                 this.wireStartNode = snappedNode;
                 this._clearSelections();
             } else {
                 const clickedWire = this._getClickedWire(pos);
                 if (clickedWire) {
-                    this._clearSelections();
-                    this.selectedWire = clickedWire;
-                    this._enableRemoveSelectedButton();
+                    // Clicked on a wire - toggle selection
+                    if (this.selectedWire === clickedWire) {
+                        // Already selected - deselect it
+                        this._clearSelections();
+                    } else {
+                        // Not selected - select it
+                        this._clearSelections();
+                        this.selectedWire = clickedWire;
+                        this._enableRemoveSelectedButton();
+                    }
                 } else {
                     const clickedGate = this._getClickedGate(pos);
-                    if (clickedGate) {
-                        if (e.shiftKey) { // Dragging gate
-                            this.draggingGate = clickedGate;
-                            this.draggingOffset = { x: pos.x - clickedGate.x, y: pos.y - clickedGate.y };
-                        } else { // Selecting gate
-                            this._clearSelections();
-                            this.selectedGate = clickedGate;
-                            this._enableRemoveSelectedButton();
-                        }
+                    // Clicked on a gate - prepare for dragging
+                if (clickedGate) {
+                    // Clicked on a gate
+                    if (this.selectedGate === clickedGate) {
+                        // Already selected - deselect it
+                        this._clearSelections();
                     } else {
-                        this._clearSelections(); // Clicked on empty space
+                        // Not selected - select it and prepare for dragging
+                        this.draggingGate = clickedGate;
+                        this.draggingOffset = { x: pos.x - clickedGate.x, y: pos.y - clickedGate.y };
+                        this.dragStartPosition = { x: pos.x, y: pos.y };
+                        this._clearSelections();
+                        this.selectedGate = clickedGate;
+                        this._enableRemoveSelectedButton();
                     }
+                } else {
+                    // Clicked on empty space - clear selections
+                    this._clearSelections();
+                }
                 }
             }
             this._draw();
@@ -297,6 +312,20 @@ export class DrawCircuit {
                     this._addWire(this.wireStartNode, endNode);
                 }
                 this.wireStartNode = null;
+            }
+            if (this.draggingGate && this.dragStartPosition) {
+                const currentPos = this._getMousePos(e);
+                const dragDistance = Math.sqrt(
+                    (currentPos.x - this.dragStartPosition.x) ** 2 + 
+                    (currentPos.y - this.dragStartPosition.y) ** 2
+                );
+        
+                // If we dragged more than a few pixels, deselect
+                if (dragDistance > 5) {
+                    this._clearSelections();
+                }
+                
+                this.dragStartPosition = null;
             }
             this.draggingGate = null;
             this._draw();
