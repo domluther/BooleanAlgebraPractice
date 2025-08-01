@@ -29,7 +29,7 @@ export class DrawCircuit {
         this.abortController = null;
 
         // Help mode state
-        this.help = { enabled: false };
+        this.helpEnabled = false;
         
         // Preload images once on instantiation
         this._preloadGateImages();
@@ -121,15 +121,15 @@ export class DrawCircuit {
      */
     updateHelpDisplay() {
         const helpCheckbox = document.getElementById('drawCircuitDebugMode');
-        this.help.enabled = helpCheckbox ? helpCheckbox.checked : false;
+        this.helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
         
         const helpInfoDiv = document.getElementById('drawCircuitHelpInfo');
         if (helpInfoDiv) {
-            helpInfoDiv.style.display = this.help.enabled ? 'block' : 'none';
+            helpInfoDiv.style.display = this.helpEnabled ? 'block' : 'none';
         }
         
         // Update the content of the help display if it's enabled
-        if (this.help.enabled) {
+        if (this.helpEnabled) {
             this._updateInterpretedExpression();
         }
     }

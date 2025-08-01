@@ -14,7 +14,7 @@ export class ExpressionWriting {
         this.currentDifficulty = 1;
 
         // Help mode state
-        this.help = { enabled: false };
+        this.helpEnabled = false;
     }
 
     /**
@@ -102,12 +102,12 @@ export class ExpressionWriting {
     updateHelpDisplay() {
         // Check the state of the help checkbox for this mode
         const helpCheckbox = document.getElementById('writeExpressionDebugMode');
-        this.help.enabled = helpCheckbox ? helpCheckbox.checked : false;
+        this.helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
         
         const acceptedAnswersDiv = document.getElementById('expressionAcceptedAnswers');
         const helpInfoDiv = document.getElementById('writeExpressionHelpInfo');
 
-        if (this.help.enabled) {
+        if (this.helpEnabled) {
             if (helpInfoDiv) helpInfoDiv.style.display = 'block';
             if (this.currentAcceptedAnswers && this.currentAcceptedAnswers.length > 0) {
                 acceptedAnswersDiv.innerHTML = this.currentAcceptedAnswers.map(answer =>

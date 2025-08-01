@@ -11,9 +11,7 @@ export class Scenario {
         this.currentAcceptedAnswers = [];
         this.currentDifficulty = 1;
 
-        // This 'help' object mirrors the structure in script.js's modeSettings.
-        // TODO: (Phase 3) - This should be simplified and managed by a central UI manager.
-        this.help = { enabled: false };
+        this.helpEnabled = false;
 
     }
 
@@ -329,12 +327,12 @@ export class Scenario {
 
     updateHelpDisplay() {
         const helpCheckbox = document.getElementById('scenarioDebugMode');
-        this.help.enabled = helpCheckbox ? helpCheckbox.checked : false;
+        this.helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
 
         const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
         const helpInfoDiv = document.getElementById('scenarioHelpInfo');
 
-        if (this.help.enabled) {
+        if (this.helpEnabled) {
             if (helpInfoDiv) helpInfoDiv.style.display = 'block';
 
             if (this.currentAcceptedAnswers && this.currentAcceptedAnswers.length > 0) {
