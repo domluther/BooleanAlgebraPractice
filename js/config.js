@@ -1,6 +1,6 @@
 // config.js - Application configuration and settings
 
-import { NameThatGate } from './name-that-gate.js';
+import { NameThat } from './name-that.js';
 import { ExpressionWriting } from './expression-writing.js';
 import { DrawCircuit } from './draw-circuit.js';
 import { Scenario } from './scenario.js';
@@ -11,10 +11,10 @@ import { TruthTable } from './truth-table.js';
  * Each mode defines its label, difficulty levels, class, and dependencies.
  */
 export const modeSettings = {
-    nameThatGate: {
-        label: 'Name That Gate',
-        levels: 2,
-        class: NameThatGate,
+    nameThat: {
+        label: 'Name That',
+        levels: 3,
+        class: NameThat,
         dependencies: ['circuitGenerator']
     },
     writeExpression: {

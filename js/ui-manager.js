@@ -45,7 +45,7 @@ export class UIManager {
      * @param {string} currentMode - The current game mode, to check if the button should be hidden.
      */
     showSubmitButton(currentMode) {
-        if (currentMode === 'nameThatGate') {
+        if (currentMode === 'nameThat') {
             this.hideSubmitButton();
             return;
         }
@@ -141,7 +141,7 @@ export class UIManager {
             return `
                 <div class="program-item">
                     <div class="program-info">
-                        <div class="program-name">${scoreManager.formatModeName(mode)}</div>
+                        <div class="program-name">${formatModeName(mode)}</div>
                         <div class="program-details">
                             ${score.attempts} attempts • ${score.correct} correct (${accuracy}%) • Best streak: ${score.bestStreak}
                         </div>
@@ -183,7 +183,7 @@ export class UIManager {
      */
     formatModeName(mode) {
         const modeNames = {
-            'nameThatGate': 'Name That Gate',
+            'nameThat': 'Name That',
             'writeExpression': 'Write Expression', 
             'truthTable': 'Truth Table',
             'drawCircuit': 'Draw Circuit',

@@ -118,8 +118,8 @@ export function setupGlobalEventListeners(gameManager) {
         if (gameManager.answered) {
             gameManager.nextQuestion();
         } else {
-            // In 'nameThatGate' mode, there's no text input to submit.
-            if (gameManager.currentMode !== 'nameThatGate') {
+            // In 'nameThat' mode, there's no text input to submit.
+            if (gameManager.currentMode !== 'nameThat') {
                 gameManager.submitAnswer();
             }
         }

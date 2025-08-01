@@ -1,7 +1,7 @@
 // truth-table.js
 
 import { expressionDatabase } from './data.js';
-import { shuffleExpression } from './expression-utils.js';
+import { evaluateExpression, getInputVariables, shuffleExpression } from './expression-utils.js';
 
 export class TruthTable {
     /**
@@ -101,14 +101,12 @@ export class TruthTable {
         const expressions = expressionDatabase[`level${this.currentDifficulty}`];
         this.currentExpression = expressions[Math.floor(Math.random() * expressions.length)];
 
-        console.log('Original Expression:', this.currentExpression);
 
         // If difficulty is 3 or 4, generate different input and output variables.
         if (this.currentDifficulty >= 3) {
             this.currentExpression = shuffleExpression(this.currentExpression);
         }
 
-        console.log('New Expression:', this.currentExpression);
         // Display the expression and generate the corresponding logic circuit
         expressionDisplay.innerHTML = `<div class="expression-text">${this.currentExpression}</div>`;
         this.circuitGenerator.generateCircuit(this.currentExpression, truthTableCircuitContainer);
@@ -161,7 +159,7 @@ export class TruthTable {
     _parseExpression(expression) {
         const rightSide = expression.split(' = ')[1];
 
-        const inputs = this._getInputVariables(expression);
+        const inputs = getInputVariables(expression);
 
         // TODO - Currently Q = (NOT (A OR B)) AND C only detects (A OR B) as an intermediate expression. Reduces column width but incomplete.
         // This is a limitation of the current regex - it only captures the first level of parentheses
@@ -175,27 +173,6 @@ export class TruthTable {
         });
 
         return { inputs, intermediateExpressions };
-    }
-
-    /**
-     * Extracts the input variables from a boolean expression.
-     * @param {string} expression - The boolean expression string (e.g., "Q = A AND (B OR C)").
-     * @returns {string[]} An array of unique input variable names.
-     */
-    _getInputVariables(expression) {
-
-        const rightSide = expression.split(' = ')[1];
-
-        let cleanExpression = rightSide
-            .replace(/\bAND\b/g, ' | ')
-            .replace(/\bOR\b/g, ' | ')
-            .replace(/\bNOT\b/g, ' | ')
-            .replace(/\bXOR\b/g, ' | ')
-            .replace(/[()]/g, ' | ');
-        const tokens = cleanExpression.split('|').map(token => token.trim()).filter(token => token.length > 0);
-        return [...new Set(tokens.filter(token =>
-            token.length === 1 && token.match(/[A-Z]/)
-        ))].sort();
     }
 
     /**
@@ -219,34 +196,6 @@ export class TruthTable {
     }
 
     /**
-     * Evaluates a boolean expression string with a given set of input values.
-     * @param {string} expression - The expression part to evaluate.
-     * @param {object} values - An object mapping variable names to boolean values.
-     * @returns {boolean} The result of the evaluation.
-     */
-    _evaluateExpression(expression, values) {
-        try {
-            let evalExpression = expression;
-            Object.keys(values).forEach(variable => {
-                const regex = new RegExp(`\\b${variable}\\b`, 'g');
-                evalExpression = evalExpression.replace(regex, values[variable]);
-            });
-
-            evalExpression = evalExpression
-                .replace(/\bAND\b/g, '&&')
-                .replace(/\bOR\b/g, '||')
-                .replace(/\bNOT\b/g, '!')
-                .replace(/\bXOR\b/g, '^')
-            
-            const func = new Function('return ' + evalExpression);
-            return func();
-        } catch (error) {
-            console.error('Error evaluating expression:', expression, error);
-            return false;
-        }
-    }
-
-    /**
      * Calculates the full data for the current truth table, including intermediate and final outputs.
      */
     _calculateTruthTableData() {
@@ -257,11 +206,10 @@ export class TruthTable {
             const result = { ...combination };
             if (this.showIntermediateColumns && this.intermediateExpressions.length > 0) {
                 this.intermediateExpressions.forEach((expr, index) => {
-                    result[`intermediate_${index}`] = this._evaluateExpression(expr, combination);
+                    result[`intermediate_${index}`] = evaluateExpression(expr, combination);
                 });
             }
-            
-            result.Q = this._evaluateExpression(expressionBody, combination);
+            result.Q = evaluateExpression(expressionBody, combination);
             return result;
         });
     }

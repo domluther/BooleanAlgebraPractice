@@ -17,7 +17,7 @@ export class ScoreManager {
         
         // Mode-based scoring configuration
         this.modeScoring = {
-            'nameThatGate': { basePoints: 1, difficultyMultiplier: 1 },
+            'nameThat': { basePoints: 1, difficultyMultiplier: 1 },
             'writeExpression': { basePoints: 3, difficultyMultiplier: 1.5 },
             'truthTable': { basePoints: 4, difficultyMultiplier: 2 },
             'drawCircuit': { basePoints: 3, difficultyMultiplier: 2.5 },
@@ -26,7 +26,7 @@ export class ScoreManager {
 
         // Hardcoded scoring for specific modes by level
         this.modeScoringCalculated = {
-            'nameThatGate': { 1: 1, 2: 2, 3: 4 },
+            'nameThat': { 1: 1, 2: 2, 3: 4 },
             'writeExpression': { 1: 3, 2: 5, 3: 7, 4: 10},
             'truthTable': { 1: 4, 2: 8, 3: 12, 4: 20},
             'drawCircuit': { 1: 3, 2: 6, 3: 10, 4: 15},
@@ -173,16 +173,16 @@ export class ScoreManager {
         this.saveScores();
     }
 
-    formatModeName(mode) {
-        const modeNames = {
-            'nameThatGate': 'Name That Gate',
-            'writeExpression': 'Write Expression', 
-            'truthTable': 'Truth Table',
-            'drawCircuit': 'Draw Circuit',
-            'scenario': 'Scenario'
-        };
-        return modeNames[mode] || mode;
-    }
+    // formatModeName(mode) {
+    //     const modeNames = {
+    //         'nameThat': 'Name That Gate',
+    //         'writeExpression': 'Write Expression', 
+    //         'truthTable': 'Truth Table',
+    //         'drawCircuit': 'Draw Circuit',
+    //         'scenario': 'Scenario'
+    //     };
+    //     return modeNames[mode] || mode;
+    // }
     // === UTILITY METHODS ===
     
     formatItemName(key) {

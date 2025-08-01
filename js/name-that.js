@@ -1,8 +1,7 @@
-// name-that-gate.js
-
 import {expressionDatabase} from './data.js';
+import { evaluateExpression, getInputVariables } from './expression-utils.js';
 
-export class NameThatGate {
+export class NameThat {
     constructor(circuitGenerator, dependencies) {
         this.circuitGenerator = circuitGenerator;
         // Store the passed-in dependencies
@@ -35,7 +34,7 @@ export class NameThatGate {
      * Creates the answer buttons for this mode.
     */
     generateOptions(labels) {
-        const optionsContainer = document.querySelector('#nameThatGateMode .options');
+        const optionsContainer = document.querySelector('#nameThatMode .options');
         optionsContainer.innerHTML = '';
 
         labels.forEach(label => {
@@ -51,26 +50,31 @@ export class NameThatGate {
      * Generates a new question by picking a random gate and rendering it.
      */
     generateQuestion() {
-        const questionTitle = document.getElementById('nameThatGateQuestionTitle');
+        const questionTitle = document.getElementById('nameThatQuestionTitle');
+        const displayArea = document.getElementById('nameThatLogicDiagramDisplay');
+        displayArea.innerHTML = ''; // Clear previous content
 
         if (this.currentDifficulty === 1) {
             questionTitle.textContent = 'Which GCSE logic gate is this?';
-            this.generateLevel1Question();
-        } else { // Level 2
+            this._generateLevel1Question();
+        } else if (this.currentDifficulty === 2) {
             questionTitle.textContent = 'Which expression matches this logic diagram?';
-            this.generateLevel2Question();
+            this._generateLevel2Question();
+        } else { // Level 3
+            questionTitle.textContent = 'Which expression matches this truth table?';
+            this._generateLevel3Question();
         }
 
-        document.querySelectorAll('#nameThatGateMode .options .btn').forEach(btn => {
+        document.querySelectorAll('#nameThatMode .options .btn').forEach(btn => {
             btn.disabled = false;
             btn.classList.remove('correct', 'incorrect', 'disabled');
         });
     }
 
-    generateLevel1Question() {
+    _generateLevel1Question() {
         const gates = ['AND', 'OR', 'NOT', 'NONE', 'NONE'];
         this.currentGate = gates[Math.floor(Math.random() * gates.length)];
-        const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
+        const svgCanvas = document.getElementById('nameThatLogicDiagramDisplay');
         this.reason = '';
 
         switch (this.currentGate) {
@@ -91,9 +95,10 @@ export class NameThatGate {
     }
 
     // TODO - expressionDatabase contains questions with commutation which is problematic here ie Q = A AND B is the same as Q = B AND A but one would be marked wrong
-    generateLevel2Question() {
-        const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
-        const expressions = expressionDatabase.level2;
+    _generateLevel2Question() {
+        const svgCanvas = document.getElementById('nameThatLogicDiagramDisplay');
+        svgCanvas.innerHTML = ''; // Ensure cleared at start
+        const expressions = expressionDatabase.level2NoOverlap;
 
         this.correctExpression = expressions[Math.floor(Math.random() * expressions.length)];
         this.circuitGenerator.generateCircuit(this.correctExpression, svgCanvas);
@@ -114,6 +119,34 @@ export class NameThatGate {
 
         this.generateOptions(options);
     }
+
+    _generateLevel3Question() {
+        const displayArea = document.getElementById('nameThatLogicDiagramDisplay');
+        const expressions = expressionDatabase.level2NoOverlap; // Use more complex expressions
+
+        // 1. Select a correct expression
+        this.correctExpression = expressions[Math.floor(Math.random() * expressions.length)];
+
+        // 2. Generate and display the truth table for it
+        displayArea.innerHTML = this._generateStaticTableHTML(this.correctExpression);
+
+        // 3. Get 3 other unique random expressions for options
+        const options = [this.correctExpression];
+        const otherExpressions = expressions.filter(expr => expr !== this.correctExpression);
+        while (options.length < 4 && otherExpressions.length > 0) {
+            const randomIndex = Math.floor(Math.random() * otherExpressions.length);
+            const randomExpression = otherExpressions.splice(randomIndex, 1)[0];
+            options.push(randomExpression);
+        }
+
+        // 4. Shuffle options and generate buttons
+        // Shuffle the options so the correct answer isn't always first
+        for (let i = options.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [options[i], options[j]] = [options[j], options[i]];
+        }
+        this.generateOptions(options);
+}
 
     /**
      * Checks the user's selected answer against the correct answer.
@@ -149,7 +182,7 @@ export class NameThatGate {
         this.ui.showFeedback(feedbackMessage, isCorrect ? 'correct' : 'incorrect');
 
         // Update button styles to show correct/incorrect answers
-        const optionButtons = document.querySelectorAll('#nameThatGateMode .options .btn');
+        const optionButtons = document.querySelectorAll('#nameThatMode .options .btn');
         optionButtons.forEach(btn => {
             if (btn.textContent === correctAnswer) {
                 btn.classList.add('correct');
@@ -216,5 +249,42 @@ export class NameThatGate {
         this.reason = selectedGate.reason;
 
         return `<svg width="200" height="120" viewBox="0 0 200 120">${selectedGate.svg}</svg>`;
+    }
+
+        /**
+     * Generates and returns the HTML for a static, completed truth table.
+     * @param {string} expression - The expression to build the table for.
+     * @returns {string} The complete HTML string for the table.
+     * @private
+     */
+    _generateStaticTableHTML(expression) {
+        const inputs = getInputVariables(expression);
+        const outputVariable = expression.split(' = ')[0].trim();
+        const expressionBody = expression.split(' = ')[1];
+        const numCombinations = 2 ** inputs.length;
+
+        let tableHTML = '<table class="truth-table"><thead><tr>';
+        inputs.forEach(input => tableHTML += `<th class="input-header">${input}</th>`);
+        tableHTML += `<th class="output-header">${outputVariable}</th></tr></thead><tbody>`;
+
+        for (let i = 0; i < numCombinations; i++) {
+            const combination = {};
+            const rowValues = {};
+            tableHTML += '<tr>';
+            for (let j = 0; j < inputs.length; j++) {
+                const inputName = inputs[j];
+                const value = Boolean((i >> (inputs.length - 1 - j)) & 1);
+                combination[inputName] = value;
+                rowValues[inputName] = value ? 1 : 0;
+                tableHTML += `<td class="input-cell">${rowValues[inputName]}</td>`;
+            }
+
+            const outputValue = evaluateExpression(expressionBody, combination);
+            tableHTML += `<td class="output-cell">${outputValue ? 1 : 0}</td>`;
+            tableHTML += '</tr>';
+        }
+
+        tableHTML += '</tbody></table>';
+        return tableHTML;
     }
 }

@@ -10,7 +10,7 @@ ui-setup.js ✅ - Initial UI generation (mode buttons, difficulty dropdowns, eve
 
 Game Mode Files
 
-name-that-gate.js ✅ - Name That Gate mode logic
+name-that.js ✅ - Name That mode logic
 expression-writing.js ✅ - Expression Writing mode logic
 truth-table.js ✅ - Truth Table mode logic
 draw-circuit.js ✅ - Draw Circuit mode logic (interactive canvas-based circuit building)
