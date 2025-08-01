@@ -67,9 +67,12 @@ export class ScoreManager {
         return this.modeScoringCalculated[mode][difficulty];
     }
 
-    recordScore(mode, difficulty, isCorrect) {
+    recordScore(mode, difficulty, isCorrect, expertMode = false) {
         // const points = this.calculatePoints(mode, difficulty, isCorrect);
-        const points = this.lookupPoints(mode, difficulty, isCorrect);
+        let points = this.lookupPoints(mode, difficulty, isCorrect);
+        if (expertMode) {
+            points *= 3
+        }
         if (!this.scores[mode]) {
             this.scores[mode] = {
                 attempts: 0,

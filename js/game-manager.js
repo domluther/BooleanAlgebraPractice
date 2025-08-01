@@ -78,7 +78,8 @@ export class GameManager {
                 const result = this.scoreManager.recordScore(
                     this.currentMode, 
                     this.getCurrentDifficulty(), 
-                    isCorrect
+                    isCorrect,
+                    this.getExpertMode()
                 );
                 
                 // Update score button display
@@ -130,7 +131,13 @@ export class GameManager {
         // Return current difficulty level for the active mode
         return this.activeModeInstance?.currentDifficulty || 1;
     }
-    
+
+    getExpertMode() {
+        // Return expert mode status for the active mode
+        return this.activeModeInstance?.expertMode || false;
+    }
+
+
     /**
      * Submits the user's answer and delegates checking to the current mode.
      */

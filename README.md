@@ -5,7 +5,6 @@
 TODO
 - Layout of difficulty level + toggles - especially on truth table when multiple toggles
 - More intermediate columns in truth table mode eg Q = (A AND (NOT B)) OR C only makes NOT B - I think it's just first level.  May cause issues for level 4 truth tables
-- What do I want when people get questions wrong? Can they try again? Truth Table hiding feedback issues due to resetUIState
 - Hard + mode - Randomise input outputs so not always A B C Q?
 - Scenario mode - 30 bonus pixels under the table - why?
 - Truth table - 3x points if expert mode is on

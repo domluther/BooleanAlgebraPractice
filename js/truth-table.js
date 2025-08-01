@@ -66,6 +66,13 @@ export class TruthTable {
     toggleExpertMode() {
         this.expertMode = document.getElementById('expertMode').checked;
 
+        // Inelegant solution - stops user from toggling expert mode after answering original question
+        // Same as calling nextQuestion() but that's on gameManager so don't have access here
+        if (this.state.getAnswered()) {
+            this.generateQuestion();
+        }
+        this.state.setAnswered(false);
+
         if (this.currentExpression) {
             // Re-generate a fresh table as the structure changes significantly
             this._generateTableHTML();
@@ -85,7 +92,7 @@ export class TruthTable {
      * Generates a new truth table question.
      * Fetches an expression, generates the circuit, calculates the table data, and renders the HTML.
      */
-    generateQuestion() {
+        generateQuestion() {
         const expressionDisplay = document.getElementById('truthTableExpression');
         const truthTableCircuitContainer = document.getElementById('truthTableLogicDiagramDisplay');
 
