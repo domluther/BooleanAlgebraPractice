@@ -61,9 +61,15 @@ export class ScoreManager {
         return Math.floor(config.basePoints * ((1 + (difficulty - 1)) * config.difficultyMultiplier));
     }
 
+    lookupPoints(mode, difficulty, isCorrect) {
+        if (!isCorrect) return 0;
+
+        return this.modeScoringCalculated[mode][difficulty];
+    }
+
     recordScore(mode, difficulty, isCorrect) {
-        const points = this.calculatePoints(mode, difficulty, isCorrect);
-        console.log(`Recording score for mode: ${mode}, difficulty: ${difficulty}, isCorrect: ${isCorrect}, points: ${points}`);
+        // const points = this.calculatePoints(mode, difficulty, isCorrect);
+        const points = this.lookupPoints(mode, difficulty, isCorrect);
         if (!this.scores[mode]) {
             this.scores[mode] = {
                 attempts: 0,

@@ -335,7 +335,7 @@ export class DrawCircuit {
         // Button listeners
         document.getElementById('resetCircuitBtn').addEventListener('click', () => {
             if (this.state.getAnswered()) return;
-            this.ui.resetUIState();
+            this.ui.resetUIState('drawCircuit');
             this._disableRemoveSelectedButton();
             this._setupCanvas();
             this._draw();

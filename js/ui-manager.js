@@ -63,8 +63,10 @@ export class UIManager {
      * Resets the main UI state for a new question.
      * @param {string} currentMode - The current game mode.
      */
-    resetUIState(currentMode) {
-        this.hideFeedback();
+    resetUIState(currentMode, hideFeedback = true) {
+        if (hideFeedback) {
+            this.hideFeedback();
+        }
         this.hideNextButton();
         this.showSubmitButton(currentMode);
     }

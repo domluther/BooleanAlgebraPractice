@@ -77,7 +77,7 @@ export class TruthTable {
             });
 
             // Reset answered state and show submit button
-            this.ui.resetUIState();
+            this.ui.resetUIState('truthTable');
         }
     }
 
@@ -109,7 +109,7 @@ export class TruthTable {
         this._generateTableHTML();
 
         // Ensure UI is ready for a new question
-        this.ui.resetUIState();
+        this.ui.resetUIState('truthTable');
         document.querySelectorAll('.truth-table-select').forEach(select => {
             select.value = '';
             select.disabled = false;
@@ -124,7 +124,8 @@ export class TruthTable {
     checkAnswer() {
         if (this.state.getAnswered()) return;
 
-        this.state.setAnswered(true);
+        // Commented out here so they can try again if wrong
+        // this.state.setAnswered(true);
         this.ui.hideSubmitButton();
 
         if (this.expertMode) {
@@ -325,7 +326,7 @@ export class TruthTable {
 
         if (!allOutputAnswered) {
             this.ui.showFeedback('Please answer all rows in the output column (Q).', 'incorrect');
-            this.ui.resetUIState();
+            this.ui.resetUIState('truthTable', false);
             document.querySelectorAll('.truth-table-select').forEach(s => {
                 s.disabled = false;
                 s.classList.remove('unanswered');
@@ -337,6 +338,8 @@ export class TruthTable {
         this.state.recordResult(isCorrect)
         if (isCorrect) {
             this.ui.showFeedback('Correct! Perfect truth table!', 'correct');
+            // Only set answered if the answer is correct - gives a chance to fix incorrect answers
+            this.state.setAnswered(true);
         } else {
             this.ui.showFeedback(`Output column: ${outputCorrect}/${outputSelects.length} correct. Review the highlighted answers.`, 'incorrect');
         }
@@ -350,6 +353,9 @@ export class TruthTable {
         const userRows = [];
         const numRows = this.currentTruthTableData.length;
         let allFieldsFilled = true;
+
+        // Expert mode doesn't get a chance to fix mistakes
+        this.state.setAnswered(true);
 
         for (let i = 0; i < numRows; i++) {
             const userRowData = {};
@@ -370,7 +376,7 @@ export class TruthTable {
         
         if (!allFieldsFilled) {
             this.ui.showFeedback('Expert Mode: All fields must be filled.', 'incorrect');
-            this.ui.resetUIState();
+            this.ui.resetUIState('truthTable');
             allSelects.forEach(s => s.classList.toggle('unanswered', s.value === ''));
             return;
         }
