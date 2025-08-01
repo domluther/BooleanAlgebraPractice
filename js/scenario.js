@@ -1,9 +1,9 @@
 import { generateAllAcceptedAnswers } from './expression-utils.js';
+import * as ttUtils from './truth-table-utils.js';
 
 export class Scenario {
     constructor(circuitGenerator, dependencies) {
         this.circuitGenerator = circuitGenerator;
-        // Store the passed-in dependencies
         this.ui = dependencies.ui;
         this.state = dependencies.state;
 
@@ -11,14 +11,29 @@ export class Scenario {
         this.currentAcceptedAnswers = [];
         this.currentDifficulty = 1;
 
-        this.helpEnabled = false;
+        this.questionType = 'expression'; // 'expression', 'truth-table', or 'draw-circuit'
+        this.currentTruthTableData = [];
+        this.inputs = [];
+        this.intermediateExpressions = [];
 
+        this.helpEnabled = false;
+        // Truth table options state
+        this.showIntermediateColumns = false;
+        this.expertMode = false;
     }
 
     /**
-     * Initializes the scenario mode, generating the first scenario.
+     * Initializes the scenario mode, adding event listeners and generating the first question.
      */
     initialize() {
+        document.getElementById('scenarioShowIntermediate').onchange = () => {
+            this.showIntermediateColumns = document.getElementById('scenarioShowIntermediate').checked;
+            this._redrawTable();
+        };
+        document.getElementById('scenarioExpertMode').onchange = () => {
+            this.expertMode = document.getElementById('scenarioExpertMode').checked;
+            this._redrawTable();
+        };
         this.generateQuestion();
     }
 
@@ -236,84 +251,124 @@ export class Scenario {
             ]
         };
     
-        const scenarioDisplay = document.getElementById('scenarioDisplay');
         const scenarios = scenarioScenarios[this.currentDifficulty];
-    
-        // Pick a random scenario from the current difficulty level
         const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-    
-        // Store the current expression and generate accepted answers
+
         this.currentExpression = randomScenario.expression;
         this.currentAcceptedAnswers = generateAllAcceptedAnswers(this.currentExpression);
 
-        // Generate the HTML for the scenario display
+        // Generate the HTML for the scenario description and input table
         let inputTableRows = '';
         for (const [input, description] of Object.entries(randomScenario.inputs)) {
-            inputTableRows += `
-                <tr>
-                    <td><strong>${input}</strong></td>
-                    <td>${description}</td>
-                </tr>
-            `;
+            inputTableRows += `<tr><td><strong>${input}</strong></td><td>${description}</td></tr>`;
         }
-    
-        // Replace newlines in scenario text with <br> for HTML display
         const scenarioHTML = `
             <div class="scenario-content">
                 <h3>${randomScenario.title}</h3>
-                <div class="panel bg-white panel-accent-info">
-                    ${randomScenario.scenario.replace(/\n/g, '<br>')}
-                </div>
-                
+                <div class="panel bg-white panel-accent-info">${randomScenario.scenario.replace(/\n/g, '<br>')}</div>
                 <div class="input-table-container">
                     <table class="input-table">
-                        <thead>
-                            <tr>
-                                <th>Input</th>
-                                <th>Criteria (True / False)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${inputTableRows}
-                        </tbody>
+                        <thead><tr><th>Input</th><th>Criteria (True / False)</th></tr></thead>
+                        <tbody>${inputTableRows}</tbody>
                     </table>
                 </div>
-            </div>
-        `;
-    
-        scenarioDisplay.innerHTML = scenarioHTML;
+            </div>`;
+        document.getElementById('scenarioDisplay').innerHTML = scenarioHTML;
         document.getElementById('scenarioInput').value = '';
+        
+        // Randomly choose a question type
+        const questionTypes = ['expression', 'truth-table', 'draw-circuit'];
+        this.questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+        
+        // Hide all task-specific containers and options
+        document.getElementById('scenarioExpressionTask').style.display = 'none';
+        document.getElementById('scenarioTruthTableTask').style.display = 'none';
+        document.getElementById('scenarioDrawCircuitTask').style.display = 'none';
+        document.getElementById('scenarioTruthTableOptions').style.display = 'none';
+        document.getElementById('scenarioHelpInfo').style.display = 'none';
+        this.ui.showSubmitButton();
 
-        this.updateHelpDisplay();
+        const questionTitle = document.getElementById('scenarioQuestionTitle');
+
+        // Configure UI based on the chosen question type
+        switch (this.questionType) {
+            case 'truth-table':
+                questionTitle.textContent = 'Complete the truth table for this scenario:';
+                document.getElementById('scenarioTruthTableTask').style.display = 'block';
+                document.getElementById('scenarioTruthTableOptions').style.display = 'flex';
+                this._generateTruthTable();
+                break;
+
+            case 'draw-circuit':
+                questionTitle.textContent = 'Draw the logic circuit for this scenario:';
+                document.getElementById('scenarioDrawCircuitTask').style.display = 'block';
+                this.ui.hideSubmitButton(); // No submission for placeholder
+                break;
+
+            case 'expression':
+            default:
+                questionTitle.textContent = 'Write the Boolean expression for this scenario:';
+                document.getElementById('scenarioExpressionTask').style.display = 'block';
+                this.updateHelpDisplay();
+                break;
+        }   
+    }
+    
+        /**
+     * Generates and renders the truth table using functions from the utility module.
+     */
+    _generateTruthTable() {
+        const parsedData = ttUtils.parseExpressionForTable(this.currentExpression);
+        this.inputs = parsedData.inputs;
+        this.intermediateExpressions = parsedData.intermediateExpressions;
+
+        this.currentTruthTableData = ttUtils.calculateTruthTableData(this.currentExpression, this.inputs, this.intermediateExpressions, this.showIntermediateColumns);
+        const tableHTML = ttUtils.generateTableHTML(this.currentTruthTableData, this.inputs, this.intermediateExpressions, this.currentExpression, this.showIntermediateColumns, this.expertMode);
+
+        document.getElementById('scenarioTruthTableContainer').innerHTML = tableHTML;
+        this.ui.resetUIState('scenarioMode');
     }
 
+    /**
+     * Helper to redraw the table when an option (e.g., expert mode) is toggled.
+     */
+    _redrawTable() {
+        if (this.questionType === 'truth-table') {
+            this._generateTruthTable();
+        }
+    }
+
+    /**
+     * Routes to the correct checking logic based on the current question type.
+     */
     checkAnswer() {
         if (this.state.getAnswered()) return;
 
-        const userAnswer = document.getElementById('scenarioInput').value.trim().toUpperCase();
+        switch (this.questionType) {
+            case 'expression':
+                this._checkExpressionAnswer();
+                break;
+            case 'truth-table':
+                this._checkTruthTableAnswer();
+                break;
+            case 'draw-circuit':
+                // No action needed for the placeholder
+                break;
+        }
+    }
 
+    /**
+     * Checks the user's submitted Boolean expression.
+     */
+    _checkExpressionAnswer() {
+        const userAnswer = document.getElementById('scenarioInput').value.trim().toUpperCase();
         this.state.setAnswered(true);
         this.ui.hideSubmitButton();
 
-        // Use the same normalization function as the regular expression mode
-        function normalizeExpression(expr) {
-            return expr
-                .replace(/\s+/g, ' ') // Collapse multiple spaces to single space
-                .replace(/\s*\(\s*/g, '(') // Remove spaces around opening parentheses
-                .replace(/\s*\)\s*/g, ')') // Remove spaces around closing parentheses  
-                .replace(/\s*(AND|OR|NOT)\s*/g, ' $1 ') // Ensure single space around operators
-                .replace(/\s+/g, ' ') // Collapse any remaining multiple spaces
-                .trim(); // Remove leading/trailing spaces
-        }
-
-        // Normalize the user answer for comparison
+        const normalizeExpression = (expr) => expr.replace(/\s+/g, ' ').replace(/\s*\(\s*/g, '(').replace(/\s*\)\s*/g, ')').replace(/\s*(AND|OR|NOT)\s*/g, ' $1 ').trim();
         const normalizedUser = normalizeExpression(userAnswer);
 
-        // Check if user answer matches any of the accepted answers
-        const isCorrect = this.currentAcceptedAnswers.some(acceptedAnswer => {
-            const normalizedAccepted = normalizeExpression(acceptedAnswer.toUpperCase());
-            return normalizedUser === normalizedAccepted;
-        });
+        const isCorrect = this.currentAcceptedAnswers.some(accepted => normalizeExpression(accepted.toUpperCase()) === normalizedUser);
 
         this.state.recordResult(isCorrect);
         if (isCorrect) {
@@ -321,8 +376,39 @@ export class Scenario {
         } else {
             this.ui.showFeedback(`Incorrect. The correct answer is: ${this.currentExpression}`, 'incorrect');
         }
-
         this.ui.showNextButton();
+    }
+
+    /**
+     * Checks the user's submitted truth table using functions from the utility module.
+     */
+    _checkTruthTableAnswer() {
+        if (this.state.getAnswered()) return;
+
+        this.ui.hideSubmitButton();
+        if (this.expertMode) {
+            ttUtils.checkExpertModeAnswer(this.currentTruthTableData, this.ui, this.state);
+        } else {
+            ttUtils.checkNormalModeAnswer(this.currentExpression, this.currentTruthTableData, this.ui, this.state);
+        }
+    }
+
+    /**
+     * Shows or hides the "Accepted Answers" help section for the expression task.
+     */
+    updateHelpDisplay() {
+        const helpCheckbox = document.getElementById('scenarioDebugMode');
+        this.helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
+        const helpInfoDiv = document.getElementById('scenarioHelpInfo');
+        if (!helpInfoDiv) return;
+
+        if (this.helpEnabled && this.questionType === 'expression') {
+            helpInfoDiv.style.display = 'block';
+            const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
+            acceptedAnswersDiv.innerHTML = this.currentAcceptedAnswers.map(answer => `<div>${answer}</div>`).join('');
+        } else {
+            helpInfoDiv.style.display = 'none';
+        }
     }
 
     updateHelpDisplay() {

@@ -30,7 +30,7 @@ export class ScoreManager {
             'writeExpression': { 1: 3, 2: 5, 3: 7, 4: 10},
             'truthTable': { 1: 4, 2: 8, 3: 12, 4: 20},
             'drawCircuit': { 1: 3, 2: 6, 3: 10, 4: 15},
-            'scenario': { 1: 3, 2: 5, 3: 8}
+            'scenario': { 1: 4, 2: 6, 3: 10}
         };
     }
 
