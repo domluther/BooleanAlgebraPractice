@@ -122,7 +122,7 @@ export class NameThat {
 
     _generateLevel3Question() {
         const displayArea = document.getElementById('nameThatLogicDiagramDisplay');
-        const expressions = expressionDatabase.level2NoOverlap; // Use more complex expressions
+        const expressions = [...expressionDatabase.level2NoOverlap]; // Use more complex expressions
 
         // 1. Select a correct expression
         this.correctExpression = expressions[Math.floor(Math.random() * expressions.length)];
