@@ -6,10 +6,11 @@ export class CircuitGenerator {
 		this.gateId = 0;
 		this.wireId = 0;
 		this.variablePositions = new Map(); // Track variable positions to avoid overlaps
+		this.input = '';
 	}
 
 	parseExpression(expr) {
-		// Remove Q = from the beginning
+		this.input = expr.split(' = ')[0];
 		const rightSide = expr.split(' = ')[1];
 		return this.parseTokens(this.tokenize(rightSide));
 	}
@@ -314,9 +315,9 @@ export class CircuitGenerator {
 		svg += this.renderGates(layout);
 
 		// Output label
-		svg += `<text x="${width - 30}" y="${height/2 + 5}" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
+		svg += `<text x="${width - 30}" y="${height/2 + 5}" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
 
-		// Output line to Q
+		// Output line to eg Q
 		const rootOutput = this.getOutputPoint(layout);
 		svg += `<line x1="${rootOutput.x}" y1="${rootOutput.y}" x2="${width - 50}" y2="${height/2}" stroke="#333" stroke-width="2"/>`;
 

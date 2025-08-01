@@ -1,7 +1,7 @@
 // js/draw-circuit.js
 
 import { expressionDatabase } from './data.js';
-import { generateAllAcceptedAnswers } from './expression-utils.js';
+import { generateAllAcceptedAnswers, shuffleExpression } from './expression-utils.js';
 
 export class DrawCircuit {
     constructor(dependencies) {
@@ -73,6 +73,13 @@ export class DrawCircuit {
         const expressions = expressionDatabase[levelKey];
         
         this.targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
+
+        // If difficulty is 3 or 4, generate different input and output variables.
+        if (this.currentDifficulty >= 3) {
+            this.targetExpression = shuffleExpression(this.targetExpression);
+        }
+        
+
         document.getElementById('circuitTargetExpression').innerHTML = `<div class="expression-text">${this.targetExpression}</div>`;
         this.parsedTargetExpression = this._parseExpression(this.targetExpression);
 

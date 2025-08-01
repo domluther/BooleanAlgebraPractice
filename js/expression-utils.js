@@ -219,3 +219,84 @@ function _generateExpressionVariations(expression) {
 		return [expression];
 	}
 }
+
+export function shuffleExpression(expression){
+            const inputVars = getInputVariables(expression);
+            return replaceVariables(inputVars, expression);
+}
+
+export function getInputVariables(expression) {
+
+        const rightSide = expression.split(' = ')[1];
+
+        let cleanExpression = rightSide
+            .replace(/\bAND\b/g, ' | ')
+            .replace(/\bOR\b/g, ' | ')
+            .replace(/\bNOT\b/g, ' | ')
+            .replace(/\bXOR\b/g, ' | ')
+            .replace(/[()]/g, ' | ');
+        const tokens = cleanExpression.split('|').map(token => token.trim()).filter(token => token.length > 0);
+
+		return [...new Set(tokens.filter(token =>
+            token.length === 1 && token.match(/[A-Z]/)
+        ))].sort();
+}
+
+
+/**
+ * Replaces the input and output variables in a Boolean expression with new random ones.
+ * - Input variables are replaced with unique characters from A-H.
+ * - The output variable is replaced with a character from P-Z.
+ * This method returns the new expression.
+ * @param {string[]} inputVars - An array of the original input variables, e.g., ['A', 'B'].
+ * @param {string} expression - The full original expression string, e.g., "Q = A AND (B OR A)".
+ */
+function replaceVariables(inputVars, expression) {
+	// Ensure these don't overlap - otherwise we can end up with collisions
+    const inputLetterPool = ['A','B','C','D','E','F','G','H'];
+    const outputLetterPool = ['P','Q','R','S','T','U','V','W','X','Y','Z'];
+
+    // 1. Create a shuffled list of potential replacements.
+    const replacements = [...inputLetterPool].sort(() => Math.random() - 0.5);
+
+    const inputMap = {};
+    
+    // 2. Assign a unique replacement to each input variable.
+    for (const originalVar of inputVars) {
+        if (replacements.length > 0) {
+            const newVar = replacements.pop();
+            inputMap[originalVar] = newVar;
+        } else {
+            // Fallback: If we run out of replacements, map the variable to itself.
+            newVar = originalVar;
+            inputMap[originalVar] = newVar; 
+        }
+    }
+    
+    // Replace the output variable.
+    let newExpression = expression;
+    const outputVarMatch = expression.match(/^(\w)\s*=/);
+    if (outputVarMatch) {
+        const outputVar = outputVarMatch[1];
+        const outputReplacement = outputLetterPool[Math.floor(Math.random() * outputLetterPool.length)];
+        const outputRegex = new RegExp(`^${outputVar}(\\s*=)`);
+        newExpression = newExpression.replace(outputRegex, `${outputReplacement}$1`);
+    }
+
+    // Replace input variables using the corrected, collision-free map.
+	// Step 1: Temporarily replace input variables with unique tokens
+	const tempMap = {};
+	for (const [originalVar, newVar] of Object.entries(inputMap)) {
+		const tempToken = `__TMP_${originalVar}__`;
+		tempMap[tempToken] = newVar;
+		const regex = new RegExp(`\\b${originalVar}\\b`, 'g');
+		newExpression = newExpression.replace(regex, tempToken);
+	}
+
+	// Step 2: Replace temporary tokens with final new variable names
+	for (const [tempToken, newVar] of Object.entries(tempMap)) {
+		const regex = new RegExp(tempToken, 'g');
+		newExpression = newExpression.replace(regex, newVar);
+	}
+    return newExpression;
+}

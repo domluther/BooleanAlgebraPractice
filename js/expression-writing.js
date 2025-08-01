@@ -1,7 +1,7 @@
 // expression-writing.js
 
 import { expressionDatabase } from './data.js';
-import { generateAllAcceptedAnswers } from './expression-utils.js';
+import { generateAllAcceptedAnswers, shuffleExpression } from './expression-utils.js';
 
 export class ExpressionWriting {
     constructor(circuitGenerator, dependencies) {
@@ -42,6 +42,12 @@ export class ExpressionWriting {
         const expressions = expressionDatabase[levelKey];
 
         this.currentExpression = expressions[Math.floor(Math.random() * expressions.length)];
+
+        // If difficulty is 3 or 4, generate different input and output variables.
+        if (this.currentDifficulty >= 3) {
+            this.currentExpression = shuffleExpression(this.currentExpression);
+        }
+
         this.circuitGenerator.generateCircuit(this.currentExpression, logicDiagramDisplay);
 
         this.currentAcceptedAnswers = generateAllAcceptedAnswers(this.currentExpression);
