@@ -73,11 +73,12 @@ export class TruthTable {
     checkAnswer() {
         if (this.state.getAnswered()) return;
 
-        this.ui.hideSubmitButton();
+        const containerId = 'truthTableContainer';
+
         if (this.expertMode) {
-            ttUtils.checkExpertModeAnswer(this.currentTruthTableData, this.ui, this.state);
+            ttUtils.checkExpertModeAnswer(this.currentTruthTableData, this.ui, this.state, containerId);
         } else {
-            ttUtils.checkNormalModeAnswer(this.currentExpression, this.currentTruthTableData, this.ui, this.state);
+            ttUtils.checkNormalModeAnswer(this.currentExpression, this.currentTruthTableData, this.ui, this.state, containerId);
         }
     }
 

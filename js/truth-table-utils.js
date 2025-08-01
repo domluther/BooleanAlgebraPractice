@@ -163,12 +163,17 @@ function _validateExpertModeAnswers(userRows, correctData) {
  * @param {object[]} truthTableData - The correct, pre-calculated truth table data.
  * @param {object} ui - The UI dependency for showing feedback.
  * @param {object} state - The state dependency for recording results.
+ * @param {string} containerId - The ID of the parent container holding the table.
  */
-export function checkNormalModeAnswer(expression, truthTableData, ui, state) {
+export function checkNormalModeAnswer(expression, truthTableData, ui, state, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
     const outputVariable = expression.split(' = ')[0].trim();
-    const outputSelects = document.querySelectorAll('.output-select');
+    const outputSelects = container.querySelectorAll('.output-select');
     let outputCorrect = 0;
     let allOutputAnswered = true;
+
 
     outputSelects.forEach((select) => {
         const rowIndex = parseInt(select.dataset.row);
@@ -202,6 +207,7 @@ export function checkNormalModeAnswer(expression, truthTableData, ui, state) {
     if (!allOutputAnswered) {
         ui.showFeedback(`Please answer all rows in the output column (${outputVariable}).`, 'incorrect');
         ui.showSubmitButton();
+        // Not all answered? Enable unanswered selects
         document.querySelectorAll('.truth-table-select.unanswered').forEach(s => {
             s.disabled = false;
             s.classList.remove('unanswered');
@@ -209,15 +215,25 @@ export function checkNormalModeAnswer(expression, truthTableData, ui, state) {
         return;
     }
 
+    // Can't skip the question until you at least try to answer every dropdown
+    ui.showNextButton();
+
     const isCorrect = outputCorrect === outputSelects.length;
     state.recordResult(isCorrect);
     if (isCorrect) {
         ui.showFeedback('Correct! Perfect truth table!', 'correct');
         state.setAnswered(true);
+        ui.hideSubmitButton();
     } else {
+        // Lets them try again
+        ui.showSubmitButton();
         ui.showFeedback(`Output column: ${outputCorrect}/${outputSelects.length} correct. Review the highlighted answers.`, 'incorrect');
+                document.querySelectorAll('.truth-table-select.incorrect').forEach(s => {
+            s.disabled = false;
+            // s.classList.remove('incorrect');
+        });
+
     }
-    ui.showNextButton();
 }
 
 /**
@@ -225,9 +241,13 @@ export function checkNormalModeAnswer(expression, truthTableData, ui, state) {
  * @param {object[]} truthTableData - The correct, pre-calculated truth table data.
  * @param {object} ui - The UI dependency for showing feedback.
  * @param {object} state - The state dependency for recording results.
+ * @param {string} containerId - The ID of the parent container holding the table.
  */
-export function checkExpertModeAnswer(truthTableData, ui, state) {
-    const allSelects = document.querySelectorAll('.truth-table-select');
+export function checkExpertModeAnswer(truthTableData, ui, state, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const allSelects = container.querySelectorAll('.truth-table-select');
     const userRows = [];
     const numRows = truthTableData.length;
     let allFieldsFilled = true;
