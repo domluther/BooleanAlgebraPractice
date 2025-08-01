@@ -66,17 +66,21 @@ function _generateExpressionVariations(expression) {
 			}
 		}
 
-		// Find the main operator (AND/OR) at the lowest depth
+		// Find the main operator (AND/OR/XOR) at the lowest depth
 		let depth = 0;
 		let mainOpIndex = -1;
 		let mainOp = null;
 
-		// Look for OR first (lower precedence)
+		// Look for OR and XOR first (lower precedence than AND)
 		for (let i = expr.length - 1; i >= 0; i--) {
 			if (expr[i] === ')') depth++;
 			else if (expr[i] === '(') depth--;
 			else if (depth === 0) {
-				if (expr.substring(i, i + 3) === ' OR') {
+				if (expr.substring(i, i + 4) === ' XOR') {
+					mainOpIndex = i;
+					mainOp = 'XOR';
+					break;
+				} else if (expr.substring(i, i + 3) === ' OR') {
 					mainOpIndex = i;
 					mainOp = 'OR';
 					break;
@@ -89,7 +93,13 @@ function _generateExpressionVariations(expression) {
 
 		if (mainOpIndex !== -1) {
 			const left = expr.substring(0, mainOpIndex).trim();
-			const right = expr.substring(mainOpIndex + (mainOp === 'OR' ? 3 : 4)).trim();
+			let operatorLength;
+			if (mainOp === 'OR') {
+				operatorLength = 3;
+			} else if (mainOp === 'AND' || mainOp === 'XOR') {
+				operatorLength = 4;
+			}
+			const right = expr.substring(mainOpIndex + operatorLength).trim();
 
 			return {
 				type: mainOp,
@@ -120,7 +130,7 @@ function _generateExpressionVariations(expression) {
 			}));
 		}
 
-		if (ast.type === 'AND' || ast.type === 'OR') {
+		if (ast.type === 'AND' || ast.type === 'OR' || ast.type === 'XOR') {
 			const leftVariations = _generateASTVariations(ast.left);
 			const rightVariations = _generateASTVariations(ast.right);
 
@@ -161,7 +171,7 @@ function _generateExpressionVariations(expression) {
 			const operandStr = _astToString(ast.operand);
 
 			// Use parentheses if originally had them or if operand is complex
-			const needsParens = ast.hasParens || (ast.operand.type === 'AND' || ast.operand.type === 'OR');
+			const needsParens = ast.hasParens || (ast.operand.type === 'AND' || ast.operand.type === 'OR' || ast.operand.type === 'XOR');
 
 			if (needsParens) {
 				return `(NOT ${operandStr})`;
@@ -169,7 +179,7 @@ function _generateExpressionVariations(expression) {
 			return `NOT ${operandStr}`;
 		}
 
-		if (ast.type === 'AND' || ast.type === 'OR') {
+		if (ast.type === 'AND' || ast.type === 'OR' || ast.type === 'XOR') {
 			const leftStr = _astToString(ast.left);
 			const rightStr = _astToString(ast.right);
 
@@ -178,10 +188,10 @@ function _generateExpressionVariations(expression) {
 			let rightFinal = rightStr;
 
 			// Add parentheses if sub-expression is complex (contains operators)
-			if (ast.left.type === 'AND' || ast.left.type === 'OR') {
+			if (ast.left.type === 'AND' || ast.left.type === 'OR' || ast.left.type === 'XOR') {
 				leftFinal = `(${leftStr})`;
 			}
-			if (ast.right.type === 'AND' || ast.right.type === 'OR') {
+			if (ast.right.type === 'AND' || ast.right.type === 'OR' || ast.right.type === 'XOR') {
 				rightFinal = `(${rightStr})`;
 			}
 

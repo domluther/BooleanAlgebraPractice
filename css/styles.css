@@ -417,7 +417,7 @@ body {
 
 /* ----- Score System & Modal ----- */
 .score-button {
-	position: absolute;
+	position: absolute; /* fixed would make it stay in corner */
 	top: var(--spacing-lg);
 	right: var(--spacing-xl);
 	background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
@@ -436,7 +436,7 @@ body {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	display: block;
+	/* display: block; */
 }
 
 .score-button:hover {

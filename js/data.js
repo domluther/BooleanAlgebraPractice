@@ -8,7 +8,7 @@ export const expressionDatabase = {
 		"Q = NOT B",
 	],
 	level2: [
-		"Q = (A and B) AND C",
+		"Q = (A AND B) AND C",
 		"Q = (A AND B) OR C",
 		"Q = (A AND C) AND B",
 		"Q = (A AND C) OR B",

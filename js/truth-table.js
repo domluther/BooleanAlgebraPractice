@@ -148,6 +148,7 @@ export class TruthTable {
             .replace(/\bAND\b/g, ' | ')
             .replace(/\bOR\b/g, ' | ')
             .replace(/\bNOT\b/g, ' | ')
+            .replace(/\bXOR\b/g, ' | ')
             .replace(/[()]/g, ' | ');
 
         const tokens = cleanExpression.split('|').map(token => token.trim()).filter(token => token.length > 0);
@@ -208,7 +209,8 @@ export class TruthTable {
             evalExpression = evalExpression
                 .replace(/\bAND\b/g, '&&')
                 .replace(/\bOR\b/g, '||')
-                .replace(/\bNOT\b/g, '!');
+                .replace(/\bNOT\b/g, '!')
+                .replace(/\bXOR\b/g, '^')
             
             return eval(evalExpression);
         } catch (error) {

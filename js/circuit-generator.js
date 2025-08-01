@@ -28,6 +28,9 @@ export class CircuitGenerator {
 			} else if (expr[i] === ')') {
 				tokens.push(')');
 				i++;
+			} else if (expr.substr(i, 3) === 'XOR') {
+				tokens.push('XOR');
+				i += 3;
 			} else if (expr.substr(i, 3) === 'AND') {
 				tokens.push('AND');
 				i += 3;
@@ -52,13 +55,30 @@ export class CircuitGenerator {
 	}
 
 	parseOr(tokens, pos) {
-		let result = this.parseAnd(tokens, pos);
+		let result = this.parseXor(tokens, pos);
 
 		while (result.pos < tokens.length && tokens[result.pos] === 'OR') {
-			const right = this.parseAnd(tokens, result.pos + 1);
+			const right = this.parseXor(tokens, result.pos + 1);
 			result = {
 				node: {
 					type: 'OR',
+					left: result.node,
+					right: right.node
+				},
+				pos: right.pos
+			};
+		}
+		return result;
+	}
+
+	parseXor(tokens, pos) {
+		let result = this.parseAnd(tokens, pos);
+
+		while (result.pos < tokens.length && tokens[result.pos] === 'XOR') {
+			const right = this.parseAnd(tokens, result.pos + 1);
+			result = {
+				node: {
+					type: 'XOR',
 					left: result.node,
 					right: right.node
 				},
@@ -144,8 +164,8 @@ export class CircuitGenerator {
 	isSingleGateCircuit(node) {
 		if (!node) return false;
 
-		// Single gate: AND/OR with only variable children, or NOT with variable child
-		if (node.type === 'AND' || node.type === 'OR') {
+		// Single gate: AND/OR/XOR with only variable children, or NOT with variable child
+		if (node.type === 'AND' || node.type === 'OR' || node.type === 'XOR') {
 			return (node.left && node.left.type === 'VAR') &&
 				(node.right && node.right.type === 'VAR');
 		} else if (node.type === 'NOT') {
@@ -197,7 +217,7 @@ export class CircuitGenerator {
 			nodeLayout.width = 60;
 			nodeLayout.height = 40;
 			nodeLayout.operand = this.layoutNodes(node.operand, x - 90, y, level + 1, y);
-		} else { // AND or OR
+		} else { // AND, OR, or XOR
 			nodeLayout.width = 80;
 			nodeLayout.height = 60;
 
@@ -315,9 +335,9 @@ export class CircuitGenerator {
 			// Hardcoded AND gate
 			const varA = layout.left.name;
 			const varB = layout.right.name;
-			return `<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="50" x2="60" y2="50" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="70" x2="60" y2="70" stroke="#333" stroke-width="2"/>
+			return `<path d="M 62 35 L 62 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="#333" stroke-width="2"/>
+        <line x1="30" y1="50" x2="62" y2="50" stroke="#333" stroke-width="2"/>
+        <line x1="30" y1="70" x2="62" y2="70" stroke="#333" stroke-width="2"/>
         <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
         <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
         <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
@@ -338,11 +358,26 @@ export class CircuitGenerator {
         <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
 		}
 
+		if (layout.type === 'XOR' && layout.left && layout.right &&
+			layout.left.type === 'VAR' && layout.right.type === 'VAR') {
+			// Hardcoded XOR gate - OR shape with extra input curve, lines connect to main gate body
+			const varA = layout.left.name;
+			const varB = layout.right.name;
+			return `<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="#333" stroke-width="2"/>
+        <path d="M 55 35 Q 70 60 55 85" fill="none" stroke="#333" stroke-width="2"/>
+        <line x1="30" y1="50" x2="65" y2="50" stroke="#333" stroke-width="2"/>
+        <line x1="30" y1="70" x2="65" y2="70" stroke="#333" stroke-width="2"/>
+        <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
+        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
+        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
+		}
+
 		if (layout.type === 'NOT' && layout.operand && layout.operand.type === 'VAR') {
 			// Hardcoded NOT gate
 			const varA = layout.operand.name;
 			return `<path d="M 60 30 L 60 90 L 108 60 Z" fill="none" stroke="#333" stroke-width="2"/>
-        <circle cx="115" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
+        <circle cx="114" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
         <line x1="30" y1="60" x2="60" y2="60" stroke="#333" stroke-width="2"/>
         <line x1="120" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
         <text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
@@ -375,6 +410,13 @@ export class CircuitGenerator {
 			svg += this.renderGates(node.right);
 		} else if (node.type === 'OR') {
 			svg += `<path d="M ${node.x - 40} ${node.y - 30} Q ${node.x - 15} ${node.y - 30} ${node.x + 10} ${node.y} Q ${node.x - 15} ${node.y + 30} ${node.x - 40} ${node.y + 30} Q ${node.x - 25} ${node.y} ${node.x - 40} ${node.y - 30}" fill="none" stroke="#333" stroke-width="2"/>`;
+			svg += this.renderGates(node.left);
+			svg += this.renderGates(node.right);
+		} else if (node.type === 'XOR') {
+			// XOR gate - OR shape with additional input curve
+			svg += `<path d="M ${node.x - 40} ${node.y - 30} Q ${node.x - 15} ${node.y - 30} ${node.x + 10} ${node.y} Q ${node.x - 15} ${node.y + 30} ${node.x - 40} ${node.y + 30} Q ${node.x - 25} ${node.y} ${node.x - 40} ${node.y - 30}" fill="none" stroke="#333" stroke-width="2"/>`;
+			// Additional curved line at the input
+			svg += `<path d="M ${node.x - 45} ${node.y - 30} Q ${node.x - 30} ${node.y} ${node.x - 45} ${node.y + 30}" fill="none" stroke="#333" stroke-width="2"/>`;
 			svg += this.renderGates(node.left);
 			svg += this.renderGates(node.right);
 		} else if (node.type === 'NOT') {
@@ -424,6 +466,21 @@ export class CircuitGenerator {
 
 			svg += this.renderConnections(node.left);
 			svg += this.renderConnections(node.right);
+		} else if (node.type === 'XOR') {
+			// Connection from left child to gate - connect to main gate body, passing through the extra curve
+			if (node.left) {
+				const leftOutput = this.getOutputPoint(node.left);
+				svg += `<line x1="${leftOutput.x}" y1="${leftOutput.y}" x2="${node.x - 35}" y2="${node.y - 15}" stroke="#333" stroke-width="2"/>`;
+			}
+
+			// Connection from right child to gate - connect to main gate body, passing through the extra curve
+			if (node.right) {
+				const rightOutput = this.getOutputPoint(node.right);
+				svg += `<line x1="${rightOutput.x}" y1="${rightOutput.y}" x2="${node.x - 35}" y2="${node.y + 15}" stroke="#333" stroke-width="2"/>`;
+			}
+
+			svg += this.renderConnections(node.left);
+			svg += this.renderConnections(node.right);
 		} else if (node.type === 'NOT') {
 			// Connection from operand to NOT gate
 			if (node.operand) {
@@ -453,7 +510,7 @@ export class CircuitGenerator {
 				x: node.x + 30,
 				y: node.y
 			};
-		} else if (node.type === 'OR') {
+		} else if (node.type === 'OR' || node.type === 'XOR') {
 			return {
 				x: node.x + 10,
 				y: node.y
