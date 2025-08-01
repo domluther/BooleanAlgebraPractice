@@ -1,5 +1,7 @@
 // name-that-gate.js
 
+import {expressionDatabase} from './data.js';
+
 export class NameThatGate {
     constructor(circuitGenerator, dependencies) {
         this.circuitGenerator = circuitGenerator;
@@ -8,31 +10,39 @@ export class NameThatGate {
         this.state = dependencies.state;
         this.currentGate = '';
         this.reason = '';
+        this.currentDifficulty = 1;
+        this.correctExpression = ''; // for level 2
     }
 
     /**
      * Initializes the mode, generating the answer options and the first question.
      */
     initialize() {
-        this.generateOptions();
         this.generateQuestion();
         // Use the injected UI function
         this.ui.hideSubmitButton();    }
 
     /**
-     * Creates the answer buttons ('AND', 'OR', 'NOT', 'NONE') for this mode.
+     * Handles difficulty level changes.
+     * @param {number} level - The new difficulty level.
      */
-    generateOptions() {
+    setDifficulty(level) {
+        this.currentDifficulty = level;
+        this.generateQuestion();
+    }
+
+    /**
+     * Creates the answer buttons for this mode.
+    */
+    generateOptions(labels) {
         const optionsContainer = document.querySelector('#nameThatGateMode .options');
         optionsContainer.innerHTML = '';
 
-        const gates = ['AND', 'OR', 'NOT', 'NONE'];
-        gates.forEach(gate => {
+        labels.forEach(label => {
             const button = document.createElement('button');
             button.classList.add('btn', 'option');
-            button.textContent = gate;
-            // The button now calls this class's checkAnswer method directly
-            button.onclick = () => this.checkAnswer(gate);
+            button.textContent = label;
+            button.onclick = () => this.checkAnswer(label);
             optionsContainer.appendChild(button);
         });
     }
@@ -41,16 +51,28 @@ export class NameThatGate {
      * Generates a new question by picking a random gate and rendering it.
      */
     generateQuestion() {
-        const gates = ['AND', 'OR', 'NOT', 'NONE', 'NONE']; // 'NONE' is weighted higher
-        this.currentGate = gates[Math.floor(Math.random() * gates.length)];
+        const questionTitle = document.getElementById('nameThatGateQuestionTitle');
 
-        const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
-        if (!svgCanvas) {
-            console.error("SVG canvas element not found.");
-            return;
+        if (this.currentDifficulty === 1) {
+            questionTitle.textContent = 'Which GCSE logic gate is this?';
+            this.generateLevel1Question();
+        } else { // Level 2
+            questionTitle.textContent = 'Which expression matches this logic diagram?';
+            this.generateLevel2Question();
         }
 
-        this.reason = ''; // Reset the reason
+        document.querySelectorAll('#nameThatGateMode .options .btn').forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('correct', 'incorrect', 'disabled');
+        });
+    }
+
+    generateLevel1Question() {
+        const gates = ['AND', 'OR', 'NOT', 'NONE', 'NONE'];
+        this.currentGate = gates[Math.floor(Math.random() * gates.length)];
+        const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
+        this.reason = '';
+
         switch (this.currentGate) {
             case 'AND':
                 this.circuitGenerator.generateCircuit('Q = A AND B', svgCanvas);
@@ -65,54 +87,75 @@ export class NameThatGate {
                 svgCanvas.innerHTML = this._drawInvalidGate();
                 break;
         }
+        this.generateOptions(['AND', 'OR', 'NOT', 'NONE']);
+    }
 
-        // Reset option button styles
-        document.querySelectorAll('#nameThatGateMode .options .btn').forEach(btn => {
-            btn.disabled = false;
-            btn.classList.remove('correct', 'incorrect', 'disabled');
-        });
+    // TODO - expressionDatabase contains questions with commutation which is problematic here ie Q = A AND B is the same as Q = B AND A but one would be marked wrong
+    generateLevel2Question() {
+        const svgCanvas = document.getElementById('nameThatGateLogicDiagramDisplay');
+        const expressions = expressionDatabase.level2;
+
+        this.correctExpression = expressions[Math.floor(Math.random() * expressions.length)];
+        this.circuitGenerator.generateCircuit(this.correctExpression, svgCanvas);
+
+        const options = [this.correctExpression];
+        const otherExpressions = expressions.filter(expr => expr !== this.correctExpression);
+
+        while (options.length < 4 && otherExpressions.length > 0) {
+            const randomIndex = Math.floor(Math.random() * otherExpressions.length);
+            options.push(otherExpressions.splice(randomIndex, 1)[0]);
+        }
+
+        // Shuffle the options so the correct answer isn't always first
+        for (let i = options.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [options[i], options[j]] = [options[j], options[i]];
+        }
+
+        this.generateOptions(options);
     }
 
     /**
-     * Checks the user's selected answer against the correct gate.
-     * @param {string} selectedAnswer - The gate name selected by the user.
+     * Checks the user's selected answer against the correct answer.
+     * @param {string} selectedAnswer - The answer selected by the user.
      */
     checkAnswer(selectedAnswer) {
-        // Use the injected state functions
         if (this.state.getAnswered()) return;
         this.state.setAnswered(true);
-        const nameThatGateButtons = document.querySelectorAll('#nameThatGateMode .options .btn');
 
-        const isCorrect = selectedAnswer === this.currentGate;
+        const isLevel1 = this.currentDifficulty === 1;
+        const correctAnswer = isLevel1 ? this.currentGate : this.correctExpression;
+        const isCorrect = selectedAnswer === correctAnswer;
+
         this.state.recordResult(isCorrect);
 
+        let feedbackMessage;
+
+        // Handle feedback messages
         if (isCorrect) {
-            nameThatGateButtons.forEach(btn => {
-                if (btn.textContent === selectedAnswer) {
-                    btn.classList.add('correct');
-                }
-            });
-            let message = 'Correct! Well done!';
-            if (this.currentGate === 'NONE') {
-                message = `Correct! This is not a GCSE logic gate. ${this.reason}`;
+            feedbackMessage = 'Correct! Well done!';
+            // Provide specific reason if the 'NONE' answer is correctly identified in Level 1
+            if (isLevel1 && correctAnswer === 'NONE') {
+                feedbackMessage = `Correct! This is not a GCSE logic gate. ${this.reason}`;
             }
-            this.ui.showFeedback(message, 'correct'); // Inject UI function
         } else {
-            nameThatGateButtons.forEach(btn => {
-                if (btn.textContent === selectedAnswer) {
-                    btn.classList.add('incorrect');
-                } else if (btn.textContent === this.currentGate) {
-                    btn.classList.add('correct');
-                }
-            });
-            let message = `Incorrect! The correct answer is ${this.currentGate}!`;
-            if (this.currentGate === 'NONE') {
-                message = `Incorrect! This is not a GCSE logic gate. ${this.reason}`;
+            feedbackMessage = `Incorrect! The correct answer is ${correctAnswer}!`;
+            // Provide specific reason if the 'NONE' answer is incorrectly identified in Level 1
+            if (isLevel1 && correctAnswer === 'NONE') {
+                feedbackMessage = `Incorrect! This is not a GCSE logic gate. ${this.reason}`;
             }
-            this.ui.showFeedback(message, 'incorrect');
         }
 
-        nameThatGateButtons.forEach(btn => {
+        this.ui.showFeedback(feedbackMessage, isCorrect ? 'correct' : 'incorrect');
+
+        // Update button styles to show correct/incorrect answers
+        const optionButtons = document.querySelectorAll('#nameThatGateMode .options .btn');
+        optionButtons.forEach(btn => {
+            if (btn.textContent === correctAnswer) {
+                btn.classList.add('correct');
+            } else if (btn.textContent === selectedAnswer) {
+                btn.classList.add('incorrect');
+            }
             btn.disabled = true;
             btn.classList.add('disabled');
         });

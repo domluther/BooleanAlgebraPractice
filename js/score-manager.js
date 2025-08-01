@@ -26,7 +26,7 @@ export class ScoreManager {
 
         // Hardcoded scoring for specific modes by level
         this.modeScoringCalculated = {
-            'nameThatGate': { 1: 1 },
+            'nameThatGate': { 1: 1, 2: 2, 3: 4 },
             'writeExpression': { 1: 3, 2: 5, 3: 7, 4: 10},
             'truthTable': { 1: 4, 2: 8, 3: 12, 4: 20},
             'drawCircuit': { 1: 3, 2: 6, 3: 10, 4: 15},

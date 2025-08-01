@@ -1,6 +1,7 @@
 // circuit-generator.js
 // Generates SVG for expressions - used in expression writing + truth table modes
 
+// TODO - Add a shuffle option ie commutation to practice that
 export class CircuitGenerator {
 	constructor() {
 		this.gateId = 0;

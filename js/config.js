@@ -13,7 +13,7 @@ import { TruthTable } from './truth-table.js';
 export const modeSettings = {
     nameThatGate: {
         label: 'Name That Gate',
-        levels: 0,
+        levels: 2,
         class: NameThatGate,
         dependencies: ['circuitGenerator']
     },
