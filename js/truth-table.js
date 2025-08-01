@@ -163,8 +163,8 @@ export class TruthTable {
 
         const inputs = this._getInputVariables(expression);
 
-        // TODO - Improve detection. Currently Q = (NOT (A OR B)) AND C only detects (A OR B) as an intermediate expression. 
-        // Always generate intermediate expressions - even if not displayed (means available if needed)
+        // TODO - Currently Q = (NOT (A OR B)) AND C only detects (A OR B) as an intermediate expression. Reduces column width but incomplete.
+        // This is a limitation of the current regex - it only captures the first level of parentheses
         const intermediateExpressions = [];
         const parenthesesMatches = rightSide.match(/\([^()]+\)/g) || [];
         parenthesesMatches.forEach(match => {
@@ -177,6 +177,11 @@ export class TruthTable {
         return { inputs, intermediateExpressions };
     }
 
+    /**
+     * Extracts the input variables from a boolean expression.
+     * @param {string} expression - The boolean expression string (e.g., "Q = A AND (B OR C)").
+     * @returns {string[]} An array of unique input variable names.
+     */
     _getInputVariables(expression) {
 
         const rightSide = expression.split(' = ')[1];
@@ -192,9 +197,6 @@ export class TruthTable {
             token.length === 1 && token.match(/[A-Z]/)
         ))].sort();
     }
-
-
-
 
     /**
      * Generates all possible input combinations for a given set of inputs.
@@ -223,7 +225,6 @@ export class TruthTable {
      * @returns {boolean} The result of the evaluation.
      */
     _evaluateExpression(expression, values) {
-        // TODO investigate  'new Function()' instead of 'eval()'
         try {
             let evalExpression = expression;
             Object.keys(values).forEach(variable => {
@@ -237,7 +238,8 @@ export class TruthTable {
                 .replace(/\bNOT\b/g, '!')
                 .replace(/\bXOR\b/g, '^')
             
-            return eval(evalExpression);
+            const func = new Function('return ' + evalExpression);
+            return func();
         } catch (error) {
             console.error('Error evaluating expression:', expression, error);
             return false;
@@ -441,7 +443,6 @@ export class TruthTable {
      * @returns {object} An object indicating if the table is correct and which rows matched.
      */
     _validateExpertModeAnswers(userRows) {
-        // TODO: Investigate JSON.stringify instead of property-by-property comparison logic from script.js. Beware of potential bugs from property ordering.
         const correctData = this.currentTruthTableData;
         const numRows = correctData.length;
         const usedCorrectRows = new Set();
