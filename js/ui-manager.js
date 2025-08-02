@@ -141,7 +141,7 @@ export class UIManager {
             return `
                 <div class="program-item">
                     <div class="program-info">
-                        <div class="program-name">${formatModeName(mode)}</div>
+                        <div class="program-name">${this.formatModeName(mode)}</div>
                         <div class="program-details">
                             ${score.attempts} attempts • ${score.correct} correct (${accuracy}%) • Best streak: ${score.bestStreak}
                         </div>
