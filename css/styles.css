@@ -1190,7 +1190,7 @@ body {
 }
 
 /* ----- Draw Circuit Mode Specifics ----- */
-#drawCircuitContainer {
+#drawCircuitContainer, #scenarioDrawCircuitContainer {
 	display: flex;
 	gap: var(--spacing-xl);
 	margin-top: var(--spacing-lg);

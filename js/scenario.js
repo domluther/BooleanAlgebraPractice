@@ -1,5 +1,6 @@
 import { generateAllAcceptedAnswers } from './expression-utils.js';
 import * as ttUtils from './truth-table-utils.js';
+import * as drawUtils from './draw-circuit-utils.js';
 
 export class Scenario {
     constructor(circuitGenerator, dependencies) {
@@ -20,12 +21,18 @@ export class Scenario {
         // Truth table options state
         this.showIntermediateColumns = false;
         this.expertMode = false;
+
+        // Properties for Draw Circuit mode
+        this.gateImages = {};
+        this.drawingContext = null;
     }
 
     /**
      * Initializes the scenario mode, adding event listeners and generating the first question.
      */
     initialize() {
+        this.gateImages = drawUtils.preloadGateImages();
+
         document.getElementById('scenarioShowIntermediate').onchange = () => {
             this.showIntermediateColumns = document.getElementById('scenarioShowIntermediate').checked;
             this._redrawTable();
@@ -286,6 +293,9 @@ export class Scenario {
         document.getElementById('scenarioDrawCircuitTask').style.display = 'none';
         document.getElementById('scenarioTruthTableOptions').style.display = 'none';
         document.getElementById('scenarioHelpInfo').style.display = 'none';
+        const circuitHelp = document.getElementById('scenarioDrawCircuitHelpInfo');
+        if (circuitHelp) circuitHelp.style.display = 'none';
+
         this.ui.showSubmitButton();
 
         const questionTitle = document.getElementById('scenarioQuestionTitle');
@@ -301,8 +311,8 @@ export class Scenario {
 
             case 'draw-circuit':
                 questionTitle.textContent = 'Draw the logic circuit for this scenario:';
+                this._setupCircuitTask();
                 document.getElementById('scenarioDrawCircuitTask').style.display = 'block';
-                this.ui.hideSubmitButton(); // No submission for placeholder
                 break;
 
             case 'expression':
@@ -314,7 +324,67 @@ export class Scenario {
         }   
     }
     
-        /**
+    /**
+     * Sets up the HTML and initializes the context for a circuit drawing task.
+     */
+    _setupCircuitTask() {
+        const drawContainer = document.getElementById('scenarioDrawCircuitTask');
+        // Inject the required HTML for the canvas and toolbox
+        drawContainer.innerHTML = `
+            <div id="scenarioDrawCircuitContainer">
+                <div class="circuit-toolbox">
+                    <h3>Toolbox</h3>
+                    <div class="gate" draggable="true" id="drag-AND">
+                        <div class="gate-icon"><img src="/img/svg/and.svg" alt="AND Gate" class="gate-svg"></div>
+                        <div class="gate-label">AND</div>
+                    </div>
+                    <div class="gate" draggable="true" id="drag-OR">
+                        <div class="gate-icon"><img src="/img/svg/or.svg" alt="OR Gate" class="gate-svg"></div>
+                        <div class="gate-label">OR</div>
+                    </div>
+                    <div class="gate" draggable="true" id="drag-NOT">
+                        <div class="gate-icon"><img src="/img/svg/not.svg" alt="NOT Gate" class="gate-svg"></div>
+                        <div class="gate-label">NOT</div>
+                    </div>
+                    <button id="scenarioRemoveSelectedBtn" class="btn btn-full btn-warning">Remove Selected</button>
+                    <button id="scenarioResetCircuitBtn" class="btn btn-full btn-danger">Reset</button>
+                </div>
+                <div id="canvasContainer">
+                    <canvas id="scenarioCanvas" width="750" height="500"></canvas>
+                </div>
+            </div>
+        `;
+
+        // Initialize the drawing context object
+        this.drawingContext = {
+            canvas: document.getElementById('scenarioCanvas'),
+            ctx: document.getElementById('scenarioCanvas').getContext('2d'),
+            gates: [],
+            wires: [],
+            inputs: [],
+            output: null,
+            selectedGate: null,
+            selectedWire: null,
+            nextId: 0,
+            draggingGate: null,
+            draggingOffset: { x: 0, y: 0 },
+            wireStartNode: null,
+            targetExpression: this.currentExpression,
+            parsedTargetExpression: drawUtils.parseExpression(this.currentExpression),
+            gateImages: this.gateImages,
+            abortController: null,
+            modePrefix: 'scenario',
+            ui: this.ui,
+            state: this.state
+        };
+
+        // Setup canvas and listeners
+        drawUtils.setupCanvas(this.drawingContext);
+        drawUtils.addCircuitModeEventListeners(this.drawingContext);
+        this.updateHelpDisplay();
+    }
+
+    /**
      * Generates and renders the truth table using functions from the utility module.
      */
     _generateTruthTable() {
@@ -344,6 +414,7 @@ export class Scenario {
     checkAnswer() {
         if (this.state.getAnswered()) return;
 
+        console.log(`Checking answer for question type: ${this.questionType}`);
         switch (this.questionType) {
             case 'expression':
                 this._checkExpressionAnswer();
@@ -352,7 +423,7 @@ export class Scenario {
                 this._checkTruthTableAnswer();
                 break;
             case 'draw-circuit':
-                // No action needed for the placeholder
+                this._checkCircuitAnswer();
                 break;
         }
     }
@@ -380,6 +451,35 @@ export class Scenario {
     }
 
     /**
+     * Checks the user's drawn circuit diagram.
+     */
+    _checkCircuitAnswer() {
+        console.log('Checking circuit answer...');
+        const interpretedExprDiv = document.getElementById('scenarioInterpretedExpression');
+        if (!interpretedExprDiv) return;
+
+        console.log('div found')
+        const userExprText = interpretedExprDiv.textContent;
+
+        if (userExprText.includes('?')) {
+            this.ui.showFeedback('Your circuit is not complete yet.', 'incorrect');
+            return;
+        }
+
+        const isCorrect = this.currentAcceptedAnswers.some(acceptedAnswer => userExprText === acceptedAnswer);
+        
+        this.state.recordResult(isCorrect);
+        if (isCorrect) {
+            this.ui.showFeedback('Correct! The circuit matches the expression.', 'correct');
+            this.state.setAnswered(true);
+            this.ui.hideSubmitButton();
+        } else {
+            this.ui.showFeedback(`Incorrect. Your circuit (${userExprText}) does not match the scenario.`, 'incorrect');
+        }
+        this.ui.showNextButton();
+    }
+
+    /**
      * Checks the user's submitted truth table using functions from the utility module.
      */
     _checkTruthTableAnswer() {
@@ -395,42 +495,29 @@ export class Scenario {
     }
 
     /**
-     * Shows or hides the "Accepted Answers" help section for the expression task.
+     * Shows or hides the help sections based on the current question type.
      */
     updateHelpDisplay() {
         const helpCheckbox = document.getElementById('scenarioDebugMode');
         this.helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
-        const helpInfoDiv = document.getElementById('scenarioHelpInfo');
-        if (!helpInfoDiv) return;
 
-        if (this.helpEnabled && this.questionType === 'expression') {
-            helpInfoDiv.style.display = 'block';
-            const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
-            acceptedAnswersDiv.innerHTML = this.currentAcceptedAnswers.map(answer => `<div>${answer}</div>`).join('');
-        } else {
-            helpInfoDiv.style.display = 'none';
-        }
-    }
+        const expressionHelp = document.getElementById('scenarioHelpInfo');
+        const circuitHelp = document.getElementById('scenarioDrawCircuitHelpInfo');
 
-    updateHelpDisplay() {
-        const helpCheckbox = document.getElementById('scenarioDebugMode');
-        this.helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
+        if(expressionHelp) expressionHelp.style.display = 'none';
+        if(circuitHelp) circuitHelp.style.display = 'none';
 
-        const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
-        const helpInfoDiv = document.getElementById('scenarioHelpInfo');
-
+        console.log(this.questionType, this.helpEnabled, expressionHelp, circuitHelp);
         if (this.helpEnabled) {
-            if (helpInfoDiv) helpInfoDiv.style.display = 'block';
-
-            if (this.currentAcceptedAnswers && this.currentAcceptedAnswers.length > 0) {
-                acceptedAnswersDiv.innerHTML = this.currentAcceptedAnswers.map(answer =>
-                    `<div>${answer}</div>`
-                ).join('');
-            } else {
-                acceptedAnswersDiv.innerHTML = '<div>No accepted answers generated</div>';
+            if (this.questionType === 'expression' && expressionHelp) {
+                expressionHelp.style.display = 'block';
+                const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
+                if(acceptedAnswersDiv) {
+                    acceptedAnswersDiv.innerHTML = this.currentAcceptedAnswers.map(answer => `<div>${answer}</div>`).join('');
+                }
+            } else if (this.questionType === 'draw-circuit' && circuitHelp) {
+                circuitHelp.style.display = 'block';
             }
-        } else {
-            if (helpInfoDiv) helpInfoDiv.style.display = 'none';
         }
     }
 
