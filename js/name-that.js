@@ -37,10 +37,19 @@ export class NameThat {
         const optionsContainer = document.querySelector('#nameThatMode .options');
         optionsContainer.innerHTML = '';
 
-        labels.forEach(label => {
+        labels.forEach((label, index) => {
             const button = document.createElement('button');
             button.classList.add('btn', 'option');
-            button.textContent = label;
+            
+            // Create the shortcut span
+            const shortcutSpan = document.createElement('span');
+            shortcutSpan.classList.add('shortcut');
+            shortcutSpan.textContent = (index + 1).toString(); // 1, 2, 3, 4
+            
+            // Add the shortcut span and label text to the button
+            button.appendChild(shortcutSpan);
+            button.appendChild(document.createTextNode(' ' + label));
+            
             button.onclick = () => this.checkAnswer(label);
             optionsContainer.appendChild(button);
         });

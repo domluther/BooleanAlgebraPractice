@@ -606,13 +606,32 @@ body {
 }
 
 .options .btn {
+	position: relative;
 	min-width: 80px;
+	padding-left: 50px;
 	background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 	color: #2d3748;
 	border: 2px solid #e2e8f0;
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
+.option.btn .shortcut {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
 
 .options .btn.correct {
 	background: var(--success-gradient);

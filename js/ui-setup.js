@@ -112,16 +112,30 @@ export function setupGlobalEventListeners(gameManager) {
 
     // Global keyboard shortcuts
     document.addEventListener('keydown', (event) => {
-        if (event.key !== 'Enter') return;
-        event.preventDefault(); // Prevents default form submission or button activation
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Prevents default form submission or button activation
 
-        if (gameManager.answered) {
-            gameManager.nextQuestion();
-        } else {
-            // In 'nameThat' mode, there's no text input to submit.
-            if (gameManager.currentMode !== 'nameThat') {
-                gameManager.submitAnswer();
+            if (gameManager.answered) {
+                gameManager.nextQuestion();
+            } else {
+                // In 'nameThat' mode, there's no text input to submit.
+                if (gameManager.currentMode !== 'nameThat') {
+                    gameManager.submitAnswer();
+                }
             }
+        }
+        // Handle number keys 1-4 for name-that mode option selection
+        else if (gameManager.currentMode === 'nameThat' && ['1', '2', '3', '4'].includes(event.key)) {
+            event.preventDefault(); // Prevent any default behavior
+            
+            const optionButtons = document.querySelectorAll('#nameThatMode .options .btn');
+            const buttonIndex = parseInt(event.key) - 1; // Convert to 0-based index
+            
+            // Check if the button exists and is not disabled
+            if (optionButtons[buttonIndex] && !optionButtons[buttonIndex].disabled) {
+                optionButtons[buttonIndex].click();
+            }
+            return;
         }
     });
 }
