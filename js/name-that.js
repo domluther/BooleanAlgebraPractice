@@ -64,13 +64,13 @@ export class NameThat {
         displayArea.innerHTML = ''; // Clear previous content
 
         if (this.currentDifficulty === 1) {
-            questionTitle.textContent = 'Which GCSE logic gate is this?';
+            questionTitle.textContent = 'Name that GCSE logic gate';
             this._generateLevel1Question();
         } else if (this.currentDifficulty === 2) {
-            questionTitle.textContent = 'Which expression matches this logic diagram?';
+            questionTitle.textContent = 'Name that logic expression';
             this._generateLevel2Question();
         } else { // Level 3
-            questionTitle.textContent = 'Which expression matches this truth table?';
+            questionTitle.textContent = 'Name that truth table';
             this._generateLevel3Question();
         }
 
