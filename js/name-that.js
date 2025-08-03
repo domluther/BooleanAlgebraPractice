@@ -103,10 +103,10 @@ export class NameThat {
         this.generateOptions(['AND', 'OR', 'NOT', 'NONE']);
     }
 
-    // TODO - expressionDatabase contains questions with commutation which is problematic here ie Q = A AND B is the same as Q = B AND A but one would be marked wrong
     _generateLevel2Question() {
         const svgCanvas = document.getElementById('nameThatLogicDiagramDisplay');
         svgCanvas.innerHTML = ''; // Ensure cleared at start
+        // noOverlap as it removes commutative duplicates like A AND B and B AND A
         const expressions = expressionDatabase.level2NoOverlap;
 
         this.correctExpression = expressions[Math.floor(Math.random() * expressions.length)];
@@ -131,7 +131,7 @@ export class NameThat {
 
     _generateLevel3Question() {
         const displayArea = document.getElementById('nameThatLogicDiagramDisplay');
-        const expressions = [...expressionDatabase.level2NoOverlap]; // Use more complex expressions
+        const expressions = [...expressionDatabase.level2NoOverlap]; // Combine with level 3 questions?
 
         // 1. Select a correct expression
         this.correctExpression = expressions[Math.floor(Math.random() * expressions.length)];
