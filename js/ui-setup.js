@@ -23,25 +23,8 @@ function generateModeSelectorButtons(gameManager) {
         button.innerText = mode.label;
 
         button.onclick = () => {
-            // Update active button styling
-            document.querySelectorAll('.mode-selector .btn-select').forEach(btn => 
-                btn.classList.remove('active', 'mode-active')
-            );
-            button.classList.add('active', 'mode-active');
-            
-            // Hide all game mode containers and help sections
-            document.querySelectorAll('.game-mode-container').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.help-info').forEach(el => el.style.display = 'none');
-            
-            // Show the relevant container for the selected mode
-            const activeContainer = document.getElementById(modeKey + 'Mode');
-            if (activeContainer) {
-                activeContainer.style.display = 'block';
-            }
-            
-            // Mode must be set before generating difficulty dropdown to get correct level
-            gameManager.setGameMode(modeKey);
-            generateDifficultyDropdown(gameManager, modeKey);
+            window.location.hash = modeKey;
+
         };
         container.appendChild(button);
     }
@@ -109,6 +92,44 @@ export function setupGlobalEventListeners(gameManager) {
     });
 
     setupScoreEventListeners(gameManager);
+
+        // Handle hash-based navigation (much simpler than pushState/popstate!)
+    function handleModeChange() {
+        const hash = window.location.hash.slice(1); // Remove the # symbol
+        const mode = hash || appSettings.defaultMode; // Default if no hash
+        
+        if (gameManager.modeSettings[mode]) {
+            // Update active button styling
+            document.querySelectorAll('.mode-selector .btn-select').forEach(btn => 
+                btn.classList.remove('active', 'mode-active')
+            );
+            
+            const activeButton = document.querySelector(`.mode-selector .btn-select[data-mode="${mode}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active', 'mode-active');
+            }
+            
+            // Hide all game mode containers and help sections
+            document.querySelectorAll('.game-mode-container').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.help-info').forEach(el => el.style.display = 'none');
+            
+            // Show the relevant container for the selected mode
+            const activeContainer = document.getElementById(mode + 'Mode');
+            if (activeContainer) {
+                activeContainer.style.display = 'block';
+            }
+            
+            // Update game manager and difficulty dropdown
+            gameManager.setGameMode(mode);
+            generateDifficultyDropdown(gameManager, mode);
+        }
+    }
+
+    // Listen for hash changes (back/forward buttons work automatically!)
+    window.addEventListener('hashchange', handleModeChange);
+    
+    // Handle initial load
+    handleModeChange();
 
     // Global keyboard shortcuts
     document.addEventListener('keydown', (event) => {
@@ -179,8 +200,8 @@ function setupScoreEventListeners(gameManager) {
  * Initializes the default game mode by clicking the first mode button.
  */
 export function initializeDefaultMode() {
-    const initialModeButton = document.querySelector('.mode-selector .btn-select');
-    if (initialModeButton) {
-        initialModeButton.click(); // Simulate a click to set the initial mode
+    // Set default hash if none exists
+    if (!window.location.hash) {
+        window.location.hash = appSettings.defaultMode;
     }
 }

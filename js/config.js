@@ -58,7 +58,7 @@ export const difficultyLabels = {
  */
 export const appSettings = {
     // Default mode to load on startup
-    defaultMode: 'writeExpression',
+    defaultMode: 'nameThat',
     
     // UI element selectors (centralized for easier maintenance)
     selectors: {
