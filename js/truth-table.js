@@ -62,7 +62,7 @@ export class TruthTable {
         this._calculateAndRenderTable();
 
         // Update UI
-        document.getElementById('truthTableExpression').textContent = this.currentExpression;
+        this.ui.showExpression('truthTableExpression', this.currentExpression);
         this.circuitGenerator.generateCircuit(this.currentExpression, logicDiagramDisplay);
         this.ui.resetUIState('truthTableMode');
     }

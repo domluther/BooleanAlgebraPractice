@@ -101,7 +101,7 @@ export class ExpressionWriting {
      */
     updateHelpDisplay() {
         // Check the state of the help checkbox for this mode
-        const helpCheckbox = document.getElementById('writeExpressionDebugMode');
+        const helpCheckbox = document.getElementById('writeExpressionHelpMode');
         this.helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
         
         const acceptedAnswersDiv = document.getElementById('expressionAcceptedAnswers');

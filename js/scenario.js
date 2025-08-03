@@ -1,9 +1,11 @@
 import { generateAllAcceptedAnswers } from './expression-utils.js';
+import { CircuitDrawer } from './draw-circuit-utils.js'; // Add this at the top
 import * as ttUtils from './truth-table-utils.js';
 
 export class Scenario {
     constructor(circuitGenerator, dependencies) {
         this.circuitGenerator = circuitGenerator;
+        this.circuitDrawer = null;
         this.ui = dependencies.ui;
         this.state = dependencies.state;
 
@@ -17,9 +19,11 @@ export class Scenario {
         this.intermediateExpressions = [];
 
         this.helpEnabled = false;
+
         // Truth table options state
         this.showIntermediateColumns = false;
         this.expertMode = false;
+
     }
 
     /**
@@ -279,39 +283,78 @@ export class Scenario {
         // Randomly choose a question type
         const questionTypes = ['expression', 'truth-table', 'draw-circuit'];
         this.questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-        
+
+        // this.questionType = 'draw-circuit'; // Force draw-circuit for now
+
         // Hide all task-specific containers and options
         document.getElementById('scenarioExpressionTask').style.display = 'none';
         document.getElementById('scenarioTruthTableTask').style.display = 'none';
         document.getElementById('scenarioDrawCircuitTask').style.display = 'none';
         document.getElementById('scenarioTruthTableOptions').style.display = 'none';
         document.getElementById('scenarioHelpInfo').style.display = 'none';
+        document.getElementById('drawCircuitScenarioHelpInfo').style.display = 'none';
         this.ui.showSubmitButton();
 
         const questionTitle = document.getElementById('scenarioQuestionTitle');
+
+        if (this.circuitDrawer) {
+            this.circuitDrawer.destroy();
+            this.circuitDrawer = null;
+        }
+
+        this._setHelpMode();
+        this.updateHelpDisplay();
 
         // Configure UI based on the chosen question type
         switch (this.questionType) {
             case 'truth-table':
                 questionTitle.textContent = 'Complete the truth table for this scenario:';
                 document.getElementById('scenarioTruthTableTask').style.display = 'block';
-                document.getElementById('scenarioTruthTableOptions').style.display = 'flex';
+                // document.getElementById('scenarioTruthTableOptions').style.display = 'flex';
                 this._generateTruthTable();
                 break;
 
-            case 'draw-circuit':
-                questionTitle.textContent = 'Draw the logic circuit for this scenario:';
-                document.getElementById('scenarioDrawCircuitTask').style.display = 'block';
-                this.ui.hideSubmitButton(); // No submission for placeholder
-                break;
+        case 'draw-circuit': // This is the new part
+            questionTitle.textContent = 'Draw the logic circuit for this scenario:';
+            document.getElementById('scenarioDrawCircuitTask').style.display = 'block';
+
+            // We need a submit button for this mode
+            this.ui.showSubmitButton();
+
+            // Initialize the circuit drawer utility
+            this.circuitDrawer = new CircuitDrawer('scenarioCircuitCanvas', this.ui, this.state, 'scenario');
+            this.circuitDrawer.start(
+                this.currentExpression, 
+                document.getElementById('scenarioInterpretedExpression')
+            );
+
+            break;
 
             case 'expression':
             default:
                 questionTitle.textContent = 'Write the Boolean expression for this scenario:';
                 document.getElementById('scenarioExpressionTask').style.display = 'block';
-                this.updateHelpDisplay();
                 break;
         }   
+    }
+
+    /**
+     * Routes to the correct checking logic based on the current question type.
+     */
+    checkAnswer() {
+        if (this.state.getAnswered()) return;
+
+        switch (this.questionType) {
+            case 'expression':
+                this._checkExpressionAnswer();
+                break;
+            case 'truth-table':
+                this._checkTruthTableAnswer();
+                break;
+            case 'draw-circuit':
+                this._checkCircuitAnswer();
+                break;
+        }
     }
     
         /**
@@ -335,25 +378,6 @@ export class Scenario {
     _redrawTable() {
         if (this.questionType === 'truth-table') {
             this._generateTruthTable();
-        }
-    }
-
-    /**
-     * Routes to the correct checking logic based on the current question type.
-     */
-    checkAnswer() {
-        if (this.state.getAnswered()) return;
-
-        switch (this.questionType) {
-            case 'expression':
-                this._checkExpressionAnswer();
-                break;
-            case 'truth-table':
-                this._checkTruthTableAnswer();
-                break;
-            case 'draw-circuit':
-                // No action needed for the placeholder
-                break;
         }
     }
 
@@ -394,33 +418,59 @@ export class Scenario {
         }
     }
 
-    /**
-     * Shows or hides the "Accepted Answers" help section for the expression task.
-     */
-    updateHelpDisplay() {
-        const helpCheckbox = document.getElementById('scenarioDebugMode');
-        this.helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
-        const helpInfoDiv = document.getElementById('scenarioHelpInfo');
-        if (!helpInfoDiv) return;
+    _checkCircuitAnswer() {
+        const userExprText = this.circuitDrawer.getCurrentExpression();
 
-        if (this.helpEnabled && this.questionType === 'expression') {
-            helpInfoDiv.style.display = 'block';
-            const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
-            acceptedAnswersDiv.innerHTML = this.currentAcceptedAnswers.map(answer => `<div>${answer}</div>`).join('');
-        } else {
-            helpInfoDiv.style.display = 'none';
+        if (userExprText.includes('?')) {
+            this.ui.showFeedback('Your circuit is not complete yet.', 'incorrect');
+            return;
         }
+
+        // Use the same accepted answers list generated for the expression question
+        const isCorrect = this.currentAcceptedAnswers.some(acceptedAnswer => userExprText === acceptedAnswer);
+
+        this.state.recordResult(isCorrect);
+        if (isCorrect) {
+            this.ui.showFeedback('Correct! The circuit matches the expression.', 'correct');
+        } else {
+            this.ui.showFeedback(`Incorrect. Your circuit (${userExprText.split('=')[1].trim()}) does not match the target expression.`, 'incorrect');
+        }
+
+        this.ui.showNextButton();
+        this.ui.hideSubmitButton();
+        this.state.setAnswered(true);
     }
 
     updateHelpDisplay() {
-        const helpCheckbox = document.getElementById('scenarioDebugMode');
-        this.helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
+        let helpEnabled = false;
+        
+        // Determine which help mode is enabled based on question type
+        if (this.questionType === 'expression') {
+            const helpCheckbox = document.getElementById('scenarioExpressionHelpMode');
+            helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
+        } else if (this.questionType === 'draw-circuit') {
+            const helpCheckbox = document.getElementById('scenarioDrawCircuitHelpMode');
+            helpEnabled = helpCheckbox ? helpCheckbox.checked : false;
+        }
+        
+        this.helpEnabled = helpEnabled;
+        const expressionHelpDiv = document.getElementById('scenarioHelpInfo');
+        const circuitHelpDiv = document.getElementById('drawCircuitScenarioHelpInfo');
 
-        const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
-        const helpInfoDiv = document.getElementById('scenarioHelpInfo');
+        if (!this.helpEnabled) {
+            expressionHelpDiv.style.display = 'none';
+            circuitHelpDiv.style.display = 'none';
+            return;
+        }
 
-        if (this.helpEnabled) {
-            if (helpInfoDiv) helpInfoDiv.style.display = 'block';
+        if (this.questionType === 'draw-circuit') {
+            expressionHelpDiv.style.display = 'none';
+            circuitHelpDiv.style.display = 'inline-block';
+        } else if (this.questionType === 'expression') {
+            expressionHelpDiv.style.display = 'block';
+            circuitHelpDiv.style.display = 'none';
+
+            const acceptedAnswersDiv = document.getElementById('scenarioAcceptedAnswers');
 
             if (this.currentAcceptedAnswers && this.currentAcceptedAnswers.length > 0) {
                 acceptedAnswersDiv.innerHTML = this.currentAcceptedAnswers.map(answer =>
@@ -429,9 +479,25 @@ export class Scenario {
             } else {
                 acceptedAnswersDiv.innerHTML = '<div>No accepted answers generated</div>';
             }
-        } else {
-            if (helpInfoDiv) helpInfoDiv.style.display = 'none';
         }
     }
 
+    _setHelpMode() {
+        const scenarioExpressionHelpOptions = document.getElementById('scenarioExpressionHelpOptions');
+        const scenarioDrawCircuitHelpOptions = document.getElementById('scenarioDrawCircuitHelpOptions');
+        const scenarioTruthTableOptions = document.getElementById('scenarioTruthTableOptions');
+        
+        // Hide all help options first
+        scenarioExpressionHelpOptions.style.display = 'none';
+        scenarioDrawCircuitHelpOptions.style.display = 'none';
+        scenarioTruthTableOptions.style.display = 'none';
+        
+        if (this.questionType === 'draw-circuit') {
+            scenarioDrawCircuitHelpOptions.style.display = 'flex';
+        } else if (this.questionType === 'expression') {
+            scenarioExpressionHelpOptions.style.display = 'flex';
+        } else if (this.questionType === 'truth-table') {
+            scenarioTruthTableOptions.style.display = 'flex';
+        }
+    }
 }

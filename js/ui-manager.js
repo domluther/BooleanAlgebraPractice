@@ -192,6 +192,10 @@ export class UIManager {
         return modeNames[mode] || mode;
     }
 
+    showExpression(eleId, expression, help=false) {
+        document.getElementById(eleId).innerHTML = `<div class="expression-text ${help ? 'help' : ''}">${expression}</div>`;
+    }
+
     populateScoreModal(stats, scoreManager) {
         const { totalAttempts, totalPoints, accuracy, currentLevel, nextLevel, progressToNext, scores } = stats;
         
