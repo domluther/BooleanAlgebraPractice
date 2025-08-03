@@ -67,7 +67,7 @@ export class NameThat {
             questionTitle.textContent = 'Name that GCSE logic gate';
             this._generateLevel1Question();
         } else if (this.currentDifficulty === 2) {
-            questionTitle.textContent = 'Name that logic expression';
+            questionTitle.textContent = 'Name that logic diagram';
             this._generateLevel2Question();
         } else { // Level 3
             questionTitle.textContent = 'Name that truth table';
