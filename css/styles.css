@@ -1087,7 +1087,7 @@ body {
 
 .truth-table-container {
 	overflow-x: auto;
-	margin: var(--spacing-lg) 0;
+	/* margin: var(--spacing-lg) 0; */
 	border-radius: var(--radius-md);
 	box-shadow: var(--shadow-sm);
 	background: var(--bg-white);
