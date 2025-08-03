@@ -256,7 +256,7 @@ export function checkExpertModeAnswer(truthTableData, ui, state, containerId) {
 
     for (let i = 0; i < numRows; i++) {
         const userRowData = {};
-        document.querySelectorAll(`[data-row="${i}"]`).forEach(select => {
+        container.querySelectorAll(`[data-row="${i}"]`).forEach(select => {
             if (select.value === '') allFieldsFilled = false;
             const columnName = select.dataset.column;
             userRowData[columnName] = select.value === '1';
