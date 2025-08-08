@@ -1,4 +1,4 @@
-import { generateAllAcceptedAnswers } from './expression-utils.js';
+import { generateAllAcceptedAnswers, normalizeExpression } from './expression-utils.js';
 import { CircuitDrawer } from './draw-circuit-utils.js'; // Add this at the top
 import * as ttUtils from './truth-table-utils.js';
 
@@ -389,7 +389,6 @@ export class Scenario {
         this.state.setAnswered(true);
         this.ui.hideSubmitButton();
 
-        const normalizeExpression = (expr) => expr.replace(/\s+/g, ' ').replace(/\s*=\s*/g, ' = ').replace(/\s*\(\s*/g, '(').replace(/\s*\)\s*/g, ')').replace(/\s*(AND|OR|NOT|XOR)\s*/g, ' $1 ').trim();
         const normalizedUser = normalizeExpression(userAnswer);
 
         const isCorrect = this.currentAcceptedAnswers.some(accepted => normalizeExpression(accepted.toUpperCase()) === normalizedUser);

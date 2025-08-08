@@ -25,6 +25,17 @@ export function generateAllAcceptedAnswers(baseExpression) {
 	return result;
 }
 
+export function normalizeExpression(expr){
+		return expr
+			.replace(/\s+/g, ' ')
+			.replace(/\s*=\s*/g, ' = ')  // normalizes equals sign spacing
+			.replace(/\s*\(\s*/g, '(')
+			.replace(/\s*\)\s*/g, ')')
+			.replace(/\s*(AND|OR|NOT|XOR)\s*/g, ' $1 ')  // Supports XOR though not used
+			.replace(/\s+/g, ' ')
+			.trim();
+	};
+
 // Generates possible options using commutative but not associative (eg no removal of brackets)
 function _generateExpressionVariations(expression) {
 	// Parse the expression into an abstract syntax tree
