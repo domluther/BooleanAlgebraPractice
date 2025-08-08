@@ -60,7 +60,6 @@ export const expressionDatabase = {
 		"Q = (B AND C) OR A",
 		"Q = (B OR C) AND A",
 		"Q = (B OR C) OR A",
-		"Q = A AND (B OR C)",
 		"Q = A OR (B AND C)",
 		"Q = A OR (B OR C)",
 		"Q = A OR (C AND D)",

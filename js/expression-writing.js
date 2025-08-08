@@ -73,9 +73,10 @@ export class ExpressionWriting {
         const normalizeExpression = (expr) => {
             return expr
                 .replace(/\s+/g, ' ')
+                .replace(/\s*=\s*/g, ' = ')  // normalizes equals sign spacing
                 .replace(/\s*\(\s*/g, '(')
                 .replace(/\s*\)\s*/g, ')')
-                .replace(/\s*(AND|OR|NOT)\s*/g, ' $1 ')
+                .replace(/\s*(AND|OR|NOT|XOR)\s*/g, ' $1 ')  // Supports XOR though not used
                 .replace(/\s+/g, ' ')
                 .trim();
         };

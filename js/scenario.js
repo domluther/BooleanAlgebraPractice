@@ -389,7 +389,7 @@ export class Scenario {
         this.state.setAnswered(true);
         this.ui.hideSubmitButton();
 
-        const normalizeExpression = (expr) => expr.replace(/\s+/g, ' ').replace(/\s*\(\s*/g, '(').replace(/\s*\)\s*/g, ')').replace(/\s*(AND|OR|NOT)\s*/g, ' $1 ').trim();
+        const normalizeExpression = (expr) => expr.replace(/\s+/g, ' ').replace(/\s*=\s*/g, ' = ').replace(/\s*\(\s*/g, '(').replace(/\s*\)\s*/g, ')').replace(/\s*(AND|OR|NOT|XOR)\s*/g, ' $1 ').trim();
         const normalizedUser = normalizeExpression(userAnswer);
 
         const isCorrect = this.currentAcceptedAnswers.some(accepted => normalizeExpression(accepted.toUpperCase()) === normalizedUser);
