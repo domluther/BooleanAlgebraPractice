@@ -185,7 +185,7 @@ function _generateExpressionVariations(expression) {
 			const needsParens = ast.hasParens || (ast.operand.type === 'AND' || ast.operand.type === 'OR' || ast.operand.type === 'XOR');
 
 			if (needsParens) {
-				return `(NOT ${operandStr})`;
+				return `NOT (${operandStr})`;
 			}
 			return `NOT ${operandStr}`;
 		}
