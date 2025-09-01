@@ -78,7 +78,7 @@ export const expressionDatabase = {
 		'Q = (A AND B) AND (C OR D)',
 		'Q = (A OR B) OR (C AND D)',
 		'Q = (NOT (A AND B)) OR C',
-		'Q = (NOT (A OR B)) AND C',
+		'Q = (NOT (A OR B)) AND C', 
 		'Q = A AND (NOT (B OR C))',
 		'Q = A OR (NOT (B AND C))',
 		'Q = (NOT A) AND (NOT B)',
@@ -97,10 +97,10 @@ export const expressionDatabase = {
 		'Q = ((NOT A) OR (NOT B)) OR C',
 		'Q = (A AND (NOT B)) AND C',
 		'Q = (A OR (NOT B)) OR C',
-		'Q = NOT ((A OR B) OR C)',
+		'Q = NOT ((A OR B) OR C)', 
 		'Q = NOT ((A AND B) AND C)',
-		'Q = ((A AND (NOT B)) OR C)',
-		'Q = ((A OR (NOT B)) AND C)'
+		'Q = (A AND (NOT B)) OR C',
+		'Q = (A OR (NOT B)) AND C'
 	],
 	level4: [
 		'Q = ((A AND B) OR (C AND D)) OR E',

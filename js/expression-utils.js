@@ -31,8 +31,22 @@ export function normalizeExpression(expr){
 			.replace(/\s*=\s*/g, ' = ')  // normalizes equals sign spacing
 			.replace(/\s*\(\s*/g, '(')
 			.replace(/\s*\)\s*/g, ')')
+			// Remove outer parentheses around entire right-hand side: Q = (expr) -> Q = expr
+			.replace(/^(\w+)\s*=\s*\((.+)\)$/g, '$1 = $2')
+			// Normalize parentheses around NOT expressions
+			.replace(/\(NOT\s+\(([^)]+)\)\)/g, 'NOT ($1)')  // (NOT (expr)) -> NOT (expr)
+			.replace(/\(\(NOT\s+([^)]+)\)\s+AND/g, '(NOT $1 AND')  // ((NOT var) AND -> (NOT var AND
+			.replace(/\(\(NOT\s+([^)]+)\)\s+OR/g, '(NOT $1 OR')   // ((NOT var) OR -> (NOT var OR
+			.replace(/AND\s+\(NOT\s+([^)]+)\)\)/g, 'AND NOT $1)')  // AND (NOT var)) -> AND NOT var)
+			.replace(/OR\s+\(NOT\s+([^)]+)\)\)/g, 'OR NOT $1)')    // OR (NOT var)) -> OR NOT var)
+			// Handle double parentheses around NOT expressions: ((NOT var) -> (NOT var
+			.replace(/\(\(NOT\s+([^)]+)\)/g, '(NOT $1')  // ((NOT var) -> (NOT var
+			// Normalize outer parentheses around entire NOT expressions
+			.replace(/=\s*\(NOT\s+\(([^)]+)\)\)/g, '= NOT ($1)')  // = (NOT (expr)) -> = NOT (expr)
 			.replace(/\s*(AND|OR|NOT|XOR)\s*/g, ' $1 ')  // Supports XOR though not used
 			.replace(/\s+/g, ' ')
+			.replace(/\(\s+/g, '(')  // remove extra spaces after opening parentheses
+			.replace(/\s+\)/g, ')')  // remove extra spaces before closing parentheses
 			.trim();
 	};
 
@@ -212,6 +226,117 @@ function _generateExpressionVariations(expression) {
 		return '';
 	}
 
+	// Alternative AST to string that adds extra parentheses around NOT expressions
+	function _astToStringWithNOTParens(ast) {
+		if (ast.type === 'VAR') {
+			return ast.name;
+		}
+
+		if (ast.type === 'NOT') {
+			const operandStr = _astToStringWithNOTParens(ast.operand);
+
+			// Always use parentheses around the entire NOT expression when it has complex operands
+			const needsParens = ast.hasParens || (ast.operand.type === 'AND' || ast.operand.type === 'OR' || ast.operand.type === 'XOR');
+
+			if (needsParens) {
+				return `(NOT (${operandStr}))`;
+			}
+			return `NOT ${operandStr}`;
+		}
+
+		if (ast.type === 'AND' || ast.type === 'OR' || ast.type === 'XOR') {
+			const leftStr = _astToStringWithNOTParens(ast.left);
+			const rightStr = _astToStringWithNOTParens(ast.right);
+
+			// Preserve parentheses structure - add parentheses around complex sub-expressions
+			let leftFinal = leftStr;
+			let rightFinal = rightStr;
+
+			// Add parentheses if sub-expression is complex (contains operators)
+			if (ast.left.type === 'AND' || ast.left.type === 'OR' || ast.left.type === 'XOR') {
+				leftFinal = `(${leftStr})`;
+			}
+			if (ast.right.type === 'AND' || ast.right.type === 'OR' || ast.right.type === 'XOR') {
+				rightFinal = `(${rightStr})`;
+			}
+
+			return `${leftFinal} ${ast.type} ${rightFinal}`;
+		}
+
+		return '';
+	}
+
+	// Alternative AST to string that minimizes parentheses around variables in NOT expressions
+	function _astToStringMinimalParens(ast) {
+		if (ast.type === 'VAR') {
+			return ast.name;
+		}
+
+		if (ast.type === 'NOT') {
+			const operandStr = _astToStringMinimalParens(ast.operand);
+
+			// Only use parentheses around complex operands, not single variables
+			if (ast.operand.type === 'AND' || ast.operand.type === 'OR' || ast.operand.type === 'XOR') {
+				return `NOT (${operandStr})`;
+			}
+			return `NOT ${operandStr}`;
+		}
+
+		if (ast.type === 'AND' || ast.type === 'OR' || ast.type === 'XOR') {
+			const leftStr = _astToStringMinimalParens(ast.left);
+			const rightStr = _astToStringMinimalParens(ast.right);
+
+			// Preserve parentheses structure - add parentheses around complex sub-expressions
+			let leftFinal = leftStr;
+			let rightFinal = rightStr;
+
+			// Add parentheses if sub-expression is complex (contains operators)
+			if (ast.left.type === 'AND' || ast.left.type === 'OR' || ast.left.type === 'XOR') {
+				leftFinal = `(${leftStr})`;
+			}
+			if (ast.right.type === 'AND' || ast.right.type === 'OR' || ast.right.type === 'XOR') {
+				rightFinal = `(${rightStr})`;
+			}
+
+			return `${leftFinal} ${ast.type} ${rightFinal}`;
+		}
+
+		return '';
+	}
+
+	// Circuit drawer style: matches how the circuit drawer builds expressions
+	function _astToStringCircuitStyle(ast) {
+		if (ast.type === 'VAR') {
+			return ast.name;
+		}
+
+		if (ast.type === 'NOT') {
+			const operandStr = _astToStringCircuitStyle(ast.operand);
+			// Circuit drawer just uses "NOT ${operand}" where operand might already have parentheses
+			return `NOT ${operandStr}`;
+		}
+
+		if (ast.type === 'AND' || ast.type === 'OR' || ast.type === 'XOR') {
+			const leftStr = _astToStringCircuitStyle(ast.left);
+			const rightStr = _astToStringCircuitStyle(ast.right);
+
+			// Circuit drawer adds parentheses around expressions that contain operators or start with NOT
+			let leftFinal = leftStr;
+			let rightFinal = rightStr;
+
+			if (leftStr.includes(' AND ') || leftStr.includes(' OR ') || leftStr.includes(' XOR ') || leftStr.startsWith('NOT ')) {
+				leftFinal = `(${leftStr})`;
+			}
+			if (rightStr.includes(' AND ') || rightStr.includes(' OR ') || rightStr.includes(' XOR ') || rightStr.startsWith('NOT ')) {
+				rightFinal = `(${rightStr})`;
+			}
+
+			return `${leftFinal} ${ast.type} ${rightFinal}`;
+		}
+
+		return '';
+	}
+
 	try {
 		// Parse the expression
 		const ast = _parseExpression(expression);
@@ -219,9 +344,13 @@ function _generateExpressionVariations(expression) {
 		// Generate all variations
 		const astVariations = _generateASTVariations(ast);
 
-		// Convert back to strings and remove duplicates
-		const stringVariations = astVariations.map(_astToString);
-		const uniqueVariations = [...new Set(stringVariations)];
+		// Convert back to strings using all four formats and remove duplicates
+		const stringVariations1 = astVariations.map(_astToString);
+		const stringVariations2 = astVariations.map(_astToStringWithNOTParens);
+		const stringVariations3 = astVariations.map(_astToStringMinimalParens);
+		const stringVariations4 = astVariations.map(_astToStringCircuitStyle);
+		const allVariations = [...stringVariations1, ...stringVariations2, ...stringVariations3, ...stringVariations4];
+		const uniqueVariations = [...new Set(allVariations)];
 
 		return uniqueVariations;
 	} catch (error) {
