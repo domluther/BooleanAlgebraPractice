@@ -312,15 +312,73 @@ function _generateExpressionVariations(expression) {
 
 		if (ast.type === 'NOT') {
 			const operandStr = _astToStringCircuitStyle(ast.operand);
-			// Circuit drawer just uses "NOT ${operand}" where operand might already have parentheses
-			return `NOT ${operandStr}`;
+			// Circuit drawer adds parentheses around operands that contain operators or start with NOT
+			let operandFinal = operandStr;
+			if (operandStr.includes(' AND ') || operandStr.includes(' OR ') || operandStr.includes(' XOR ') || operandStr.startsWith('NOT ')) {
+				operandFinal = `(${operandStr})`;
+			}
+			return `NOT ${operandFinal}`;
 		}
 
 		if (ast.type === 'AND' || ast.type === 'OR' || ast.type === 'XOR') {
 			const leftStr = _astToStringCircuitStyle(ast.left);
 			const rightStr = _astToStringCircuitStyle(ast.right);
 
-			// Circuit drawer adds parentheses around expressions that contain operators or start with NOT
+			// Don't add extra parentheses here - let the parent handle it
+			return `${leftStr} ${ast.type} ${rightStr}`;
+		}
+
+		return '';
+	}
+
+	// Hybrid circuit style: NOT variables with parentheses, complex operands get wrapped
+	function _astToStringHybridCircuit(ast) {
+		if (ast.type === 'VAR') {
+			return ast.name;
+		}
+
+		if (ast.type === 'NOT') {
+			const operandStr = _astToStringHybridCircuit(ast.operand);
+			// Always wrap NOT around single variables and preserve complex expressions
+			if (ast.operand.type === 'VAR') {
+				return `(NOT ${operandStr})`;  // (NOT G)
+			} else {
+				// For complex operands, add outer parentheses
+				return `NOT (${operandStr})`;  // NOT (complex)
+			}
+		}
+
+		if (ast.type === 'AND' || ast.type === 'OR' || ast.type === 'XOR') {
+			const leftStr = _astToStringHybridCircuit(ast.left);
+			const rightStr = _astToStringHybridCircuit(ast.right);
+
+			return `${leftStr} ${ast.type} ${rightStr}`;
+		}
+
+		return '';
+	}
+
+	// Aggressive parentheses: wraps sub-expressions that would get parentheses in circuit drawer
+	function _astToStringAggressiveParens(ast) {
+		if (ast.type === 'VAR') {
+			return ast.name;
+		}
+
+		if (ast.type === 'NOT') {
+			const operandStr = _astToStringAggressiveParens(ast.operand);
+			// Circuit drawer adds parentheses around operands that contain operators or start with NOT
+			let operandFinal = operandStr;
+			if (operandStr.includes(' AND ') || operandStr.includes(' OR ') || operandStr.includes(' XOR ') || operandStr.startsWith('NOT ')) {
+				operandFinal = `(${operandStr})`;
+			}
+			return `NOT ${operandFinal}`;
+		}
+
+		if (ast.type === 'AND' || ast.type === 'OR' || ast.type === 'XOR') {
+			const leftStr = _astToStringAggressiveParens(ast.left);
+			const rightStr = _astToStringAggressiveParens(ast.right);
+
+			// Add parentheses around sub-expressions that contain operators or start with NOT
 			let leftFinal = leftStr;
 			let rightFinal = rightStr;
 
@@ -344,12 +402,14 @@ function _generateExpressionVariations(expression) {
 		// Generate all variations
 		const astVariations = _generateASTVariations(ast);
 
-		// Convert back to strings using all four formats and remove duplicates
+		// Convert back to strings using all six formats and remove duplicates
 		const stringVariations1 = astVariations.map(_astToString);
 		const stringVariations2 = astVariations.map(_astToStringWithNOTParens);
 		const stringVariations3 = astVariations.map(_astToStringMinimalParens);
 		const stringVariations4 = astVariations.map(_astToStringCircuitStyle);
-		const allVariations = [...stringVariations1, ...stringVariations2, ...stringVariations3, ...stringVariations4];
+		const stringVariations5 = astVariations.map(_astToStringHybridCircuit);
+		const stringVariations6 = astVariations.map(_astToStringAggressiveParens);
+		const allVariations = [...stringVariations1, ...stringVariations2, ...stringVariations3, ...stringVariations4, ...stringVariations5, ...stringVariations6];
 		const uniqueVariations = [...new Set(allVariations)];
 
 		return uniqueVariations;

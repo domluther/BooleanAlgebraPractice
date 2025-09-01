@@ -229,5 +229,31 @@ testSuite.addTest(
     ]
 );
 
+// Test 8: Circuit NOT Expression Commutative (the specific case that was failing)
+testSuite.addTest(
+    'Circuit NOT Expression Commutative',
+    'Y = NOT ((NOT G) AND E)',
+    [
+        'Y = NOT (E AND (NOT G))',  // This was the failing circuit format
+        'Y = NOT ((NOT G) AND E)',  // Original format  
+        'Y = NOT (E AND NOT G)',    // Minimal format
+        'Y = NOT (NOT G AND E)'     // Alternative minimal format
+    ]
+);
+
+// Test 9: AND Commutative with NOT Expressions (circuit parentheses case)
+testSuite.addTest(
+    'AND Commutative with NOT Expressions',
+    'R = (G AND (NOT A)) AND H',
+    [
+        'R = ((NOT A) AND G) AND H',  // This was the failing circuit format
+        'R = (G AND (NOT A)) AND H',  // Original format
+        'R = (G AND NOT A) AND H',    // Minimal format
+        'R = (NOT A AND G) AND H',    // Alternative format
+        'R = H AND (G AND (NOT A))',  // Commuted with H
+        'R = H AND ((NOT A) AND G)'   // Commuted with H and inner commuted
+    ]
+);
+
 // Run all tests
 testSuite.runTests();
