@@ -1258,8 +1258,12 @@ body {
 	filter: brightness(0.7);
 }
 
-.gate:active {
+.gate:active, .gate.selected {
 	cursor: grabbing;
+	transform: translateY(-2px);
+	color: var(--primary-base);
+	background-color: var(--bg-light-teal);
+	border: 2px solid var(--primary-base);
 }
 
 .gate-icon {
@@ -1301,6 +1305,13 @@ body {
 	cursor: crosshair;
 	max-width: 100%;
 	height: auto;
+	touch-action: none; /* Prevent scrolling/zooming during touch interactions */
+}
+
+#circuitCanvas.placement-mode, #scenarioCircuitCanvas.placement-mode {
+	cursor: copy;
+	border: 3px dashed var(--primary-base);
+	background-color: var(--bg-light-teal);
 }
 
 #interpretedExpression, .interpreted-expression-display {

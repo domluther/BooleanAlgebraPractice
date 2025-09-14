@@ -28,6 +28,10 @@ export class CircuitDrawer {
         this.wireStartNode = null;
         this.gateImages = {};
         this.mode = mode
+        
+        // Touch-friendly gate placement state
+        this.selectedGateType = null; // Type of gate selected from toolbox
+        this.placementMode = false; // Whether we're in gate placement mode
 
         // Abort controller for cleaning up event listeners
         this.abortController = new AbortController();
@@ -87,6 +91,9 @@ export class CircuitDrawer {
         this.wireStartNode = null;
         this.selectedGate = null;
         this.selectedWire = null;
+
+        // Clear gate selection state for touch devices
+        this._clearGateSelection();
 
         // Hide feedback from previous question
         document.getElementById('feedback').style.display = 'none';
@@ -154,7 +161,21 @@ export class CircuitDrawer {
         this.abortController = new AbortController();
         const signal = this.abortController.signal;
 
-        // Toolbox gate drag listeners
+        // Toolbox gate click listeners (touch-friendly replacement for drag-and-drop)
+        document.querySelectorAll('.gate[data-gate-type]').forEach(gate => {
+            gate.addEventListener('click', (e) => {
+                e.preventDefault();
+                this._selectGateType(gate.dataset.gateType || gate.id.replace('drag-', ''));
+            }, { signal });
+            
+            // Also support touch events for gates
+            gate.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this._selectGateType(gate.dataset.gateType || gate.id.replace('drag-', ''));
+            }, { signal });
+        });
+
+        // Keep original drag-and-drop for desktop compatibility
         document.querySelectorAll('.gate[draggable="true"]').forEach(gate => {
             gate.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('text/plain', e.currentTarget.id);
@@ -163,7 +184,7 @@ export class CircuitDrawer {
             }, { signal });
         });
 
-        // Canvas drop listener
+        // Canvas drop listener (for desktop drag-and-drop)
         this.canvas.addEventListener('dragover', (e) => e.preventDefault());
         this.canvas.addEventListener('drop', (e) => {
             e.preventDefault();
@@ -172,6 +193,7 @@ export class CircuitDrawer {
             const type = id.replace('drag-', '');
             const rect = this.canvas.getBoundingClientRect();
             this._addGate(type, e.clientX - rect.left, e.clientY - rect.top);
+            this._clearGateSelection();
         }, { signal });
         
         // Canvas mouse listeners for interaction (wiring, moving, selecting)
@@ -179,6 +201,15 @@ export class CircuitDrawer {
             if (this.state.getAnswered()) return;
 
             const pos = this._getMousePos(e);
+            
+            // If we're in gate placement mode, place the selected gate
+            if (this.placementMode && this.selectedGateType) {
+                this._addGate(this.selectedGateType, pos.x, pos.y);
+                this._clearGateSelection();
+                this._draw();
+                return;
+            }
+            
             const snappedNode = this._getClickedNode(pos) || this._getNearbyNode(pos);
 
             if (snappedNode) {
@@ -282,6 +313,40 @@ export class CircuitDrawer {
             this._draw();
             this._updateInterpretedExpression();
         }, { signal });
+
+        // Touch event handlers (for tablet/mobile compatibility)
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent default touch behaviors
+            if (this.state.getAnswered()) return;
+            
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousedown', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            this.canvas.dispatchEvent(mouseEvent);
+        }, { signal, passive: false });
+
+        this.canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Prevent scrolling
+            if (e.touches.length === 1) { // Only handle single touch
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                this.canvas.dispatchEvent(mouseEvent);
+            }
+        }, { signal, passive: false });
+
+        this.canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const mouseEvent = new MouseEvent('mouseup', {
+                clientX: e.changedTouches[0].clientX,
+                clientY: e.changedTouches[0].clientY
+            });
+            this.canvas.dispatchEvent(mouseEvent);
+        }, { signal, passive: false });
 
         // Button listeners
         document.getElementById(`${this.mode}ResetCircuitBtn`).addEventListener('click', () => {
@@ -607,4 +672,62 @@ export class CircuitDrawer {
     _disableResetButton() { this._disableButton(`${this.mode}ResetCircuitBtn`); }
     _enableRemoveSelectedButton() { this._enableButton(`${this.mode}RemoveSelectedBtn`); }
     _disableRemoveSelectedButton() { this._disableButton(`${this.mode}RemoveSelectedBtn`); }
+
+    /**
+     * Select a gate type for placement (touch-friendly gate selection)
+     */
+    _selectGateType(gateType) {
+        // Clear any existing gate selection visual state
+        document.querySelectorAll('.gate').forEach(gate => {
+            gate.classList.remove('selected');
+        });
+        
+        if (this.selectedGateType === gateType) {
+            // If same gate type is selected, deselect it
+            this._clearGateSelection();
+        } else {
+            // Select new gate type
+            this.selectedGateType = gateType;
+            this.placementMode = true;
+            
+            // Add visual feedback to selected gate
+            const gateElement = document.getElementById(`drag-${gateType}`) || 
+                                document.getElementById(`drag-${gateType}-scenario`);
+            if (gateElement) {
+                gateElement.classList.add('selected');
+            }
+            
+            // Update canvas cursor and visual state to indicate placement mode
+            this.canvas.style.cursor = 'copy';
+            this.canvas.classList.add('placement-mode');
+            
+            // Show feedback to user
+            if (this.ui && this.ui.showFeedback) {
+                this.ui.showFeedback(`${gateType.toUpperCase()} gate selected. Tap on the canvas to place it.`, 'info');
+            }
+        }
+    }
+
+    /**
+     * Clear gate selection and exit placement mode
+     */
+    _clearGateSelection() {
+        const wasInPlacementMode = this.placementMode;
+        
+        this.selectedGateType = null;
+        this.placementMode = false;
+        this.canvas.style.cursor = 'crosshair';
+        this.canvas.classList.remove('placement-mode');
+        
+        // Remove visual feedback from all gates
+        document.querySelectorAll('.gate').forEach(gate => {
+            gate.classList.remove('selected');
+        });
+        
+        // Hide feedback only if we were in placement mode
+        // Don't hide other important feedback messages
+        if (wasInPlacementMode && this.ui && this.ui.hideFeedback) {
+            this.ui.hideFeedback();
+        }
+    }
 }
