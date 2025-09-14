@@ -13,6 +13,8 @@ export class DrawCircuit {
         this.targetExpression = "";
         this.currentDifficulty = 1;
         this.helpEnabled = false;
+        this.hasAttemptedCurrentQuestion = false; // Track if user has attempted current question
+        this.questionWasAnsweredCorrectly = false; // Track if current question was answered correctly
         
         // Circuit drawer instance
         this.circuitDrawer = null;
@@ -39,10 +41,18 @@ export class DrawCircuit {
      * Generates a new circuit drawing question based on the current difficulty.
      */
     generateQuestion() {
+        // If moving to a new question and the previous question was attempted but not answered correctly,
+        // record it as an incorrect attempt (only if they never got it right)
+        if (this.targetExpression && this.hasAttemptedCurrentQuestion && !this.questionWasAnsweredCorrectly) {
+            this.state.recordResult(false);
+        }
+
         const levelKey = `level${this.currentDifficulty}`;
         const expressions = expressionDatabase[levelKey];
         
         this.targetExpression = expressions[Math.floor(Math.random() * expressions.length)];
+        this.hasAttemptedCurrentQuestion = false; // Reset attempt flag for new question
+        this.questionWasAnsweredCorrectly = false; // Reset correct answer flag for new question
 
         // If difficulty is 3 or 4, generate different input and output variables.
         if (this.currentDifficulty >= 3) {
@@ -84,20 +94,27 @@ export class DrawCircuit {
             return;
         }
 
+        // Mark that user has attempted this question
+        this.hasAttemptedCurrentQuestion = true;
+
         const possibleAnswers = generateAllAcceptedAnswers(this.targetExpression);
         const isCorrect = possibleAnswers.some(acceptedAnswer => userExprText === acceptedAnswer);
         
-        this.state.recordResult(isCorrect);
-        
         if (isCorrect) {
+            // Only record result when correct - this way multiple attempts don't count against score
+            this.state.recordResult(isCorrect);
+            this.questionWasAnsweredCorrectly = true; // Mark that this question was answered correctly
             this.ui.showFeedback('Correct! The circuit matches the expression.', 'correct');
+            this.ui.showNextButton();
+            this.ui.hideSubmitButton();
+            this.state.setAnswered(true);
         } else {
-            this.ui.showFeedback(`Incorrect. Your circuit diagram ${userExprText} does not match the target expression ${this.targetExpression}. Check your gates & wires or move on.`, 'incorrect');
+            this.ui.showFeedback(`Incorrect. Your circuit diagram ${userExprText} does not match the target expression ${this.targetExpression}.<br>You can continue editing your circuit and try again, or move on to the next question.`, 'incorrect');
+            this.ui.showNextButton();
+            // Keep submit button visible for incorrect answers so users can try again
+            // Don't set answered to true, allowing continued editing
+            // Don't record result yet - wait until they either get it right or move on
         }
-        
-        this.ui.showNextButton();
-        this.ui.hideSubmitButton();
-        this.state.setAnswered(true);
     }
     
     /**

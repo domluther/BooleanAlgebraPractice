@@ -14,7 +14,7 @@ export class UIManager {
      * @param {string} type - The class to apply for styling ('correct' or 'incorrect').
      */
     showFeedback(message, type) {
-        this.feedbackDiv.textContent = message;
+        this.feedbackDiv.innerHTML = message;
         this.feedbackDiv.className = `feedback ${type}`;
         this.feedbackDiv.style.display = 'block';
     }
