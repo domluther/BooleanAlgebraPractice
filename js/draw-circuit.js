@@ -92,7 +92,7 @@ export class DrawCircuit {
         if (isCorrect) {
             this.ui.showFeedback('Correct! The circuit matches the expression.', 'correct');
         } else {
-            this.ui.showFeedback(`Incorrect. Your circuit diagram (${userExprText}) does not match the target expression (${this.targetExpression}). Check your gates & wires or move on.`, 'incorrect');
+            this.ui.showFeedback(`Incorrect. Your circuit diagram ${userExprText} does not match the target expression ${this.targetExpression}. Check your gates & wires or move on.`, 'incorrect');
         }
         
         this.ui.showNextButton();
