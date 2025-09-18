@@ -109,18 +109,37 @@ export class NameThat {
         // noOverlap as it removes commutative duplicates like A AND B and B AND A
         const expressions = expressionDatabase.level2NoOverlap;
 
+        // 1. Select a correct expression and generate its circuit diagram
         this.correctExpression = expressions[Math.floor(Math.random() * expressions.length)];
         this.circuitGenerator.generateCircuit(this.correctExpression, svgCanvas);
 
+        // 2. Get 3 other expressions with different truth tables for options
         const options = [this.correctExpression];
         const otherExpressions = expressions.filter(expr => expr !== this.correctExpression);
-
+        const maxAttempts = otherExpressions.length; // Prevent infinite loop
+        let attempts = 0;
+        
+        // Try to find expressions that produce different truth tables
+        while (options.length < 4 && otherExpressions.length > 0 && attempts < maxAttempts) {
+            const randomIndex = Math.floor(Math.random() * otherExpressions.length);
+            const candidateExpression = otherExpressions.splice(randomIndex, 1)[0];
+            
+            // Only add if it has a different truth table than the correct answer
+            // This prevents logically equivalent expressions from being incorrect options
+            if (!this._hasSameTruthTable(this.correctExpression, candidateExpression)) {
+                options.push(candidateExpression);
+            }
+            attempts++;
+        }
+        
+        // If we couldn't find enough different expressions, fill with random ones as fallback
         while (options.length < 4 && otherExpressions.length > 0) {
             const randomIndex = Math.floor(Math.random() * otherExpressions.length);
-            options.push(otherExpressions.splice(randomIndex, 1)[0]);
+            const randomExpression = otherExpressions.splice(randomIndex, 1)[0];
+            options.push(randomExpression);
         }
 
-        // Shuffle the options so the correct answer isn't always first
+        // 3. Shuffle the options so the correct answer isn't always first
         for (let i = options.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [options[i], options[j]] = [options[j], options[i]];
@@ -139,9 +158,24 @@ export class NameThat {
         // 2. Generate and display the truth table for it
         displayArea.innerHTML = this._generateStaticTableHTML(this.correctExpression);
 
-        // 3. Get 3 other unique random expressions for options
+        // 3. Get 3 other expressions with different truth tables for options
         const options = [this.correctExpression];
         const otherExpressions = expressions.filter(expr => expr !== this.correctExpression);
+        const maxAttempts = otherExpressions.length; // Prevent infinite loop
+        let attempts = 0;
+        
+        while (options.length < 4 && otherExpressions.length > 0 && attempts < maxAttempts) {
+            const randomIndex = Math.floor(Math.random() * otherExpressions.length);
+            const candidateExpression = otherExpressions.splice(randomIndex, 1)[0];
+            
+            // Only add if it has a different truth table than the correct answer
+            if (!this._hasSameTruthTable(this.correctExpression, candidateExpression)) {
+                options.push(candidateExpression);
+            }
+            attempts++;
+        }
+        
+        // If we couldn't find enough different expressions, fill with random ones
         while (options.length < 4 && otherExpressions.length > 0) {
             const randomIndex = Math.floor(Math.random() * otherExpressions.length);
             const randomExpression = otherExpressions.splice(randomIndex, 1)[0];
@@ -295,5 +329,61 @@ export class NameThat {
 
         tableHTML += '</tbody></table>';
         return tableHTML;
+    }
+
+    /**
+     * Checks if two Boolean expressions produce the same truth table.
+     * @param {string} expr1 - First Boolean expression (e.g., "Q = (B AND C) OR A")
+     * @param {string} expr2 - Second Boolean expression (e.g., "Q = A OR (B AND C)")
+     * @returns {boolean} True if both expressions produce identical truth tables
+     * @private
+     */
+    _hasSameTruthTable(expr1, expr2) {
+        try {
+            // Get all unique input variables from both expressions
+            const inputs1 = getInputVariables(expr1);
+            const inputs2 = getInputVariables(expr2);
+            
+            // If they don't have the same input variables, they're different
+            if (inputs1.length !== inputs2.length || 
+                !inputs1.every(input => inputs2.includes(input))) {
+                return false;
+            }
+            
+            const inputs = inputs1; // Use either set since they're the same
+            const numCombinations = 2 ** inputs.length;
+            
+            // Extract the expression bodies (right side of the equals)
+            const body1 = expr1.split(' = ')[1];
+            const body2 = expr2.split(' = ')[1];
+            
+            // Test every possible input combination
+            for (let i = 0; i < numCombinations; i++) {
+                const combination = {};
+                
+                // Generate input combination
+                for (let j = 0; j < inputs.length; j++) {
+                    const inputName = inputs[j];
+                    const value = Boolean((i >> (inputs.length - 1 - j)) & 1);
+                    combination[inputName] = value;
+                }
+                
+                // Evaluate both expressions with this combination
+                const result1 = evaluateExpression(body1, combination);
+                const result2 = evaluateExpression(body2, combination);
+                
+                // If any combination produces different results, they're not equivalent
+                if (result1 !== result2) {
+                    return false;
+                }
+            }
+            
+            // All combinations produced the same results
+            return true;
+        } catch (error) {
+            // If there's an error evaluating, assume they're different
+            console.warn('Error comparing truth tables:', error);
+            return false;
+        }
     }
 }
