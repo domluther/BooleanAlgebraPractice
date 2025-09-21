@@ -215,18 +215,30 @@ export function initializeDefaultMode() {
  * @param {GameManager} gameManager - The game manager instance.
  */
 function setupNotationSelector(gameManager) {
-    const notationToggle = document.getElementById('notationToggle');
-    if (!notationToggle) return;
+    const notationToggles = document.querySelectorAll('.notation-toggle-input');
+    if (notationToggles.length === 0) return;
 
     // Set initial state based on current setting (checked = symbols, unchecked = words)
-    notationToggle.checked = appState.notationType === 'symbol';
+    const initialState = appState.notationType === 'symbol';
+    notationToggles.forEach(toggle => {
+        toggle.checked = initialState;
+    });
 
-    // Add event listener for changes
-    notationToggle.addEventListener('change', function() {
-        const newNotationType = this.checked ? 'symbol' : 'word';
-        setNotationType(newNotationType);
-        
-        // Refresh current question display to show new notation
-        gameManager.refreshCurrentQuestionDisplay();
+    // Add event listener for changes to all toggles
+    notationToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            const newNotationType = this.checked ? 'symbol' : 'word';
+            setNotationType(newNotationType);
+            
+            // Sync all other toggles to match this one
+            notationToggles.forEach(otherToggle => {
+                if (otherToggle !== this) {
+                    otherToggle.checked = this.checked;
+                }
+            });
+            
+            // Refresh current question display to show new notation
+            gameManager.refreshCurrentQuestionDisplay();
+        });
     });
 }
