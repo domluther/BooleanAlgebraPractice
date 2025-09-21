@@ -43,15 +43,18 @@ export class CircuitDrawer {
      * Initializes the drawer for a specific expression.
      * @param {string} expression - The target Boolean expression (e.g., "Q = A AND B").
      * @param {HTMLElement} interpretedExprElement - The HTML element to display the current circuit's expression.
+     * @param {number} difficulty - The current difficulty level (1-5).
      */
-    start(expression, interpretedExprElement) {
+    start(expression, interpretedExprElement, difficulty = 1) {
         this.targetExpression = expression;
         this.parsedTargetExpression = this._parseExpression(this.targetExpression);
         this.interpretedExprElement = interpretedExprElement;
         this.interpretedExpression = '';
+        this.currentDifficulty = difficulty;
 
         this._setupCanvas();
         this._addCircuitModeEventListeners();
+        this._updateToolboxVisibility();
         this._draw();
         this._updateInterpretedExpression();
     }
@@ -410,7 +413,7 @@ export class CircuitDrawer {
     }
 
     _preloadGateImages() {
-        ['AND', 'OR', 'NOT'].forEach(type => {
+        ['AND', 'OR', 'NOT', 'XOR'].forEach(type => {
             const img = new Image();
             img.src = `/img/png/${type.toLowerCase()}.png`;
             this.gateImages[type] = img;
@@ -541,6 +544,17 @@ export class CircuitDrawer {
         const operators = new Set(['NOT', 'AND', 'OR', 'NAND', 'NOR', 'XOR']);
         const variables = tokens.filter(token => !operators.has(token));
         return { output: outputVar, inputs: [...new Set(variables)].sort() };
+    }
+
+    /**
+     * Updates toolbox gate visibility based on current difficulty level.
+     * XOR gates are only shown for A-Level difficulty (level 5).
+     */
+    _updateToolboxVisibility() {
+        const xorGate = document.getElementById('drag-XOR');
+        if (xorGate) {
+            xorGate.style.display = this.currentDifficulty === 5 ? 'block' : 'none';
+        }
     }
 
     _getMousePos(evt) {

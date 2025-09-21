@@ -30,7 +30,7 @@ export class DrawCircuit {
     
     /**
      * Sets the difficulty level and generates a new question.
-     * @param {number} level - The new difficulty level (1-4).
+     * @param {number} level - The new difficulty level (1-5).
      */
     setDifficulty(level) {
         this.currentDifficulty = level;
@@ -74,6 +74,7 @@ export class DrawCircuit {
         this.circuitDrawer.start(
             this.targetExpression, 
             document.getElementById('drawCircuitInterpretedExpression'),
+            this.currentDifficulty
         );
 
         // Reset UI state
