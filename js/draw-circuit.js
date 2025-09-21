@@ -11,7 +11,7 @@ export class DrawCircuit {
         
         // Core state
         this.targetExpression = "";
-        this.currentDifficulty = 5;
+        this.currentDifficulty = 1;
         this.helpEnabled = false;
         this.hasAttemptedCurrentQuestion = false; // Track if user has attempted current question
         this.questionWasAnsweredCorrectly = false; // Track if current question was answered correctly
