@@ -61,6 +61,9 @@ function generateDifficultyDropdown(gameManager, gameMode) {
         const option = document.createElement('option');
         option.value = i;
         option.textContent = difficultyLabels[i] || `Level ${i}`;
+        if (gameMode === 'scenario' && i === 4) {
+            option.textContent = 'A-Level'; // Special case for scenario mode level 4
+        }
         if (i === gameManager.getCurrentDifficulty()) {
             option.selected = true; // Set the current difficulty as selected
         }

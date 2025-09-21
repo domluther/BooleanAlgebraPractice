@@ -172,17 +172,6 @@ export class Scenario {
                     expression: "Q = (A AND B) OR (C AND D)"
                 },
                 {
-                    title: "Computer Login with 2FA",
-                    scenario: "To make a system more secure, the admin enabled 2FA. The system will let the user login (Q) by replying to either a push notification or an SMS.",
-                    inputs: {
-                        U: "Correct username entered",
-                        P: "Correct password entered",
-                        N: "Replied to push notification",
-                        S: "Replied to SMS"
-                    },
-                    expression: "Q = U AND P AND (N OR S)"
-                },
-                {
                     title: "Library Bonus",
                     scenario: "A library gives out a free bookmark (Q) when a special token is shown while borrowing either a fiction book or a non-fiction book.",
                     inputs: {
@@ -192,16 +181,6 @@ export class Scenario {
                     },
                     expression: "Q = T AND (F OR N)"
                 },
-                {
-                    title: "Free food",
-                    scenario: "A shop gives out a free snack (S) when a coupon is handed in while buying a hot chocolate or a tea.",
-                    inputs: {
-                        C: "Coupon is handed in",
-                        H: "Hot chocolate is bought",
-                        T: "Tea is bought"
-                    },
-                    expression: "S = C AND (H OR T)"
-                }
             ],
             3: [ // Level 3 - More wordy scenarios
                 {
@@ -215,6 +194,7 @@ export class Scenario {
                     },
                     expression: "Q = A AND (B OR (C AND D))"
                 },
+
                 {
                     title: "Smart doorbell",
                     scenario: `Smart doorbells allow people to answer their door remotely. This means the user can talk to their visitors while they are not at home, or if they are unable to answer the door in person for any other reason, such as a disability.
@@ -283,8 +263,81 @@ export class Scenario {
                         S: "Chosen metal straw",
                     },
                     expression: "Q = (B OR S) AND F AND (NOT P)"
-                }
-    
+                },
+
+           ],
+            4: [ // A-Level scenarios
+                {
+                    title: "Half adder - sum",
+                    scenario: "Think through the logic of a half adder. What is the sum (S) output when adding two binary digits A and B?",
+                    inputs: {
+                        A: "Input A is 1",
+                        B: "Input B is 1",
+                    },
+                    expression: "S = A XOR B"
+                },
+                {
+                    title: "Half adder - carry",
+                    scenario: "Think through the logic of a half adder. What is the carry (C) output when adding two binary digits A and B?",
+                    inputs: {
+                        A: "Input A is 1",
+                        B: "Input B is 1",
+                    },
+                    expression: "C = A AND B"
+                },
+                {
+                    title: "Full adder - sum",
+                    scenario: "The sum (S) of a full adder is 1 if an odd number of the inputs are 1. This means either A or B are 1 (but not both) while the carry-in (C) is 1, or if A and B are both 1 (but not C).",
+                    inputs: {
+                        A: "Input A is 1",
+                        B: "Input B is 1",
+                        C: "Carry-in is 1"
+                    },
+                    expression: "S = (A XOR B) XOR C"
+                },
+                {
+                    title: "Full adder - carry out",
+                    scenario: "A full adder is used to perform binary addition. The carry-out (C)is 1 if there's a carry from the addition. This occurs when either A and B are both 1 or when the carry-in is 1 and either A or B is 1 (but not both).",
+                    inputs: {
+                        A: "Input A is 1",
+                        B: "Input B is 1",
+                        C: "Carry-in is 1"
+                    },
+                    expression: "C = ((A XOR B) AND C) OR (A AND B)"
+                },
+                {
+                    title: "Burglar Alarms - Revisited",
+                    scenario: `An alarm is made up of a noise sensor and a motion sensor. When the alarm is set, it will trigger (Q) if either of the sensors detect movement.
+                    The alarm has a test mode which can be used to check that the sensors are working without triggering the alarm. When in test mode, the alarm will not trigger even if the sensors detect movement.`,
+                    inputs: {
+                        N: "Noise sensor is triggered",
+                        M: "Motion sensor is triggered",
+                        S: "Alarm is set",
+                        T: "Alarm is in test mode"
+                    },
+                    expression: "Q = S AND (N OR M) AND (NOT T)"
+                },
+                {
+                    title: "Computer Login with 2FA",
+                    scenario: "To make a system more secure, the admin enabled 2FA. The system will let the user login (Q) by replying to either a push notification or an SMS.",
+                    inputs: {
+                        U: "Correct username entered",
+                        P: "Correct password entered",
+                        N: "Replied to push notification",
+                        S: "Replied to SMS"
+                    },
+                    expression: "Q = U AND P AND (N OR S)"
+                },
+                {
+                    title: "Free food",
+                    scenario: "A shop gives out a free snack (S) when a coupon is handed in while buying a hot chocolate or a tea.",
+                    inputs: {
+                        C: "Coupon is handed in",
+                        H: "Hot chocolate is bought",
+                        T: "Tea is bought"
+                    },
+                    expression: "S = C AND (H OR T)"
+                }                
             ]
         };
     
@@ -360,6 +413,8 @@ export class Scenario {
                 this.currentExpression, 
                 document.getElementById('scenarioInterpretedExpression')
             );
+        
+            this._updateToolboxVisibility();
 
             break;
 
@@ -734,4 +789,13 @@ export class Scenario {
         // but may have help displays that should be refreshed
         this.updateHelpDisplay();
     }
+
+    _updateToolboxVisibility() {
+        const xorGate = document.getElementById('drag-XOR-scenario');
+        console.log(this.currentDifficulty, xorGate);
+        if (xorGate) {
+            xorGate.style.display = this.currentDifficulty === 4 ? 'block' : 'none';
+        }
+    }
+
 }

@@ -37,7 +37,7 @@ export const modeSettings = {
     },
     scenario: {
         label: 'Scenarios',
-        levels: 3,
+        levels: 4, // Level 4 is called A-Level in the UI - see ui-setup.js
         class: Scenario,
         dependencies: ['circuitGenerator']
     }
