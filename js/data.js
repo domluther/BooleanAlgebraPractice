@@ -111,5 +111,12 @@ export const expressionDatabase = {
 		'Q = (A AND B) AND (NOT (C OR D))',
 		'Q = ((NOT A) OR B) AND (C OR (NOT D))',
 		'Q = (A AND ((NOT B) OR C)) OR (D AND E)'
+	],
+	level5: [
+		'Q = A XOR B',
+		'Q = (A XOR B) AND C',
+		'Q = (A AND C) XOR (B AND C)',
+		'Q = (A OR B) XOR (B AND C)',
+		'Q = (A AND (NOT B)) XOR C'
 	]
 };

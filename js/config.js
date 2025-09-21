@@ -31,7 +31,7 @@ export const modeSettings = {
     },
     drawCircuit: {
         label: 'Draw Circuit',
-        levels: 4,
+        levels: 5,
         class: DrawCircuit,
         dependencies: [] // This mode doesn't need the circuit generator
     },
@@ -50,7 +50,8 @@ export const difficultyLabels = {
     1: 'Easy',
     2: 'Medium', 
     3: 'Hard',
-    4: 'Expert'
+    4: 'Expert',
+    5: 'A-Level'
 };
 
 /**
