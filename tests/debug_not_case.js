@@ -1,4 +1,4 @@
-import { generateAllAcceptedAnswers } from './js/expression-utils.js';
+import { generateAllAcceptedAnswers } from '../js/expression-utils.js';
 
 // Debug the parsing and generation
 const targetExpression = "Y = NOT ((NOT G) AND E)";

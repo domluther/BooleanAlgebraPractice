@@ -1,4 +1,4 @@
-import { generateAllAcceptedAnswers } from './js/expression-utils.js';
+import { generateAllAcceptedAnswers } from '../js/expression-utils.js';
 
 // Test a simpler case first
 console.log("=== Testing simple NOT case ===");
