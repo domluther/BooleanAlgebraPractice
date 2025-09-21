@@ -19,13 +19,13 @@ export const modeSettings = {
     },
     writeExpression: {
         label: 'Expression Writing',
-        levels: 4,
+        levels: 5,
         class: ExpressionWriting,
         dependencies: ['circuitGenerator']
     },
     truthTable: {
         label: 'Truth Tables',
-        levels: 4,
+        levels: 5,
         class: TruthTable,
         dependencies: ['circuitGenerator']
     },

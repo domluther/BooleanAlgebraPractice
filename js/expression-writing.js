@@ -43,7 +43,7 @@ export class ExpressionWriting {
 
         this.currentExpression = expressions[Math.floor(Math.random() * expressions.length)];
 
-        // If difficulty is 3 or 4, generate different input and output variables.
+        // If difficulty is 3, 4, or 5, generate different input and output variables.
         if (this.currentDifficulty >= 3) {
             this.currentExpression = shuffleExpression(this.currentExpression);
         }

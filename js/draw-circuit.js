@@ -11,7 +11,7 @@ export class DrawCircuit {
         
         // Core state
         this.targetExpression = "";
-        this.currentDifficulty = 1;
+        this.currentDifficulty = 5;
         this.helpEnabled = false;
         this.hasAttemptedCurrentQuestion = false; // Track if user has attempted current question
         this.questionWasAnsweredCorrectly = false; // Track if current question was answered correctly
@@ -54,7 +54,7 @@ export class DrawCircuit {
         this.hasAttemptedCurrentQuestion = false; // Reset attempt flag for new question
         this.questionWasAnsweredCorrectly = false; // Reset correct answer flag for new question
 
-        // If difficulty is 3 or 4, generate different input and output variables.
+        // Harder modes, generate different input and output variables.
         if (this.currentDifficulty >= 3) {
             this.targetExpression = shuffleExpression(this.targetExpression);
         }

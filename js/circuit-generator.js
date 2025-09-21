@@ -11,8 +11,15 @@ export class CircuitGenerator {
 	}
 
 	parseExpression(expr) {
-		this.input = expr.split(' = ')[0];
-		const rightSide = expr.split(' = ')[1];
+		const parts = expr.split(' = ');
+		if (parts.length !== 2) {
+			// Fallback for invalid format - assume no output variable specified
+			this.input = 'Q'; // Default to Q for backward compatibility
+			return this.parseTokens(this.tokenize(expr));
+		}
+		
+		this.input = parts[0];
+		const rightSide = parts[1];
 		return this.parseTokens(this.tokenize(rightSide));
 	}
 
@@ -343,7 +350,7 @@ export class CircuitGenerator {
         <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
         <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
         <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
 		}
 
 		if (layout.type === 'OR' && layout.left && layout.right &&
@@ -357,7 +364,7 @@ export class CircuitGenerator {
         <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
         <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
         <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
 		}
 
 		if (layout.type === 'XOR' && layout.left && layout.right &&
@@ -372,7 +379,7 @@ export class CircuitGenerator {
         <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
         <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
         <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
 		}
 
 		if (layout.type === 'NOT' && layout.operand && layout.operand.type === 'VAR') {
@@ -383,7 +390,7 @@ export class CircuitGenerator {
         <line x1="30" y1="60" x2="60" y2="60" stroke="#333" stroke-width="2"/>
         <line x1="120" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
         <text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`;
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
 		}
 
 		return null;
