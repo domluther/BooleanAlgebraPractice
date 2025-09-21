@@ -1,4 +1,4 @@
-import { generateAllAcceptedAnswers, normalizeExpression } from './expression-utils.js';
+import { generateAllAcceptedAnswers, normalizeExpression, areExpressionsLogicallyEquivalent } from './expression-utils.js';
 import { CircuitDrawer } from './draw-circuit-utils.js'; // Add this at the top
 import * as ttUtils from './truth-table-utils.js';
 import { convertToCurrentNotation, convertToWordNotation, appState } from './config.js';
@@ -587,7 +587,16 @@ export class Scenario {
         const userAnswerForComparison = convertToWordNotation(userAnswer);
         const normalizedUser = normalizeExpression(userAnswerForComparison);
 
-        const isCorrect = this.currentAcceptedAnswers.some(accepted => normalizeExpression(accepted.toUpperCase()) === normalizedUser);
+        // First try exact match with accepted answers
+        let isCorrect = this.currentAcceptedAnswers.some(accepted => normalizeExpression(accepted.toUpperCase()) === normalizedUser);
+
+        // If no exact match, try logical equivalence using truth tables
+        if (!isCorrect) {
+            isCorrect = areExpressionsLogicallyEquivalent(userAnswerForComparison, this.currentExpression);
+            if (isCorrect) {
+                console.log('Expression answers are logically equivalent via truth table comparison');
+            }
+        }
 
         this.state.recordResult(isCorrect);
         if (isCorrect) {
@@ -621,8 +630,16 @@ export class Scenario {
             return;
         }
 
-        // Use the same accepted answers list generated for the expression question
-        const isCorrect = this.currentAcceptedAnswers.some(acceptedAnswer => userExprText === acceptedAnswer);
+        // First try exact match with accepted answers
+        let isCorrect = this.currentAcceptedAnswers.some(acceptedAnswer => userExprText === acceptedAnswer);
+
+        // If no exact match, try logical equivalence using truth tables
+        if (!isCorrect) {
+            isCorrect = areExpressionsLogicallyEquivalent(userExprText, this.currentExpression);
+            if (isCorrect) {
+                console.log('Circuit answers are logically equivalent via truth table comparison');
+            }
+        }
 
         this.state.recordResult(isCorrect);
         if (isCorrect) {

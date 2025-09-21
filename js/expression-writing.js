@@ -1,7 +1,7 @@
 // expression-writing.js
 
 import { expressionDatabase } from './data.js';
-import { generateAllAcceptedAnswers, normalizeExpression, shuffleExpression } from './expression-utils.js';
+import { generateAllAcceptedAnswers, normalizeExpression, shuffleExpression, areExpressionsLogicallyEquivalent } from './expression-utils.js';
 import { convertToCurrentNotation, convertToWordNotation, appState } from './config.js';
 
 export class ExpressionWriting {
@@ -121,10 +121,19 @@ export class ExpressionWriting {
         const userAnswerInWords = convertToWordNotation(userAnswer);
         const normalizedUser = normalizeExpression(userAnswerInWords);
 
-        const isCorrect = this.currentAcceptedAnswers.some(acceptedAnswer => {
+        // First try exact match with accepted answers
+        let isCorrect = this.currentAcceptedAnswers.some(acceptedAnswer => {
             const normalizedAccepted = normalizeExpression(acceptedAnswer.toUpperCase());
             return normalizedUser === normalizedAccepted;
         });
+
+        // If no exact match, try logical equivalence using truth tables
+        if (!isCorrect) {
+            isCorrect = areExpressionsLogicallyEquivalent(userAnswerInWords, this.currentExpression);
+            if (isCorrect) {
+                console.log('Expressions are logically equivalent via truth table comparison');
+            }
+        }
 
         this.state.recordResult(isCorrect)
         if (isCorrect) {
@@ -237,4 +246,5 @@ export class ExpressionWriting {
         
         return null; // Valid
     }
+
 }

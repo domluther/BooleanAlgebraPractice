@@ -534,3 +534,47 @@ export function evaluateExpression(expression, values) {
 		return false;
 	}
 }
+
+/**
+ * Compare two expressions for logical equivalence using truth tables
+ * @param {string} expr1 - First expression to compare
+ * @param {string} expr2 - Second expression to compare
+ * @returns {boolean} True if expressions are logically equivalent
+ */
+export function areExpressionsLogicallyEquivalent(expr1, expr2) {
+	try {
+		// Extract variables from both expressions
+		const vars1 = getInputVariables(expr1);
+		const vars2 = getInputVariables(expr2);
+		const allVars = [...new Set([...vars1, ...vars2])].sort();
+		
+		// Extract the right-hand side of equations
+		const rhs1 = expr1.split('=')[1]?.trim();
+		const rhs2 = expr2.split('=')[1]?.trim();
+		
+		if (!rhs1 || !rhs2) return false;
+		
+		// Generate all possible truth value combinations
+		const numVars = allVars.length;
+		const numCombinations = Math.pow(2, numVars);
+		
+		for (let i = 0; i < numCombinations; i++) {
+			const values = {};
+			for (let j = 0; j < numVars; j++) {
+				values[allVars[j]] = Boolean(i & (1 << j));
+			}
+			
+			const result1 = evaluateExpression(rhs1, values);
+			const result2 = evaluateExpression(rhs2, values);
+			
+			if (result1 !== result2) {
+				return false;
+			}
+		}
+		
+		return true;
+	} catch (error) {
+		console.error('Error comparing expressions:', error);
+		return false;
+	}
+}

@@ -1,7 +1,7 @@
 // js/draw-circuit.js
 
 import { expressionDatabase } from './data.js';
-import { generateAllAcceptedAnswers, shuffleExpression, evaluateExpression, getInputVariables } from './expression-utils.js';
+import { generateAllAcceptedAnswers, shuffleExpression, areExpressionsLogicallyEquivalent } from './expression-utils.js';
 import { CircuitDrawer } from './draw-circuit-utils.js';
 
 export class DrawCircuit {
@@ -108,7 +108,7 @@ export class DrawCircuit {
         
         // If no exact match, try logical equivalence using truth tables
         if (!isCorrect) {
-            isCorrect = this._areExpressionsLogicallyEquivalent(userExprText, this.targetExpression);
+            isCorrect = areExpressionsLogicallyEquivalent(userExprText, this.targetExpression);
             if (isCorrect) {
                 console.log('Expressions are logically equivalent via truth table comparison');
             }
@@ -151,47 +151,6 @@ export class DrawCircuit {
     refreshDisplay() {
         if (this.targetExpression) {
             this.ui.showExpression('circuitTargetExpression', this.targetExpression);
-        }
-    }
-
-    /**
-     * Compare two expressions for logical equivalence using truth tables
-     */
-    _areExpressionsLogicallyEquivalent(expr1, expr2) {
-        try {
-            // Extract variables from both expressions
-            const vars1 = getInputVariables(expr1);
-            const vars2 = getInputVariables(expr2);
-            const allVars = [...new Set([...vars1, ...vars2])].sort();
-            
-            // Extract the right-hand side of equations
-            const rhs1 = expr1.split('=')[1]?.trim();
-            const rhs2 = expr2.split('=')[1]?.trim();
-            
-            if (!rhs1 || !rhs2) return false;
-            
-            // Generate all possible truth value combinations
-            const numVars = allVars.length;
-            const numCombinations = Math.pow(2, numVars);
-            
-            for (let i = 0; i < numCombinations; i++) {
-                const values = {};
-                for (let j = 0; j < numVars; j++) {
-                    values[allVars[j]] = Boolean(i & (1 << j));
-                }
-                
-                const result1 = evaluateExpression(rhs1, values);
-                const result2 = evaluateExpression(rhs2, values);
-                
-                if (result1 !== result2) {
-                    return false;
-                }
-            }
-            
-            return true;
-        } catch (error) {
-            console.error('Error comparing expressions:', error);
-            return false;
         }
     }
 }
