@@ -152,6 +152,15 @@ export class Scenario {
                     expression: "Q = (A AND B) OR C"
                 },
                 {
+                    title: "Home assistant",
+                    scenario: "A home assistant will activate (Q) if it detects a voice command and Do Not Disturb is not enabled.",
+                    inputs: {
+                        A: "Voice command is detected",
+                        B: "Do Not Disturb is enabled"
+                    },
+                    expression: "Q = A AND NOT B"
+                },
+                {
                     title: "Gym Access",
                     scenario: "A gym grants access to discounted memberships (Q) only if one of the following applies: The person is under 21 and has a university ID, or they are aged 65 or older and show proof of residency.",
                     inputs: {
@@ -163,6 +172,17 @@ export class Scenario {
                     expression: "Q = (A AND B) OR (C AND D)"
                 },
                 {
+                    title: "Computer Login with 2FA",
+                    scenario: "To make a system more secure, the admin enabled 2FA. The system will let the user login (Q) by replying to either a push notification or an SMS.",
+                    inputs: {
+                        U: "Correct username entered",
+                        P: "Correct password entered",
+                        N: "Replied to push notification",
+                        S: "Replied to SMS"
+                    },
+                    expression: "Q = U AND P AND (N OR S)"
+                },
+                {
                     title: "Library Bonus",
                     scenario: "A library gives out a free bookmark (Q) when a special token is shown while borrowing either a fiction book or a non-fiction book.",
                     inputs: {
@@ -171,6 +191,16 @@ export class Scenario {
                         N: "Non-fiction book borrowed"
                     },
                     expression: "Q = T AND (F OR N)"
+                },
+                {
+                    title: "Free food",
+                    scenario: "A shop gives out a free snack (S) when a coupon is handed in while buying a hot chocolate or a tea.",
+                    inputs: {
+                        C: "Coupon is handed in",
+                        H: "Hot chocolate is bought",
+                        T: "Tea is bought"
+                    },
+                    expression: "S = C AND (H OR T)"
                 }
             ],
             3: [ // Level 3 - More wordy scenarios

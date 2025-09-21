@@ -7,3 +7,6 @@ TODO
 - Replace correct/incorrect in answers with emoji/symbol? Some draw circuit mode replies are too long
 - Name that level 2 + 3 pick from level 2 + 3 expressions combined - come up with level 3 no overlap
 - Scenario mode - checkboxes to enable modes?
+- For A-Level
+  - KMap support
+  - Multiple outputs on draw circuit mode - draw half/full adders
