@@ -91,6 +91,15 @@
 						<div id="logicDiagramDisplay" class="logic-diagram-display">
 							<!-- Circuit will be generated here -->
 						</div>
+						<div id="symbolInputButtons" class="symbol-input-buttons">
+							<button type="button" class="symbol-btn" data-symbol="∧" data-word="AND" title="Insert AND (∧)">∧</button>
+							<button type="button" class="symbol-btn" data-symbol="∨" data-word="OR" title="Insert OR (∨)">∨</button>
+							<button type="button" class="symbol-btn" data-symbol="¬" data-word="NOT" title="Insert NOT (¬)">¬</button>
+							<button type="button" class="symbol-btn" data-symbol="⊻" data-word="XOR" title="Insert XOR (⊻)">⊻</button>
+						</div>
+						<div id="keyboardShortcuts" class="keyboard-shortcuts">
+							<small>Keyboard: ^ (AND), v (OR), ¬ (NOT)</small>
+						</div>
 					</div>
 					<input type="text" id="expressionInput" class="expression-input" placeholder="Enter expression (e.g., Q = A AND B)">
 					<div id="writeExpressionHelpInfo" class="help-info">
@@ -149,30 +158,26 @@
 							</div>
 							<div id="drawCircuitContainer">
 								<div class="circuit-toolbox">
-									<h3>Toolbox</h3>
+									<h3>Logic Gates</h3>
 									<div class="gate" draggable="true" id="drag-AND" data-gate-type="AND">
 										<div class="gate-icon">
 											<img src="/img/svg/and.svg" alt="AND Gate" class="gate-svg">
 										</div>
-										<div class="gate-label">AND</div>
 									</div>
 									<div class="gate" draggable="true" id="drag-OR" data-gate-type="OR">
 										<div class="gate-icon">
 											<img src="/img/svg/or.svg" alt="OR Gate" class="gate-svg">
 										</div>
-										<div class="gate-label">OR</div>
 									</div>
 									<div class="gate" draggable="true" id="drag-NOT" data-gate-type="NOT">
 										<div class="gate-icon">
 											<img src="/img/svg/not.svg" alt="NOT Gate" class="gate-svg">
 										</div>
-										<div class="gate-label">NOT</div>
 									</div>
 									<div class="gate" draggable="true" id="drag-XOR" data-gate-type="XOR" style="display: none;">
 										<div class="gate-icon">
 											<img src="/img/svg/xor.svg" alt="XOR Gate" class="gate-svg">
 										</div>
-										<div class="gate-label">XOR</div>
 									</div>
 									<button id="drawCircuitRemoveSelectedBtn" class="btn btn-full btn-warning">Remove Selected</button>
 									<button id="drawCircuitResetCircuitBtn" class="btn btn-full btn-danger">Reset</button>
@@ -222,6 +227,15 @@
 								<div class="scenario-display" id="scenarioDisplay">
 									</div>
 								<div id="scenarioExpressionTask">
+									<div id="scenarioSymbolInputButtons" class="symbol-input-buttons">
+										<button type="button" class="symbol-btn" data-symbol="∧" data-word="AND" title="Insert AND (∧)">∧</button>
+										<button type="button" class="symbol-btn" data-symbol="∨" data-word="OR" title="Insert OR (∨)">∨</button>
+										<button type="button" class="symbol-btn" data-symbol="¬" data-word="NOT" title="Insert NOT (¬)">¬</button>
+										<button type="button" class="symbol-btn" data-symbol="⊻" data-word="XOR" title="Insert XOR (⊻)">⊻</button>
+									</div>
+									<div id="scenarioKeyboardShortcuts" class="keyboard-shortcuts">
+										<small>Keyboard: ^ (AND), v (OR), ¬ (NOT)</small>
+									</div>
 									<input type="text" id="scenarioInput" class="expression-input bottom" placeholder="Enter expression (e.g., Q = A AND B)">
 								</div>
 								<div id="scenarioTruthTableTask" style="display: none;">
@@ -231,15 +245,26 @@
 								<div id="scenarioDrawCircuitTask" style="display: none;">
 									<div id="drawCircuitContainerScenario" class="draw-circuit-container-flex">
 										<div class="circuit-toolbox">
-											<h3>Toolbox</h3>
+											<h3>Logic Gates</h3>
 											<div class="gate" draggable="true" id="drag-AND-scenario" data-gate-type="AND">
-												<img src="/img/svg/and.svg" alt="AND Gate" class="gate-svg"> AND
+												<div class="gate-icon">
+													<img src="/img/svg/and.svg" alt="AND Gate" class="gate-svg">
+												</div>
 											</div>
 											<div class="gate" draggable="true" id="drag-OR-scenario" data-gate-type="OR">
-												<img src="/img/svg/or.svg" alt="OR Gate" class="gate-svg"> OR
+												<div class="gate-icon">
+													<img src="/img/svg/or.svg" alt="OR Gate" class="gate-svg">
+												</div>
 											</div>
 											<div class="gate" draggable="true" id="drag-NOT-scenario" data-gate-type="NOT">
-												<img src="/img/svg/not.svg" alt="NOT Gate" class="gate-svg"> NOT
+												<div class="gate-icon">
+													<img src="/img/svg/not.svg" alt="NOT Gate" class="gate-svg">
+												</div>
+											</div>
+											<div class="gate" draggable="true" id="drag-XOR-scenario" data-gate-type="XOR" style="display: none;">
+												<div class="gate-icon">
+													<img src="/img/svg/xor.svg" alt="XOR Gate" class="gate-svg">
+												</div>
 											</div>
 											<button id="scenarioRemoveSelectedBtn" class="btn btn-full btn-warning">Remove Selected</button>
 											<button id="scenarioResetCircuitBtn" class="btn btn-full btn-danger">Reset</button>

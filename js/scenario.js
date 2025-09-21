@@ -1,6 +1,7 @@
 import { generateAllAcceptedAnswers, normalizeExpression } from './expression-utils.js';
 import { CircuitDrawer } from './draw-circuit-utils.js'; // Add this at the top
 import * as ttUtils from './truth-table-utils.js';
+import { convertToCurrentNotation, convertToWordNotation, appState } from './config.js';
 
 export class Scenario {
     constructor(circuitGenerator, dependencies) {
@@ -38,6 +39,8 @@ export class Scenario {
             this.expertMode = document.getElementById('scenarioExpertMode').checked;
             this._redrawTable();
         };
+        this.setupScenarioSymbolButtons();
+        this.setupScenarioKeyboardShortcuts();
         this.generateQuestion();
     }
 
@@ -334,6 +337,18 @@ export class Scenario {
             default:
                 questionTitle.textContent = 'Write the Boolean expression for this scenario:';
                 document.getElementById('scenarioExpressionTask').style.display = 'block';
+                
+                // Initialize expression input components
+                this.updateScenarioPlaceholder();
+                this.updateScenarioSymbolButtons();
+                this.updateScenarioKeyboardShortcuts();
+                
+                // Clear and focus the input
+                const input = document.getElementById('scenarioInput');
+                if (input) {
+                    input.value = '';
+                    input.focus();
+                }
                 break;
         }   
     }
@@ -373,6 +388,115 @@ export class Scenario {
     }
 
     /**
+     * Sets up event listeners for the scenario symbol input buttons.
+     */
+    setupScenarioSymbolButtons() {
+        const symbolButtons = document.querySelectorAll('#scenarioSymbolInputButtons .symbol-btn');
+        symbolButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const input = document.getElementById('scenarioInput');
+                const symbol = appState.notationType === 'symbol' ? button.dataset.symbol : button.dataset.word;
+                
+                // Insert the symbol at the current cursor position
+                const cursorPos = input.selectionStart;
+                const currentValue = input.value;
+                const newValue = currentValue.slice(0, cursorPos) + ' ' + symbol + ' ' + currentValue.slice(cursorPos);
+                
+                input.value = newValue;
+                
+                // Move cursor after the inserted symbol
+                const newCursorPos = cursorPos + symbol.length + 2;
+                input.setSelectionRange(newCursorPos, newCursorPos);
+                input.focus();
+            });
+        });
+    }
+
+    /**
+     * Sets up keyboard shortcuts for the scenario expression input.
+     */
+    setupScenarioKeyboardShortcuts() {
+        const input = document.getElementById('scenarioInput');
+        if (!input) return;
+
+        input.addEventListener('keydown', (event) => {
+            if (appState.notationType !== 'symbol') return;
+
+            let symbol = '';
+            switch (event.key) {
+                case '^':
+                    symbol = '∧';
+                    break;
+                case 'v':
+                case 'V':
+                    symbol = '∨';
+                    break;
+                case '!':
+                    symbol = '¬';
+                    break;
+                default:
+                    return;
+            }
+
+            event.preventDefault();
+            
+            const cursorPos = input.selectionStart;
+            const currentValue = input.value;
+            const newValue = currentValue.slice(0, cursorPos) + ' ' + symbol + ' ' + currentValue.slice(cursorPos);
+            
+            input.value = newValue;
+            
+            const newCursorPos = cursorPos + symbol.length + 2;
+            input.setSelectionRange(newCursorPos, newCursorPos);
+        });
+    }
+
+    /**
+     * Updates the scenario placeholder text based on the current notation setting.
+     */
+    updateScenarioPlaceholder() {
+        const input = document.getElementById('scenarioInput');
+        if (input) {
+            const exampleExpression = 'Q = A OR B';
+            input.placeholder = `Enter expression (e.g., ${convertToCurrentNotation(exampleExpression)})`;
+        }
+    }
+
+    /**
+     * Updates the scenario symbol buttons to show the appropriate notation and visibility.
+     */
+    updateScenarioSymbolButtons() {
+        const symbolButtonsContainer = document.getElementById('scenarioSymbolInputButtons');
+        const symbolButtons = document.querySelectorAll('#scenarioSymbolInputButtons .symbol-btn');
+        
+        // Show symbol buttons only in symbol mode
+        if (symbolButtonsContainer) {
+            symbolButtonsContainer.style.display = appState.notationType === 'symbol' ? 'flex' : 'none';
+        }
+        
+        symbolButtons.forEach(button => {
+            if (appState.notationType === 'symbol') {
+                button.textContent = button.dataset.symbol;
+                button.title = `Insert ${button.dataset.word} (${button.dataset.symbol})`;
+            } else {
+                button.textContent = button.dataset.word;
+                button.title = `Insert ${button.dataset.word}`;
+            }
+        });
+    }
+
+    /**
+     * Updates the scenario keyboard shortcuts hint visibility based on notation mode.
+     */
+    updateScenarioKeyboardShortcuts() {
+        const shortcutsDiv = document.getElementById('scenarioKeyboardShortcuts');
+        if (shortcutsDiv) {
+            // Show keyboard shortcuts only in symbol mode
+            shortcutsDiv.style.display = appState.notationType === 'symbol' ? 'block' : 'none';
+        }
+    }
+
+    /**
      * Helper to redraw the table when an option (e.g., expert mode) is toggled.
      */
     _redrawTable() {
@@ -382,14 +506,56 @@ export class Scenario {
     }
 
     /**
+     * Validates that the user's input follows the expected notation consistently.
+     * @param {string} userInput - The user's input expression
+     * @returns {string|null} Error message if validation fails, null if valid
+     */
+    validateNotationConsistency(userInput) {
+        if (!userInput || userInput.trim() === '') {
+            return null;
+        }
+
+        const wordPattern = /\b(AND|OR|NOT|XOR)\b/i;
+        const symbolPattern = /[∧∨¬⊻]/;
+
+        const hasWords = wordPattern.test(userInput);
+        const hasSymbols = symbolPattern.test(userInput);
+
+        if (hasWords && hasSymbols) {
+            return `Please use either words (AND, OR, NOT, XOR) OR symbols (∧, ∨, ¬, ⊻), but not both.`;
+        }
+
+        if (appState.notationType === 'symbol' && hasWords) {
+            return `Please use symbol notation (∧, ∨, ¬, ⊻) or keyboard shortcuts (^, v, !) instead of words. Current mode: Symbols`;
+        }
+
+        if (appState.notationType === 'word' && hasSymbols) {
+            return `Please use word notation (AND, OR, NOT, XOR) instead of symbols. Current mode: Words`;
+        }
+
+        return null;
+    }
+
+    /**
      * Checks the user's submitted Boolean expression.
      */
     _checkExpressionAnswer() {
         const userAnswer = document.getElementById('scenarioInput').value.trim().toUpperCase();
+        
         this.state.setAnswered(true);
         this.ui.hideSubmitButton();
 
-        const normalizedUser = normalizeExpression(userAnswer);
+        // Check for notation consistency
+        const notationError = this.validateNotationConsistency(userAnswer);
+        if (notationError) {
+            this.ui.showFeedback(notationError, 'incorrect');
+            this.ui.showNextButton();
+            return;
+        }
+
+        // Convert user input from symbols to words if they used symbol notation
+        const userAnswerForComparison = convertToWordNotation(userAnswer);
+        const normalizedUser = normalizeExpression(userAnswerForComparison);
 
         const isCorrect = this.currentAcceptedAnswers.some(accepted => normalizeExpression(accepted.toUpperCase()) === normalizedUser);
 
@@ -397,7 +563,7 @@ export class Scenario {
         if (isCorrect) {
             this.ui.showFeedback('Correct! Excellent work!', 'correct');
         } else {
-            this.ui.showFeedback(`Incorrect. The correct answer is: ${this.currentExpression}`, 'incorrect');
+            this.ui.showFeedback(`Incorrect. The correct answer is: ${convertToCurrentNotation(this.currentExpression)}`, 'incorrect');
         }
         this.ui.showNextButton();
     }
@@ -509,6 +675,14 @@ export class Scenario {
         if (this.questionType === 'truth-table' && this.currentExpression) {
             this._redrawTable();
         }
+        
+        // Update expression mode components when in expression question type
+        if (this.questionType === 'expression') {
+            this.updateScenarioPlaceholder();
+            this.updateScenarioSymbolButtons();
+            this.updateScenarioKeyboardShortcuts();
+        }
+        
         // Expression and draw-circuit modes don't show expressions directly in scenario
         // but may have help displays that should be refreshed
         this.updateHelpDisplay();

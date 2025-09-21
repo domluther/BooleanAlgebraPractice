@@ -459,7 +459,7 @@ export function getInputVariables(expression) {
 function replaceVariables(inputVars, expression) {
 	// Ensure these don't overlap - otherwise we can end up with collisions
     const inputLetterPool = ['A','B','C','D','E','F','G','H'];
-    const outputLetterPool = ['P','Q','R','S','T','U','V','W','X','Y','Z'];
+    const outputLetterPool = ['P','Q','R','S','T','W','X','Y','Z'];
 
     // 1. Create a shuffled list of potential replacements.
     const replacements = [...inputLetterPool].sort(() => Math.random() - 0.5);

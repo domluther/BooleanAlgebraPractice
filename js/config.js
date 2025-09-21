@@ -131,6 +131,13 @@ export function convertToSymbolNotation(expression) {
  */
 export function convertToWordNotation(expression) {
     let result = expression;
+    
+    // First handle keyboard-friendly symbol alternatives
+    result = result.replace(/\^/g, 'AND');      // ^ → AND
+    result = result.replace(/[vV]/g, 'OR');     // v or V → OR  
+    result = result.replace(/!/g, 'NOT');       // ! → NOT
+    
+    // Then handle the proper mathematical symbols
     for (const [symbol, word] of Object.entries(notationMaps.symbolToWord)) {
         const regex = new RegExp(`\\${symbol}`, 'g');
         result = result.replace(regex, word);

@@ -2,7 +2,7 @@
 
 import { expressionDatabase } from './data.js';
 import { generateAllAcceptedAnswers, normalizeExpression, shuffleExpression } from './expression-utils.js';
-import { convertToCurrentNotation } from './config.js';
+import { convertToCurrentNotation, convertToWordNotation, appState } from './config.js';
 
 export class ExpressionWriting {
     constructor(circuitGenerator, dependencies) {
@@ -22,6 +22,7 @@ export class ExpressionWriting {
      * Initializes the mode by generating the first question.
      */
     initialize() {
+        this.setupSymbolButtons();
         this.generateQuestion();
     }
     
@@ -57,7 +58,44 @@ export class ExpressionWriting {
         
         const input = document.getElementById('expressionInput');
         input.value = '';
+        this.updatePlaceholder();
+        this.updateSymbolButtons();
+        this.updateKeyboardShortcuts();
         input.focus();
+    }
+
+    /**
+     * Sets up event listeners for the symbol input buttons.
+     */
+    setupSymbolButtons() {
+        const symbolButtons = document.querySelectorAll('.symbol-btn');
+        symbolButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const input = document.getElementById('expressionInput');
+                const symbol = appState.notationType === 'symbol' ? button.dataset.symbol : button.dataset.word;
+                
+                // Insert the symbol at the current cursor position
+                const cursorPos = input.selectionStart;
+                const currentValue = input.value;
+                const newValue = currentValue.slice(0, cursorPos) + ' ' + symbol + ' ' + currentValue.slice(cursorPos);
+                
+                input.value = newValue;
+                
+                // Move cursor after the inserted symbol
+                const newCursorPos = cursorPos + symbol.length + 2;
+                input.setSelectionRange(newCursorPos, newCursorPos);
+                input.focus();
+            });
+        });
+    }
+
+    /**
+     * Updates the placeholder text based on the current notation setting.
+     */
+    updatePlaceholder() {
+        const input = document.getElementById('expressionInput');
+        const exampleExpression = 'Q = A OR B';
+        input.placeholder = `Enter expression (e.g., ${convertToCurrentNotation(exampleExpression)})`;
     }
     
     /**
@@ -71,7 +109,17 @@ export class ExpressionWriting {
         this.state.setAnswered(true);
         this.ui.hideSubmitButton();
 
-        const normalizedUser = normalizeExpression(userAnswer);
+        // Check for notation consistency
+        const notationError = this.validateNotationConsistency(userAnswer);
+        if (notationError) {
+            this.ui.showFeedback(notationError, 'incorrect');
+            this.ui.showNextButton();
+            return;
+        }
+
+        // Convert user input from symbols to words if they used symbol notation
+        const userAnswerInWords = convertToWordNotation(userAnswer);
+        const normalizedUser = normalizeExpression(userAnswerInWords);
 
         const isCorrect = this.currentAcceptedAnswers.some(acceptedAnswer => {
             const normalizedAccepted = normalizeExpression(acceptedAnswer.toUpperCase());
@@ -82,7 +130,7 @@ export class ExpressionWriting {
         if (isCorrect) {
             this.ui.showFeedback('Correct! Excellent work!', 'correct');
         } else {
-            this.ui.showFeedback(`Incorrect. The correct answer is: ${this.currentExpression}`, 'incorrect');
+            this.ui.showFeedback(`Incorrect. The correct answer is: ${convertToCurrentNotation(this.currentExpression)}`, 'incorrect');
         }
         this.ui.showNextButton();
     }
@@ -119,11 +167,74 @@ export class ExpressionWriting {
         // Update help display in case notation changed
         this.updateHelpDisplay();
         
-        // TODO: In the future, add support for allowing users to type expressions 
-        // using symbol notation (∧, ∨, ¬, ⊻) in addition to word notation.
-        // This will require:
-        // 1. Input parsing that converts symbols to internal word format
-        // 2. User interface hints showing available symbols
-        // 3. Potentially a toggle for input mode or auto-detection
+        // Update placeholder text
+        this.updatePlaceholder();
+        
+        // Update symbol button display based on current notation
+        this.updateSymbolButtons();
+        
+        // Update keyboard shortcuts visibility
+        this.updateKeyboardShortcuts();
+    }
+
+    /**
+     * Updates the symbol buttons to show the appropriate notation and visibility.
+     */
+    updateSymbolButtons() {
+        const symbolButtonsContainer = document.getElementById('symbolInputButtons');
+        const symbolButtons = document.querySelectorAll('.symbol-btn');
+        
+        // Show symbol buttons only in symbol mode
+        if (symbolButtonsContainer) {
+            symbolButtonsContainer.style.display = appState.notationType === 'symbol' ? 'flex' : 'none';
+        }
+        
+        symbolButtons.forEach(button => {
+            if (appState.notationType === 'symbol') {
+                button.textContent = button.dataset.symbol;
+                button.title = `Insert ${button.dataset.word} (${button.dataset.symbol})`;
+            } else {
+                button.textContent = button.dataset.word;
+                button.title = `Insert ${button.dataset.word}`;
+            }
+        });
+    }
+
+    /**
+     * Updates the keyboard shortcuts hint visibility based on notation mode.
+     */
+    updateKeyboardShortcuts() {
+        const shortcutsDiv = document.getElementById('keyboardShortcuts');
+        if (shortcutsDiv) {
+            // Show keyboard shortcuts only in symbol mode
+            shortcutsDiv.style.display = appState.notationType === 'symbol' ? 'block' : 'none';
+        }
+    }
+
+    /**
+     * Validates that the user's input follows the expected notation consistently.
+     * @param {string} userInput - The user's input expression
+     * @returns {string|null} Error message if validation fails, null if valid
+     */
+    validateNotationConsistency(userInput) {
+        const hasWords = /\b(AND|OR|NOT|XOR)\b/.test(userInput);
+        const hasSymbols = /[∧∨¬⊻^vV!]/.test(userInput);
+        
+        if (appState.notationType === 'symbol') {
+            if (hasWords) {
+                return `Please use symbol notation (∧, ∨, ¬, ⊻) or keyboard shortcuts (^, v, !) instead of words. Current mode: Symbols`;
+            }
+        } else {
+            if (hasSymbols) {
+                return `Please use word notation (AND, OR, NOT, XOR) instead of symbols. Current mode: Words`;
+            }
+        }
+        
+        // Check for mixed notation within the same expression
+        if (hasWords && hasSymbols) {
+            return `Please use consistent notation throughout your expression. Don't mix words and symbols.`;
+        }
+        
+        return null; // Valid
     }
 }

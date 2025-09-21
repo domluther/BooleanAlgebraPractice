@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Notation Validation Test</title>
+</head>
+<body>
+    <h1>Testing Notation Validation</h1>
+    <div id="test-results"></div>
+    
+    <script type="module">
+        import { convertToWordNotation, setNotationType } from './js/config.js';
+        
+        // Mock the ExpressionWriting class validation method
+        function validateNotationConsistency(userInput, notationType) {
+            const hasWords = /\b(AND|OR|NOT|XOR)\b/.test(userInput);
+            const hasSymbols = /[∧∨¬⊻^vV!]/.test(userInput);
+            
+            if (notationType === 'symbol') {
+                if (hasWords) {
+                    return `Please use symbol notation (∧, ∨, ¬, ⊻) or keyboard shortcuts (^, v, !) instead of words. Current mode: Symbols`;
+                }
+            } else {
+                if (hasSymbols) {
+                    return `Please use word notation (AND, OR, NOT, XOR) instead of symbols. Current mode: Words`;
+                }
+            }
+            
+            // Check for mixed notation within the same expression
+            if (hasWords && hasSymbols) {
+                return `Please use consistent notation throughout your expression. Don't mix words and symbols.`;
+            }
+            
+            return null; // Valid
+        }
+        
+        const testResults = document.getElementById('test-results');
+        
+        function runTests() {
+            const tests = [
+                {
+                    name: 'Symbol mode accepts keyboard shortcuts',
+                    input: 'Q = A ^ B v !C',
+                    mode: 'symbol',
+                    shouldPass: true
+                },
+                {
+                    name: 'Symbol mode accepts symbols',
+                    input: 'Q = A ∧ B ∨ ¬C',
+                    mode: 'symbol',
+                    shouldPass: true
+                },
+                {
+                    name: 'Symbol mode rejects words',
+                    input: 'Q = A AND B OR NOT C',
+                    mode: 'symbol',
+                    shouldPass: false
+                },
+                {
+                    name: 'Word mode accepts words',
+                    input: 'Q = A AND B OR NOT C',
+                    mode: 'word',
+                    shouldPass: true
+                },
+                {
+                    name: 'Word mode rejects symbols',
+                    input: 'Q = A ∧ B ∨ ¬C',
+                    mode: 'word',
+                    shouldPass: false
+                },
+                {
+                    name: 'Word mode rejects keyboard shortcuts',
+                    input: 'Q = A ^ B v !C',
+                    mode: 'word',
+                    shouldPass: false
+                },
+                {
+                    name: 'Mixed notation rejected',
+                    input: 'Q = A AND B ∨ ¬C',
+                    mode: 'symbol',
+                    shouldPass: false
+                },
+                {
+                    name: 'Mixed notation rejected (reverse)',
+                    input: 'Q = A ^ B OR NOT C',
+                    mode: 'word',
+                    shouldPass: false
+                }
+            ];
+            
+            let html = '<h2>Validation Test Results:</h2>';
+            tests.forEach(test => {
+                const error = validateNotationConsistency(test.input, test.mode);
+                const actuallyPassed = error === null;
+                const testPassed = actuallyPassed === test.shouldPass;
+                
+                html += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid ${testPassed ? 'green' : 'red'};">
+                        <strong>${test.name}</strong>: ${testPassed ? 'PASS' : 'FAIL'}<br>
+                        Input: ${test.input}<br>
+                        Mode: ${test.mode}<br>
+                        Should Pass: ${test.shouldPass}<br>
+                        Actually Passed: ${actuallyPassed}<br>
+                        ${error ? `Error: ${error}` : 'No Error'}
+                    </div>
+                `;
+            });
+            
+            testResults.innerHTML = html;
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>
