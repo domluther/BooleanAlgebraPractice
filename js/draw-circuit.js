@@ -131,4 +131,13 @@ export class DrawCircuit {
             helpInfoDiv.style.display = this.helpEnabled ? 'inline-block' : 'none';
         }
     }
+
+    /**
+     * Refreshes the display to apply notation changes without generating a new question.
+     */
+    refreshDisplay() {
+        if (this.targetExpression) {
+            this.ui.showExpression('circuitTargetExpression', this.targetExpression);
+        }
+    }
 }

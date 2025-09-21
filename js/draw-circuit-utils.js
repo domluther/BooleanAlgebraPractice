@@ -1,5 +1,7 @@
 // js/draw-circuit-utils.js
 
+import { convertToCurrentNotation } from './config.js';
+
 /**
  * Manages an interactive circuit drawing canvas.
  * This utility can be attached to any canvas element to provide circuit drawing functionality.
@@ -504,7 +506,7 @@ export class CircuitDrawer {
         
         const outputName = this.output?.name || '?';
         this.interpretedExpression = `${outputName} = ${expression}`;
-        this.interpretedExprElement.textContent = this.interpretedExpression;
+        this.interpretedExprElement.textContent = convertToCurrentNotation(this.interpretedExpression);
     }
     
     _buildExpression(node) {

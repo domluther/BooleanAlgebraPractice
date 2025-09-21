@@ -1,5 +1,6 @@
 import {expressionDatabase} from './data.js';
 import { evaluateExpression, getInputVariables } from './expression-utils.js';
+import { convertToCurrentNotation } from './config.js';
 
 export class NameThat {
     constructor(circuitGenerator, dependencies) {
@@ -11,6 +12,7 @@ export class NameThat {
         this.reason = '';
         this.currentDifficulty = 1;
         this.correctExpression = ''; // for level 2
+        this.currentOptions = []; // Store current options for refresh
     }
 
     /**
@@ -34,6 +36,7 @@ export class NameThat {
      * Creates the answer buttons for this mode.
     */
     generateOptions(labels) {
+        this.currentOptions = labels; // Store for potential refresh
         const optionsContainer = document.querySelector('#nameThatMode .options');
         optionsContainer.innerHTML = '';
 
@@ -46,9 +49,16 @@ export class NameThat {
             shortcutSpan.classList.add('shortcut');
             shortcutSpan.textContent = (index + 1).toString(); // 1, 2, 3, 4
             
+            // Apply notation conversion to labels that are expressions, but keep basic gate names as-is
+            let displayLabel = label;
+            if (label !== 'NONE') {
+                // Apply notation conversion for gate names and expressions
+                displayLabel = convertToCurrentNotation(label);
+            }
+            
             // Add the shortcut span and label text to the button
             button.appendChild(shortcutSpan);
-            button.appendChild(document.createTextNode(' ' + label));
+            button.appendChild(document.createTextNode(' ' + displayLabel));
             
             button.onclick = () => this.checkAnswer(label);
             optionsContainer.appendChild(button);
@@ -384,6 +394,22 @@ export class NameThat {
             // If there's an error evaluating, assume they're different
             console.warn('Error comparing truth tables:', error);
             return false;
+        }
+    }
+
+    /**
+     * Refreshes the display to apply notation changes without generating a new question.
+     */
+    refreshDisplay() {
+        // For all levels, regenerate the options display with current notation
+        if (this.currentOptions.length > 0) {
+            this.generateOptions(this.currentOptions);
+        }
+        
+        // For level 3, also regenerate the truth table display
+        if (this.currentDifficulty === 3 && this.correctExpression) {
+            const displayArea = document.getElementById('nameThatLogicDiagramDisplay');
+            displayArea.innerHTML = this._generateStaticTableHTML(this.correctExpression);
         }
     }
 }

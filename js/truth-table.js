@@ -144,4 +144,14 @@ export class TruthTable {
             }
         });
     }
+
+    /**
+     * Refreshes the display to apply notation changes without generating a new question.
+     */
+    refreshDisplay() {
+        if (this.currentExpression) {
+            this.ui.showExpression('truthTableExpression', this.currentExpression);
+            this._preserveAndRedrawTable(); // Recalculate table with new notation
+        }
+    }
 }

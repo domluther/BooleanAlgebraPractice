@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Notation Test</title>
+</head>
+<body>
+    <h1>Testing Notation Conversion</h1>
+    <div id="test-results"></div>
+    
+    <script type="module">
+        import { convertToSymbolNotation, convertToWordNotation, convertToCurrentNotation, setNotationType, appState } from './js/config.js';
+        
+        const testResults = document.getElementById('test-results');
+        
+        function runTests() {
+            const tests = [
+                {
+                    name: 'Word to Symbol conversion',
+                    input: 'Q = A AND B OR NOT C',
+                    expected: 'Q = A ∧ B ∨ ¬ C',
+                    actual: convertToSymbolNotation('Q = A AND B OR NOT C')
+                },
+                {
+                    name: 'Symbol to Word conversion', 
+                    input: 'Q = A ∧ B ∨ ¬ C',
+                    expected: 'Q = A AND B OR NOT C',
+                    actual: convertToWordNotation('Q = A ∧ B ∨ ¬ C')
+                },
+                {
+                    name: 'XOR conversion',
+                    input: 'Q = A XOR B',
+                    expected: 'Q = A ⊻ B',
+                    actual: convertToSymbolNotation('Q = A XOR B')
+                }
+            ];
+            
+            let html = '<h2>Test Results:</h2>';
+            tests.forEach(test => {
+                const passed = test.actual === test.expected;
+                html += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid ${passed ? 'green' : 'red'};">
+                        <strong>${test.name}</strong>: ${passed ? 'PASS' : 'FAIL'}<br>
+                        Input: ${test.input}<br>
+                        Expected: ${test.expected}<br>
+                        Actual: ${test.actual}
+                    </div>
+                `;
+            });
+            
+            // Test current notation setting
+            setNotationType('symbol');
+            const symbolTest = convertToCurrentNotation('Q = A AND B');
+            html += `
+                <div style="margin: 10px 0; padding: 10px; border: 1px solid ${symbolTest === 'Q = A ∧ B' ? 'green' : 'red'};">
+                    <strong>Current notation (symbol)</strong>: ${symbolTest === 'Q = A ∧ B' ? 'PASS' : 'FAIL'}<br>
+                    Input: Q = A AND B<br>
+                    Expected: Q = A ∧ B<br>
+                    Actual: ${symbolTest}
+                </div>
+            `;
+            
+            setNotationType('word');
+            const wordTest = convertToCurrentNotation('Q = A AND B');
+            html += `
+                <div style="margin: 10px 0; padding: 10px; border: 1px solid ${wordTest === 'Q = A AND B' ? 'green' : 'red'};">
+                    <strong>Current notation (word)</strong>: ${wordTest === 'Q = A AND B' ? 'PASS' : 'FAIL'}<br>
+                    Input: Q = A AND B<br>
+                    Expected: Q = A AND B<br>
+                    Actual: ${wordTest}
+                </div>
+            `;
+            
+            testResults.innerHTML = html;
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

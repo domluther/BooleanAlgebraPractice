@@ -175,4 +175,15 @@ export class GameManager {
             this.activeModeInstance.updateHelpDisplay();
         }
     }
+
+    /**
+     * Refreshes the current question display to apply notation changes.
+     * This method triggers a re-render of the current question without
+     * generating a new question.
+     */
+    refreshCurrentQuestionDisplay() {
+        if (this.activeModeInstance && this.activeModeInstance.refreshDisplay) {
+            this.activeModeInstance.refreshDisplay();
+        }
+    }
 }

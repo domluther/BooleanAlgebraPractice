@@ -1,7 +1,7 @@
 // ui-setup.js
 // Handles initial UI generation and setup - moved from app.js
 
-import { difficultyLabels, appSettings } from './config.js';
+import { difficultyLabels, appSettings, appState, setNotationType } from './config.js';
 
 /**
  * Generates the mode selector buttons based on available game modes.
@@ -10,6 +10,7 @@ import { difficultyLabels, appSettings } from './config.js';
 export function generateStaticUI(gameManager){
     generateModeSelectorButtons(gameManager);
     generateDifficultyDropdown(gameManager, gameManager.currentMode);
+    setupNotationSelector(gameManager);
 }
 
 function generateModeSelectorButtons(gameManager) {
@@ -204,4 +205,25 @@ export function initializeDefaultMode() {
     if (!window.location.hash) {
         window.location.hash = appSettings.defaultMode;
     }
+}
+
+/**
+ * Sets up the notation selector and its event listener.
+ * @param {GameManager} gameManager - The game manager instance.
+ */
+function setupNotationSelector(gameManager) {
+    const notationToggle = document.getElementById('notationToggle');
+    if (!notationToggle) return;
+
+    // Set initial state based on current setting (checked = symbols, unchecked = words)
+    notationToggle.checked = appState.notationType === 'symbol';
+
+    // Add event listener for changes
+    notationToggle.addEventListener('change', function() {
+        const newNotationType = this.checked ? 'symbol' : 'word';
+        setNotationType(newNotationType);
+        
+        // Refresh current question display to show new notation
+        gameManager.refreshCurrentQuestionDisplay();
+    });
 }

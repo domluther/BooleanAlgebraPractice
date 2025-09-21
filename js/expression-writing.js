@@ -2,6 +2,7 @@
 
 import { expressionDatabase } from './data.js';
 import { generateAllAcceptedAnswers, normalizeExpression, shuffleExpression } from './expression-utils.js';
+import { convertToCurrentNotation } from './config.js';
 
 export class ExpressionWriting {
     constructor(circuitGenerator, dependencies) {
@@ -101,7 +102,7 @@ export class ExpressionWriting {
             if (helpInfoDiv) helpInfoDiv.style.display = 'block';
             if (this.currentAcceptedAnswers && this.currentAcceptedAnswers.length > 0) {
                 acceptedAnswersDiv.innerHTML = this.currentAcceptedAnswers.map(answer =>
-                    `<div>${answer}</div>`
+                    `<div>${convertToCurrentNotation(answer)}</div>`
                 ).join('');
             } else {
                 acceptedAnswersDiv.innerHTML = '<div>No accepted answers generated</div>';
@@ -109,5 +110,20 @@ export class ExpressionWriting {
         } else {
              if (helpInfoDiv) helpInfoDiv.style.display = 'none';
         }
+    }
+
+    /**
+     * Refreshes the display to apply notation changes without generating a new question.
+     */
+    refreshDisplay() {
+        // Update help display in case notation changed
+        this.updateHelpDisplay();
+        
+        // TODO: In the future, add support for allowing users to type expressions 
+        // using symbol notation (∧, ∨, ¬, ⊻) in addition to word notation.
+        // This will require:
+        // 1. Input parsing that converts symbols to internal word format
+        // 2. User interface hints showing available symbols
+        // 3. Potentially a toggle for input mode or auto-detection
     }
 }

@@ -1,3 +1,5 @@
+import { convertToCurrentNotation } from './config.js';
+
 export class UIManager {
     constructor() {
         // Cache DOM elements for performance
@@ -193,7 +195,8 @@ export class UIManager {
     }
 
     showExpression(eleId, expression, help=false) {
-        document.getElementById(eleId).innerHTML = `<div class="expression-text ${help ? 'help' : ''}">${expression}</div>`;
+        const displayExpression = convertToCurrentNotation(expression);
+        document.getElementById(eleId).innerHTML = `<div class="expression-text ${help ? 'help' : ''}">${displayExpression}</div>`;
     }
 
     populateScoreModal(stats, scoreManager) {

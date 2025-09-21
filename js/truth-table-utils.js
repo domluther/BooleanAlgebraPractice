@@ -1,6 +1,7 @@
 // js/truth-table-utils.js
 
 import { evaluateExpression, getInputVariables } from './expression-utils.js';
+import { convertToCurrentNotation } from './config.js';
 
 /**
  * Parses a boolean expression to extract input variables and intermediate sub-expressions for the table.
@@ -87,8 +88,9 @@ export function generateTableHTML(truthTableData, inputs, intermediateExpression
 
     if (showIntermediateColumns && intermediateExpressions.length > 0) {
         intermediateExpressions.forEach(expr => {
-            const title = expr.length > 10 ? ` title="${expr}"` : '';
-            const text = expr.length > 10 ? expr.substring(0, 10) + '...' : expr;
+            const displayExpr = convertToCurrentNotation(expr);
+            const title = displayExpr.length > 10 ? ` title="${displayExpr}"` : '';
+            const text = displayExpr.length > 10 ? displayExpr.substring(0, 10) + '...' : displayExpr;
             tableHTML += `<th class="intermediate-header"${title}>${text}</th>`;
         });
     }

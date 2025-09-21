@@ -61,6 +61,9 @@ export const appSettings = {
     // Default mode to load on startup
     defaultMode: 'nameThat',
     
+    // Default notation setting
+    defaultNotation: 'word', // 'word' or 'symbol'
+    
     // UI element selectors (centralized for easier maintenance)
     selectors: {
         modeSelector: '#modeSelector',
@@ -81,3 +84,77 @@ export const appSettings = {
         difficultyHeading: 'difficulty-heading'
     }
 };
+
+/**
+ * Boolean operator notation mappings
+ */
+export const notationMaps = {
+    wordToSymbol: {
+        'OR': '∨',
+        'AND': '∧',
+        'NOT': '¬',
+        'XOR': '⊻'
+    },
+    symbolToWord: {
+        '∨': 'OR',
+        '∧': 'AND', 
+        '¬': 'NOT',
+        '⊻': 'XOR'
+    }
+};
+
+/**
+ * Current application state
+ */
+export const appState = {
+    notationType: localStorage.getItem('notationType') || appSettings.defaultNotation
+};
+
+/**
+ * Converts an expression from word notation to symbol notation
+ * @param {string} expression - Expression in word notation (e.g., "Q = A AND B")
+ * @returns {string} Expression in symbol notation (e.g., "Q = A ∧ B")
+ */
+export function convertToSymbolNotation(expression) {
+    let result = expression;
+    for (const [word, symbol] of Object.entries(notationMaps.wordToSymbol)) {
+        const regex = new RegExp(`\\b${word}\\b`, 'g');
+        result = result.replace(regex, symbol);
+    }
+    return result;
+}
+
+/**
+ * Converts an expression from symbol notation to word notation
+ * @param {string} expression - Expression in symbol notation (e.g., "Q = A ∧ B")
+ * @returns {string} Expression in word notation (e.g., "Q = A AND B")
+ */
+export function convertToWordNotation(expression) {
+    let result = expression;
+    for (const [symbol, word] of Object.entries(notationMaps.symbolToWord)) {
+        const regex = new RegExp(`\\${symbol}`, 'g');
+        result = result.replace(regex, word);
+    }
+    return result;
+}
+
+/**
+ * Converts an expression to the currently selected notation type
+ * @param {string} expression - Expression in word notation (internal format)
+ * @returns {string} Expression in the selected notation for display
+ */
+export function convertToCurrentNotation(expression) {
+    if (appState.notationType === 'symbol') {
+        return convertToSymbolNotation(expression);
+    }
+    return expression; // Already in word notation
+}
+
+/**
+ * Sets the notation type and saves to localStorage
+ * @param {string} notationType - 'word' or 'symbol'
+ */
+export function setNotationType(notationType) {
+    appState.notationType = notationType;
+    localStorage.setItem('notationType', notationType);
+}

@@ -499,4 +499,18 @@ export class Scenario {
             scenarioTruthTableOptions.style.display = 'flex';
         }
     }
+
+    /**
+     * Refreshes the display to apply notation changes without generating a new question.
+     */
+    refreshDisplay() {
+        // Scenario mode displays various elements that may contain expressions
+        // Re-display based on current question type
+        if (this.questionType === 'truth-table' && this.currentExpression) {
+            this._redrawTable();
+        }
+        // Expression and draw-circuit modes don't show expressions directly in scenario
+        // but may have help displays that should be refreshed
+        this.updateHelpDisplay();
+    }
 }
