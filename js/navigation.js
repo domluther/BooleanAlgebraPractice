@@ -4,6 +4,13 @@
  * with auto-generated menu items
  */
 
+/**
+ * Global Navigation Configuration for GCSE CS Practice Sites
+ *
+ * This file contains the navigation menu that appears across all GCSE CS sites.
+ * It's separated from siteConfig.ts because navigation is global, not site-specific.
+ */
+
 export class SiteNavigation {
     constructor() {
         this.navToggle = null;
@@ -11,48 +18,55 @@ export class SiteNavigation {
         this.navMenu = null;
 
         this.navMenuData = [
-            {
-                title: "1.2 - Data Units",
-                description: "Convert units and calculate file sizes",
-                url: "https://convertdataunits.netlify.app/",
-                id: "data-units",
-                keywords: ["convertdataunits", "data", "units"]
-            },
-            {
-                title: "1.3 - Network Addresses",
-                description: "Identify IP addresses and MAC addresses",
-                url: "https://ipormac.netlify.app/",
-                id: "network-addresses",
-                keywords: ["ipormac", "network", "ip", "mac"]
-            },
-            {
-                title: "2.1 - Sorting Algorithms",
-                description: "Visualize bubble, merge & insertion sorts",
-                url: "https://ocrsortvisualiser.netlify.app/",
-                id: "sort-algorithms",
-                keywords: ["ocrsortvisualiser", "sort", "algorithm"]
-            },
-            {
-                title: "2.1 - Trace Tables",
-                description: "Practice OCR ERL algorithm tracing",
-                url: "https://tracetablepractice.netlify.app/",
-                id: "trace-tables",
-                keywords: ["tracetablepractice", "trace"]
-            },
-            {
-                title: "2.2 - Programming Practice",
-                description: "Input/output and basic programming concepts",
-                url: "https://input-output-practice.netlify.app/",
-                id: "programming-practice",
-                keywords: ["input-output-practice", "programming"]
-            },
-            {
-                title: "2.4 - Boolean Algebra",
-                description: "Logic gates and Boolean expressions",
-                url: "https://booleanalgebrapractice.netlify.app/",
-                id: "boolean-algebra",
-                keywords: ["booleanalgebrapractice", "boolean", "logic"]
-            },
+        {
+            title: "1.2 - Data Units",
+            description: "Convert units and calculate file sizes",
+            url: "https://convertdataunits.netlify.app/",
+            id: "data-units",
+            keywords: ["convertdataunits", "data", "units"],
+        },
+        {
+            title: "1.3 - Network Addresses",
+            description: "Identify IP addresses and MAC addresses",
+            url: "https://ipormac.netlify.app/",
+            id: "network-addresses",
+            keywords: ["ipormac", "network", "ip", "mac"],
+        },
+        {
+            title: "2.1 - Sorting Algorithms",
+            description: "Visualize bubble, merge & insertion sorts",
+            url: "https://ocrsortvisualiser.netlify.app/",
+            id: "sort-algorithms",
+            keywords: ["ocrsortvisualiser", "sort", "algorithm"],
+        },
+        {
+            title: "2.1 - Trace Tables",
+            description: "Visualize trace tables for algorithms",
+            url: "https://tracetablepractice.netlify.app/",
+            id: "trace-tables",
+            keywords: ["tracetablepractice", "trace", "table"],
+        },
+        {
+            title: "2.2 - Programming Fundamentals",
+            description: "Data types, constructs & operators",
+            url: "https://ocr-fundamentals.netlify.app/",
+            id: "programming-fundamentals",
+            keywords: ["ocr-fundamentals", "programming"],
+        },
+        {
+            title: "2.2 - Programming Practice",
+            description: "Input/output and basic programming concepts",
+            url: "https://input-output-practice.netlify.app/",
+            id: "programming-practice",
+            keywords: ["input-output-practice", "programming"],
+        },
+        {
+            title: "2.4 - Boolean Algebra",
+            description: "Logic gates and Boolean expressions",
+            url: "https://booleanalgebrapractice.netlify.app/",
+            id: "boolean-algebra",
+            keywords: ["booleanalgebrapractice", "boolean", "logic"],
+        },
         ];
     }
 
