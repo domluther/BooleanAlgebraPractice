@@ -12,6 +12,7 @@ export { MultipleChoice } from "./old_MultipleChoice";
 // Game Mode Components
 export { NameThat } from "./NameThat";
 export { ExpressionWriting } from "./ExpressionWriting";
+export { TruthTable } from "./TruthTable";
 
 export { Footer } from "./Footer";
 export { Header } from "./Header";

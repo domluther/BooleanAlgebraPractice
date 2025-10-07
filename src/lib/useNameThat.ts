@@ -1,6 +1,11 @@
 import { useState, useCallback } from "react";
 import { expressionDatabase } from "./data";
-import { areExpressionsLogicallyEquivalent } from "./expressionUtils";
+import {
+	areExpressionsLogicallyEquivalent,
+	evaluateExpression,
+	getInputVariables,
+} from "./expressionUtils";
+import { hasSameTruthTable } from "./truthTableUtils";
 
 /**
  * useNameThat - React hook for NameThat game mode
@@ -26,6 +31,7 @@ interface Question {
 	options: string[];
 	invalidGateSVG?: string;
 	reason?: string;
+	truthTableHTML?: string;
 }
 
 interface UseNameThatReturn {
@@ -214,6 +220,102 @@ function generateLevel2Question(): Question {
 }
 
 /**
+ * Generates and returns the HTML for a static, completed truth table.
+ * Used for Level 3 question display.
+ * @param expression - The expression to build the table for.
+ * @returns The complete HTML string for the table.
+ */
+function generateStaticTableHTML(expression: string): string {
+	const inputs = getInputVariables(expression);
+	const outputVariable = expression.split(" = ")[0].trim();
+	const expressionBody = expression.split(" = ")[1];
+	const numCombinations = 2 ** inputs.length;
+
+	let tableHTML = '<table class="truth-table"><thead><tr>';
+	inputs.forEach((input) => (tableHTML += `<th class="input-header">${input}</th>`));
+	tableHTML += `<th class="output-header">${outputVariable}</th></tr></thead><tbody>`;
+
+	for (let i = 0; i < numCombinations; i++) {
+		const combination: Record<string, boolean> = {};
+		const rowValues: Record<string, number> = {};
+		tableHTML += "<tr>";
+		for (let j = 0; j < inputs.length; j++) {
+			const inputName = inputs[j];
+			const value = Boolean((i >> (inputs.length - 1 - j)) & 1);
+			combination[inputName] = value;
+			rowValues[inputName] = value ? 1 : 0;
+			tableHTML += `<td class="input-cell">${rowValues[inputName]}</td>`;
+		}
+
+		const outputValue = evaluateExpression(expressionBody, combination);
+		tableHTML += `<td class="output-cell">${outputValue ? 1 : 0}</td>`;
+		tableHTML += "</tr>";
+	}
+
+	tableHTML += "</tbody></table>";
+	return tableHTML;
+}
+
+/**
+ * Generate a Level 3 question
+ * Shows a truth table and asks user to identify which expression it represents
+ */
+function generateLevel3Question(): Question {
+	const expressions = expressionDatabase.level2NoOverlap;
+
+	// 1. Select a correct expression
+	const correctExpression =
+		expressions[Math.floor(Math.random() * expressions.length)];
+
+	// 2. Generate the truth table HTML for display
+	const truthTableHTML = generateStaticTableHTML(correctExpression);
+
+	// 3. Get 3 other expressions with DIFFERENT truth tables for options
+	const options = [correctExpression];
+	const otherExpressions = expressions.filter(
+		(expr) => expr !== correctExpression,
+	);
+	const maxAttempts = otherExpressions.length;
+	let attempts = 0;
+
+	// Try to find expressions that produce different truth tables
+	while (
+		options.length < 4 &&
+		otherExpressions.length > 0 &&
+		attempts < maxAttempts
+	) {
+		const randomIndex = Math.floor(Math.random() * otherExpressions.length);
+		const candidateExpression = otherExpressions.splice(randomIndex, 1)[0];
+
+		// Only add if it has a different truth table than the correct answer
+		if (!hasSameTruthTable(correctExpression, candidateExpression)) {
+			options.push(candidateExpression);
+		}
+		attempts++;
+	}
+
+	// If we couldn't find enough different expressions, fill with random ones as fallback
+	while (options.length < 4 && otherExpressions.length > 0) {
+		const randomIndex = Math.floor(Math.random() * otherExpressions.length);
+		const randomExpression = otherExpressions.splice(randomIndex, 1)[0];
+		options.push(randomExpression);
+	}
+
+	// 4. Shuffle the options so the correct answer isn't always first
+	for (let i = options.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[options[i], options[j]] = [options[j], options[i]];
+	}
+
+	return {
+		expression: correctExpression,
+		correctAnswer: correctExpression,
+		options,
+		truthTableHTML,
+	};
+}
+
+/**
  * Get question title for current level
  */
 function getQuestionTitle(level: number): string {
@@ -301,8 +403,9 @@ export function useNameThat(options?: UseNameThatOptions): UseNameThatReturn {
 			setCurrentQuestion(generateLevel1Question());
 		} else if (currentLevel === 2) {
 			setCurrentQuestion(generateLevel2Question());
+		} else if (currentLevel === 3) {
+			setCurrentQuestion(generateLevel3Question());
 		}
-		// Level 3 will be implemented later
 	}, [currentLevel]);
 
 	/**
@@ -328,8 +431,9 @@ export function useNameThat(options?: UseNameThatOptions): UseNameThatReturn {
 			setCurrentQuestion(generateLevel1Question());
 		} else if (level === 2) {
 			setCurrentQuestion(generateLevel2Question());
+		} else if (level === 3) {
+			setCurrentQuestion(generateLevel3Question());
 		}
-		// Level 3 will be implemented later
 	}, []);
 
 	return {

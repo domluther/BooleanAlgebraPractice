@@ -45,7 +45,19 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 
 	// Render circuit when question changes
 	useEffect(() => {
-		if (circuitRef.current && currentQuestion.expression !== "INVALID_GATE") {
+		if (currentLevel === 3 && circuitRef.current) {
+			// Level 3: Display truth table HTML
+			if (currentQuestion.truthTableHTML) {
+				circuitRef.current.innerHTML = currentQuestion.truthTableHTML;
+			} else {
+				circuitRef.current.innerHTML =
+					'<p class="text-destructive">Error: No truth table data</p>';
+			}
+		} else if (
+			circuitRef.current &&
+			currentQuestion.expression !== "INVALID_GATE"
+		) {
+			// Level 1 & 2: Display circuit
 			// Clear previous circuit
 			circuitRef.current.innerHTML = "";
 
@@ -61,10 +73,10 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 					'<p class="text-destructive">Error rendering circuit</p>';
 			}
 		} else if (circuitRef.current && currentQuestion.invalidGateSVG) {
-			// Render invalid gate SVG
+			// Level 1 NONE option: Render invalid gate SVG
 			circuitRef.current.innerHTML = currentQuestion.invalidGateSVG;
 		}
-	}, [currentQuestion]);
+	}, [currentQuestion, currentLevel]);
 
 	const handleAnswerClick = (answer: string) => {
 		if (!isAnswered) {
@@ -123,13 +135,13 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Control Panel */}
-			<div className="p-4 rounded-lg border-2 bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800">
+			<div className="p-4 rounded-lg border-2 bg-stats-card-bg border-stats-card-border">
 				<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 					{/* Difficulty Selector */}
 					<div className="flex items-center gap-3">
 						<label
 							htmlFor="difficulty-select"
-							className="font-medium text-sm whitespace-nowrap text-blue-900 dark:text-blue-100"
+							className="font-medium text-sm whitespace-nowrap text-stats-label"
 						>
 							Difficulty:
 						</label>
@@ -137,7 +149,7 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 							id="difficulty-select"
 							value={currentLevel}
 							onChange={(e) => setLevel(Number(e.target.value) as 1 | 2 | 3)}
-							className="px-3 py-1.5 rounded-md border-2 bg-background border-blue-300 dark:border-blue-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+							className="px-3 py-1.5 rounded-md border-2 bg-background border-checkbox-label-border hover:border-checkbox-label-border-hover text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-checkbox-label-border-hover"
 						>
 							<option value={1}>Easy</option>
 							<option value={2}>Medium</option>
@@ -147,16 +159,14 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 
 					{/* Notation Toggle */}
 					<div className="flex items-center gap-3">
-						<span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-							Words
-						</span>
+						<span className="text-sm font-medium text-stats-label">Words</span>
 						<Switch
 							checked={notationType === "symbol"}
 							onCheckedChange={handleNotationToggle}
 							aria-label="Toggle between word and symbol notation"
-							className="data-[state=checked]:bg-blue-600 data-[state=unchecked]:bg-blue-200 dark:data-[state=unchecked]:bg-blue-900"
+							className="data-[state=checked]:bg-stats-points data-[state=unchecked]:bg-checkbox-label-border"
 						/>
-						<span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+						<span className="text-sm font-medium text-stats-label">
 							Symbols
 						</span>
 					</div>
@@ -167,21 +177,32 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 						size="sm"
 						onClick={generateNewQuestion}
 						title="Generate a new question"
-						className="text-xl px-3 border-2 border-blue-300 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:border-blue-400 dark:hover:border-blue-600"
+						className="text-xl px-3 border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover"
 					>
 						🎲
 					</Button>
 				</div>
 			</div>
 
-			{/* Question Title */}
-			<div className="text-center">
-				<h2 className="text-xl font-semibold sm:text-2xl">{questionTitle}</h2>
-			</div>
+		{/* Question Title */}
+		<div className="text-center">
+			<h2 className="text-xl font-semibold sm:text-2xl">{questionTitle}</h2>
+		</div>
 
-			{/* Circuit Display */}
-			<div className="p-4 border-2 rounded-lg bg-card border-blue-200 dark:border-blue-800 sm:p-6">
-				<div className="flex items-center justify-center p-6 rounded-lg bg-blue-50/30 dark:bg-blue-950/20 min-h-[150px]">
+		{/* Circuit/Truth Table Display */}
+		{currentLevel === 3 ? (
+			// Level 3: Truth table without card wrapper
+			<div className="flex items-center justify-center min-h-[150px]">
+				<div
+					ref={circuitRef}
+					className="truth-table-display"
+					style={{ minHeight: "120px" }}
+				/>
+			</div>
+		) : (
+			// Level 1 & 2: Circuit with card wrapper
+			<div className="border-2 rounded-lg bg-card border-stats-card-border">
+				<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-[150px]">
 					<div
 						ref={circuitRef}
 						className="circuit-display"
@@ -189,8 +210,7 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 					/>
 				</div>
 			</div>
-
-			{/* Answer Options */}
+		)}			{/* Answer Options */}
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{currentQuestion.options.map((option, index) => {
 					const displayOption = convertToNotation(option, notationType);
@@ -204,10 +224,10 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 					if (isAnswered) {
 						if (isCorrectAnswer) {
 							className +=
-								" bg-green-600 hover:bg-green-600 text-white border-green-700";
+								" bg-stats-streak hover:bg-stats-streak text-white border-stats-streak";
 						} else if (isSelectedWrongAnswer) {
 							className +=
-								" bg-red-600 hover:bg-red-600 text-white border-red-700";
+								" bg-stats-accuracy-low hover:bg-stats-accuracy-low text-white border-stats-accuracy-low";
 						} else {
 							className += " opacity-50";
 						}
@@ -222,7 +242,7 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 							onKeyDown={(e) => handleKeyPress(e, option, index)}
 							disabled={isAnswered}
 						>
-							<span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 px-1.5 py-0.5 rounded border border-blue-300 dark:border-blue-700">
+							<span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-xs font-bold bg-stats-card-bg text-stats-label px-1.5 py-0.5 rounded border border-checkbox-label-border">
 								{index + 1}
 							</span>
 							<span className="pl-4">{displayOption}</span>
@@ -236,8 +256,8 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 				<div
 					className={`p-4 rounded-lg text-center font-semibold border-2 ${
 						isCorrect
-							? "bg-green-50 text-green-900 border-green-500 dark:bg-green-950 dark:text-green-100 dark:border-green-700"
-							: "bg-red-50 text-red-900 border-red-500 dark:bg-red-950 dark:text-red-100 dark:border-red-700"
+							? "bg-feedback-success-bg text-feedback-success-text border-stats-streak"
+							: "bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low"
 					}`}
 				>
 					{feedbackMessage}
@@ -249,14 +269,14 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 				<Button
 					onClick={generateNewQuestion}
 					size="lg"
-					className="w-full text-lg bg-blue-600 hover:bg-blue-700 text-white"
+					className="w-full text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 				>
 					Next Question →
 				</Button>
 			)}
 
 			{/* Keyboard Shortcuts Help */}
-			<div className="py-2 text-sm text-center text-blue-600 dark:text-blue-400 font-medium">
+			<div className="py-2 text-sm text-center text-stats-label font-medium">
 				💡 Use keys 1-4 for quick answers
 				{isAnswered && " • Press Enter for next question"}
 			</div>

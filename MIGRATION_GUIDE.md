@@ -22,8 +22,8 @@ This document tracks the migration of Boolean Algebra Practice from a vanilla Ja
 
 ### Implementation Order
 - ✅ **Phase 0:** Site config and navigation setup (DONE)
-- 🔄 **Phase 1:** NameThat mode (Level 1 → 2 → 3)
-- ⏳ **Phase 2:** Expression Writing mode
+- 🔄 **Phase 1:** NameThat mode (Level 1 ✅ → Level 2 ✅ → Level 3 ⏳)
+- ✅ **Phase 2:** Expression Writing mode (DONE - All 5 levels)
 - ⏳ **Phase 3:** Truth Table mode
 - ⏳ **Phase 4:** Draw Circuit mode
 - ⏳ **Phase 5:** Scenario mode
@@ -158,19 +158,56 @@ type QuestionDisplay =
 ```
 
 ### Implementation Checklist
-- [ ] Port `CircuitGenerator` class
-- [ ] Port expression utilities
-- [ ] Port expression database
-- [ ] Write tests for Level 1 logic
-- [ ] Create `useNameThat` hook with Level 1
-- [ ] Create `nameThat.tsx` component with Level 1 UI
-- [ ] Test Level 1 end-to-end
-- [ ] Add Level 2 (tests → hook → UI)
-- [ ] Add Level 3 (tests → hook → UI)
-- [ ] Add keyboard shortcuts
-- [ ] Add expert mode
-- [ ] Add notation toggle
-- [ ] Polish styling
+- [x] Port `CircuitGenerator` class
+- [x] Port expression utilities
+- [x] Port expression database
+- [x] Write tests for Level 1 logic
+- [x] Create `useNameThat` hook with Level 1
+- [x] Create `NameThat.tsx` component with Level 1 UI
+- [x] Test Level 1 end-to-end
+- [x] Add Level 2 (tests → hook → UI)
+- [ ] Add Level 3 (tests → hook → UI) - DEFERRED
+- [x] Add keyboard shortcuts (1-4 for answers, Enter for next)
+- [x] Add notation toggle (Word/Symbol mode)
+- [x] Polish styling with semantic CSS variables
+
+## 🎮 Expression Writing Mode Migration Plan
+
+### Mode Overview
+**File:** `legacy/js/expression-writing.js`  
+**Purpose:** Write Boolean expressions for displayed circuits  
+**Levels:**
+1. **Easy:** Simple single-gate expressions
+2. **Medium:** Two-gate combinations
+3. **Hard:** Complex expressions with shuffled order
+4. **Expert:** Advanced multi-gate circuits with shuffling
+5. **A-Level:** Most complex with XOR gates and shuffling
+
+### Implementation Checklist
+- [x] Create `useExpressionWriting` hook with all 5 difficulty levels
+- [x] Implement answer validation (exact match + logical equivalence)
+- [x] Implement notation consistency checking
+- [x] Create `ExpressionWriting.tsx` component with:
+  - [x] Control panel (difficulty dropdown, notation toggle, regenerate)
+  - [x] Circuit display
+  - [x] Text input with larger font
+  - [x] Symbol helper buttons (conditional XOR on A-Level)
+  - [x] Mark My Answer button
+  - [x] Feedback display
+  - [x] Next Question button
+- [x] Create `/writeexpression` route with SharedLayout
+- [x] Add keyboard shortcuts (Enter to submit/continue)
+- [x] Polish styling with semantic CSS variables
+- [x] Integrate score tracking via ScoreManager
+
+### Key Features Implemented
+- **Answer Validation:** 
+  - Exact match checking with `generateAllAcceptedAnswers()`
+  - Logical equivalence checking with `areExpressionsLogicallyEquivalent()`
+  - Notation consistency validation
+- **Symbol Buttons:** Only visible in symbol mode, XOR button only on A-Level
+- **Keyboard Support:** Enter key for submit/next with anti-double-trigger logic
+- **Responsive Design:** Narrower, centered input and buttons on larger screens
 
 ## 📊 Score System
 
@@ -267,19 +304,52 @@ Document as they're implemented...
 ## 🚧 Current Status
 
 ### ✅ Completed
-- Site configuration (`siteConfig.ts`)
-- Mode menu navigation (`ModeMenu.tsx`)
-- Score manager (`scoreManager.ts`)
-- Basic routing structure
+- **Phase 0: Site Setup**
+  - Site configuration (`siteConfig.ts`)
+  - Mode menu navigation (`ModeMenu.tsx`)
+  - Score manager (`scoreManager.ts`)
+  - Basic routing structure with TanStack Router
+  - Theme provider with light/dark mode
+  - Semantic CSS variables in `index.css`
+
+- **Phase 1: NameThat Mode (Partial)**
+  - Level 1: Single GCSE logic gates (AND/OR/NOT/NONE) ✅
+  - Level 2: Two-gate combinations ✅
+  - Level 3: Truth table identification (deferred)
+  - Circuit generator with SVG rendering
+  - Keyboard shortcuts (1-4, Enter)
+  - Notation toggle (Word/Symbol)
+  - Score tracking integration
+  - Semantic color theming
+
+- **Phase 2: Expression Writing Mode (Complete)**
+  - All 5 difficulty levels (Easy → A-Level) ✅
+  - Answer validation (exact match + logical equivalence) ✅
+  - Notation consistency checking ✅
+  - Text input with symbol helper buttons ✅
+  - Conditional XOR button (A-Level only) ✅
+  - Keyboard shortcuts (Enter to submit/continue) ✅
+  - Score tracking integration ✅
+  - Semantic color theming ✅
 
 ### 🔄 In Progress
-- Migration guide (this document)
-- Renaming template files
+- N/A - Ready for next phase
 
 ### ⏳ Next Up
-- Testing infrastructure setup
-- Core utility migration
-- NameThat Level 1 implementation
+- **Phase 3: Truth Table Mode**
+  - Port truth table utilities
+  - Create `useTruthTable` hook
+  - Build TruthTable component
+  - Add 5 difficulty levels
+  
+- **Phase 4: Draw Circuit Mode**
+  - Interactive circuit building
+  - Drag and drop gates
+  - Wire connections
+  
+- **Phase 5: Scenario Mode**
+  - Real-world logic problems
+  - Multi-step challenges
 
 ## 📝 Notes for Future AI Agents
 
@@ -320,4 +390,6 @@ Document as they're implemented...
 
 **Last Updated:** October 7, 2025  
 **By:** AI Assistant  
-**Next Milestone:** Complete NameThat Level 1
+**Next Milestone:** Truth Table Mode or NameThat Level 3
+
+**Completion Status:** 2 of 5 game modes complete (40%)

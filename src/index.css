@@ -359,3 +359,60 @@
 	white-space: nowrap;
 	border: 0;
 }
+
+/* Truth Table Styles for NameThat Level 3 */
+.truth-table {
+	width: 100%;
+	max-width: 400px;
+	margin: 0 auto;
+	border-collapse: collapse;
+	font-family: 'Courier New', monospace;
+	font-size: 1.125rem; /* 18px */
+}
+
+.truth-table thead {
+	background-color: var(--stats-card-bg);
+}
+
+.truth-table th {
+	padding: 0.75rem 1rem;
+	font-weight: bold;
+	text-align: center;
+	border: 2px solid var(--stats-card-border);
+}
+
+.truth-table .input-header {
+	background-color: var(--stats-card-bg);
+	color: var(--stats-label);
+}
+
+.truth-table .output-header {
+	background-color: var(--stats-points);
+	color: var(--foreground);
+}
+
+.truth-table tbody tr {
+	border-bottom: 1px solid var(--stats-card-border);
+}
+
+.truth-table tbody tr:last-child {
+	border-bottom: 2px solid var(--stats-card-border);
+}
+
+.truth-table td {
+	padding: 0.5rem 1rem;
+	text-align: center;
+	border-left: 1px solid var(--stats-card-border);
+	border-right: 1px solid var(--stats-card-border);
+}
+
+.truth-table .input-cell {
+	background-color: var(--background);
+	color: var(--foreground);
+}
+
+.truth-table .output-cell {
+	background-color: var(--stats-card-bg);
+	color: var(--foreground);
+	font-weight: bold;
+}

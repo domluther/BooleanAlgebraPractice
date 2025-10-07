@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WriteexpressionRouteImport } from './routes/writeexpression'
+import { Route as TruthtableRouteImport } from './routes/truthtable'
 import { Route as Old_unitconverterRouteImport } from './routes/old_unitconverter'
 import { Route as Old_multiplechoiceRouteImport } from './routes/old_multiplechoice'
 import { Route as Old_filesizeRouteImport } from './routes/old_filesize'
@@ -20,6 +21,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const WriteexpressionRoute = WriteexpressionRouteImport.update({
   id: '/writeexpression',
   path: '/writeexpression',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TruthtableRoute = TruthtableRouteImport.update({
+  id: '/truthtable',
+  path: '/truthtable',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Old_unitconverterRoute = Old_unitconverterRouteImport.update({
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/old_filesize': typeof Old_filesizeRoute
   '/old_multiplechoice': typeof Old_multiplechoiceRoute
   '/old_unitconverter': typeof Old_unitconverterRoute
+  '/truthtable': typeof TruthtableRoute
   '/writeexpression': typeof WriteexpressionRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/old_filesize': typeof Old_filesizeRoute
   '/old_multiplechoice': typeof Old_multiplechoiceRoute
   '/old_unitconverter': typeof Old_unitconverterRoute
+  '/truthtable': typeof TruthtableRoute
   '/writeexpression': typeof WriteexpressionRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/old_filesize': typeof Old_filesizeRoute
   '/old_multiplechoice': typeof Old_multiplechoiceRoute
   '/old_unitconverter': typeof Old_unitconverterRoute
+  '/truthtable': typeof TruthtableRoute
   '/writeexpression': typeof WriteexpressionRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/old_filesize'
     | '/old_multiplechoice'
     | '/old_unitconverter'
+    | '/truthtable'
     | '/writeexpression'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/old_filesize'
     | '/old_multiplechoice'
     | '/old_unitconverter'
+    | '/truthtable'
     | '/writeexpression'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/old_filesize'
     | '/old_multiplechoice'
     | '/old_unitconverter'
+    | '/truthtable'
     | '/writeexpression'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   Old_filesizeRoute: typeof Old_filesizeRoute
   Old_multiplechoiceRoute: typeof Old_multiplechoiceRoute
   Old_unitconverterRoute: typeof Old_unitconverterRoute
+  TruthtableRoute: typeof TruthtableRoute
   WriteexpressionRoute: typeof WriteexpressionRoute
 }
 
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/writeexpression'
       fullPath: '/writeexpression'
       preLoaderRoute: typeof WriteexpressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/truthtable': {
+      id: '/truthtable'
+      path: '/truthtable'
+      fullPath: '/truthtable'
+      preLoaderRoute: typeof TruthtableRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/old_unitconverter': {
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   Old_filesizeRoute: Old_filesizeRoute,
   Old_multiplechoiceRoute: Old_multiplechoiceRoute,
   Old_unitconverterRoute: Old_unitconverterRoute,
+  TruthtableRoute: TruthtableRoute,
   WriteexpressionRoute: WriteexpressionRoute,
 }
 export const routeTree = rootRouteImport
