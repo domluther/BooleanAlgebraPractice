@@ -3,6 +3,8 @@
  * Export all reusable components for easy importing
  */
 
+export { ControlPanel } from "./ControlPanel";
+export type { DifficultyConfig, NotationConfig } from "./ControlPanel";
 export { DrawCircuit } from "./DrawCircuit";
 export { ExpressionWriting } from "./ExpressionWriting";
 export { Footer } from "./Footer";

@@ -8,23 +8,23 @@ import {
 	shuffleExpression,
 } from "./expressionUtils";
 
-const STORAGE_KEY = 'expressionWritingDifficulty';
+const STORAGE_KEY = "expressionWritingDifficulty";
 
 // Helper to get initial difficulty from localStorage
 const getInitialDifficulty = (): number => {
-  if (typeof window === 'undefined') return 1;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = parseInt(stored, 10);
-      if (parsed >= 1 && parsed <= 5) {
-        return parsed;
-      }
-    }
-  } catch (e) {
-    console.error('Error reading difficulty from localStorage:', e);
-  }
-  return 1;
+	if (typeof window === "undefined") return 1;
+	try {
+		const stored = localStorage.getItem(STORAGE_KEY);
+		if (stored) {
+			const parsed = parseInt(stored, 10);
+			if (parsed >= 1 && parsed <= 5) {
+				return parsed;
+			}
+		}
+	} catch (e) {
+		console.error("Error reading difficulty from localStorage:", e);
+	}
+	return 1;
 };
 
 /**
@@ -149,7 +149,7 @@ export function useExpressionWriting(
 		try {
 			localStorage.setItem(STORAGE_KEY, currentLevel.toString());
 		} catch (e) {
-			console.error('Error saving difficulty to localStorage:', e);
+			console.error("Error saving difficulty to localStorage:", e);
 		}
 	}, [currentLevel]);
 

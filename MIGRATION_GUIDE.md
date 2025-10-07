@@ -25,7 +25,7 @@ This document tracks the migration of Boolean Algebra Practice from a vanilla Ja
 - ✅ **Phase 1:** NameThat mode (DONE - All 3 levels)
 - ✅ **Phase 2:** Expression Writing mode (DONE - All 5 levels)
 - ✅ **Phase 3:** Truth Table mode (DONE - All 5 levels + Expert mode)
-- ⏳ **Phase 4:** Draw Circuit mode (NOT STARTED)
+- ✅ **Phase 4:** Draw Circuit mode (DONE - All 5 levels)
 - ⏳ **Phase 5:** Scenario mode (NOT STARTED)
 
 ## 📁 File Organization
@@ -251,6 +251,77 @@ type QuestionDisplay =
 - **Intermediate Columns Toggle:** Show/hide intermediate sub-expressions
 - **Circuit Display:** Shows circuit diagram above expression label
 
+## 🎮 Draw Circuit Mode Migration Plan
+
+### Mode Overview
+**File:** `legacy/js/draw-circuit.js` + `legacy/js/draw-circuit-utils.js`  
+**Purpose:** Draw logic circuits by dragging gates onto a canvas to match a target expression  
+**Levels:**
+1. **Easy:** Simple 2-input expressions
+2. **Medium:** 2-input with NOT gates
+3. **Hard:** 3-input expressions (shuffled)
+4. **Expert:** Complex 3-input (shuffled)
+5. **A-Level:** Most complex with XOR gates (shuffled)
+
+### Implementation Checklist
+- [x] Port `CircuitDrawer` class from `draw-circuit-utils.js` to TypeScript (`CircuitDrawer.ts`)
+- [x] Create `useDrawCircuit` hook with all 5 difficulty levels
+- [x] Implement interactive canvas with:
+  - [x] Drag-and-drop gate placement (desktop)
+  - [x] Click-to-place gate mode (mobile-friendly)
+  - [x] Wire connection system
+  - [x] Gate selection and removal
+  - [x] Touch-friendly controls
+- [x] Create `DrawCircuit.tsx` component with:
+  - [x] Control panel (difficulty, help toggle, notation, regenerate)
+  - [x] Target expression display
+  - [x] Toolbox with draggable AND/OR/NOT/XOR gates
+  - [x] Interactive canvas (750x500px)
+  - [x] Remove Selected and Reset buttons
+  - [x] Help mode (show current interpreted expression)
+  - [x] Check Answer and Next Question buttons
+- [x] Create `/drawcircuit` route with SharedLayout
+- [x] Add proper scoring (3, 6, 10, 15, 20 points for levels 1-5)
+- [x] Copy gate images from legacy to public folder
+- [x] Add gate styling CSS (hover effects, selection states)
+- [x] Polish styling with semantic CSS variables
+- [x] Fix initialization issues (expression callback always called)
+- [x] Fix circuit persistence (don't clear on answer check)
+- [x] Fix difficulty generation (use new level immediately)
+- [x] Add localStorage persistence for difficulty level
+
+### Key Features Implemented
+- **Interactive Canvas Drawing:**
+  - 750x500px canvas with mouse and touch support
+  - Drag gates from toolbox onto canvas
+  - Click gates to connect wires between terminals
+  - Visual feedback for placement mode, hovering, selection
+  - `touchAction: "none"` for smooth mobile interactions
+- **Gate Management:**
+  - AND, OR, NOT gates always visible
+  - XOR gate only visible on A-Level (difficulty 5)
+  - Remove Selected button (only enabled when gate selected)
+  - Reset button to clear entire circuit
+- **Expression Validation:**
+  - Builds expression from circuit structure recursively
+  - Validates against target with `generateAllAcceptedAnswers()`
+  - Falls back to logical equivalence checking if no exact match
+  - Help mode shows current interpreted expression (e.g., "Q = A AND B")
+- **Difficulty Management:**
+  - Saved to localStorage per mode
+  - Generates appropriate question immediately on level change
+  - Shuffles input/output variables for levels 3+ (Hard, Expert, A-Level)
+- **Canvas Architecture:**
+  - `CircuitDrawer` class manages all canvas interactions
+  - AbortController for clean event listener cleanup
+  - Separate input terminals, gates, wires, and output terminal
+  - Expression parsing to identify inputs/outputs from target
+- **Bug Fixes Applied:**
+  - Expression callback always fires (not blocked by missing DOM element)
+  - Circuit stays visible after correct answer until "Next Question"
+  - Difficulty change generates question with NEW level (not old from closure)
+  - All game modes standardized to initialize questions in hooks
+
 ## 📊 Score System
 
 **Current Implementation:** `src/lib/scoreManager.ts` (✅ COMPLETE)
@@ -396,20 +467,26 @@ Document as they're implemented...
   - Expert mode multiplier (3x points) ✅
   - Semantic color theming ✅
 
+- **Phase 4: Draw Circuit Mode (COMPLETE)**
+  - All 5 difficulty levels (Easy → A-Level) ✅
+  - CircuitDrawer class ported to TypeScript (880+ lines) ✅
+  - Interactive canvas with drag-and-drop gates ✅
+  - Wire connection system ✅
+  - Touch-friendly mobile controls ✅
+  - Gate toolbox (AND/OR/NOT, XOR on A-Level only) ✅
+  - Remove Selected and Reset buttons ✅
+  - Help mode (show current circuit interpretation) ✅
+  - Expression validation (exact match + logical equivalence) ✅
+  - Score tracking integration (3, 6, 10, 15, 20 points by level) ✅
+  - Gate styling with hover/selection effects ✅
+  - Semantic color theming ✅
+  - localStorage difficulty persistence ✅
+  - Standardized initialization pattern ✅
+
 ### 🔄 In Progress
-- N/A - Ready for Phase 4
+- N/A - Ready for Phase 5
 
 ### ⏳ Next Up
-- **Phase 4: Draw Circuit Mode** (NOT STARTED)
-  - Port draw circuit utilities
-  - Create `useDrawCircuit` hook
-  - Build interactive circuit builder
-  - Implement drag and drop gates
-  - Wire connection system
-  - Circuit validation
-  - 5 difficulty levels
-  - Score tracking (3, 6, 10, 15, 20 points by level)
-  
 - **Phase 5: Scenario Mode** (NOT STARTED)
   - Port scenario utilities
   - Create `useScenario` hook
@@ -418,6 +495,59 @@ Document as they're implemented...
   - Multi-step challenges
   - 4 difficulty levels
   - Score tracking (4, 6, 10, 15 points by level)
+
+## 🏗️ Architecture Patterns Standardized
+
+### Hook Initialization Pattern (All Modes)
+All game mode hooks now follow the **same consistent pattern**:
+
+```typescript
+// 1. Load saved difficulty from localStorage
+const getInitialDifficulty = () => { /* ... */ };
+
+// 2. Generate initial question based on saved difficulty
+const generateInitialQuestion = (level) => { /* ... */ };
+
+// 3. Initialize state with question ready
+const [currentLevel, setCurrentLevel] = useState(getInitialDifficulty);
+const [currentQuestion, setCurrentQuestion] = useState(() => {
+  const initialLevel = getInitialDifficulty();
+  return generateInitialQuestion(initialLevel);
+});
+
+// 4. Save difficulty to localStorage whenever it changes
+useEffect(() => {
+  localStorage.setItem(STORAGE_KEY, currentLevel.toString());
+}, [currentLevel]);
+```
+
+### Benefits of Standardization
+- ✅ **Consistency:** All modes work identically
+- ✅ **Performance:** Question ready immediately, no extra render cycle
+- ✅ **No Race Conditions:** Question and difficulty always in sync
+- ✅ **Simpler Components:** No useEffect to generate initial questions
+- ✅ **User Experience:** Difficulty remembered across page navigation
+
+### Applied To All Modes
+- ✅ `useNameThat` - Generates Level 1/2/3 question based on saved difficulty
+- ✅ `useExpressionWriting` - Generates appropriate level question on init
+- ✅ `useDrawCircuit` - Generates shuffled expression for saved difficulty
+- ✅ `useTruthTable` - Generates full truth table data on init
+
+### Component Pattern (All Modes)
+Components no longer need to call `generateQuestion()` on mount:
+
+```typescript
+// ❌ OLD PATTERN (inconsistent)
+useEffect(() => {
+  if (!currentExpression) {
+    generateQuestion();
+  }
+}, [currentExpression, generateQuestion]);
+
+// ✅ NEW PATTERN (consistent)
+// No useEffect needed - hook provides question immediately
+```
 
 ## 📝 Notes for Future AI Agents
 
@@ -468,11 +598,11 @@ When implementing a new mode, ensure:
 
 **Last Updated:** October 7, 2025  
 **By:** AI Assistant  
-**Next Milestone:** Draw Circuit Mode
+**Next Milestone:** Scenario Mode
 
-**Completion Status:** 3 of 5 game modes complete (60%)
+**Completion Status:** 4 of 5 game modes complete (80%)
 - ✅ Name That (3 levels)
 - ✅ Expression Writing (5 levels)
 - ✅ Truth Table (5 levels + expert mode)
-- ⏳ Draw Circuit (not started)
+- ✅ Draw Circuit (5 levels)
 - ⏳ Scenario (not started)

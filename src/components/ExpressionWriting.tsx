@@ -1,7 +1,6 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
 import {
 	getNotationType,
@@ -9,6 +8,7 @@ import {
 	setNotationType,
 } from "@/lib/config";
 import { useExpressionWriting } from "@/lib/useExpressionWriting";
+import { ControlPanel } from "@/components/ControlPanel";
 
 /**
  * ExpressionWriting Component - Boolean Expression Writing Game
@@ -38,9 +38,6 @@ const SYMBOL_BUTTONS = [
 ];
 
 export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
-	const difficultySelectId = useId();
-	const expressionInputId = useId();
-
 	const {
 		currentLevel,
 		currentQuestion,
@@ -163,58 +160,21 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Control Panel */}
-			<div className="p-4 rounded-lg border-2 bg-stats-card-bg border-stats-card-border">
-				<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-					{/* Difficulty Selector */}
-					<div className="flex items-center gap-3">
-						<label
-							htmlFor={difficultySelectId}
-							className="font-medium text-sm whitespace-nowrap text-stats-label"
-						>
-							Difficulty:
-						</label>
-						<select
-							id={difficultySelectId}
-							value={currentLevel}
-							onChange={(e) =>
-								setLevel(Number(e.target.value) as 1 | 2 | 3 | 4 | 5)
-							}
-							className="px-3 py-1.5 rounded-md border-2 bg-background border-checkbox-label-border hover:border-checkbox-label-border-hover text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-checkbox-label-border-hover"
-						>
-							{Object.entries(DIFFICULTY_LABELS).map(([value, label]) => (
-								<option key={value} value={value}>
-									{label}
-								</option>
-							))}
-						</select>
-					</div>
-
-					{/* Notation Toggle */}
-					<div className="flex items-center gap-3">
-						<span className="text-sm font-medium text-stats-label">Words</span>
-						<Switch
-							checked={notationType === "symbol"}
-							onCheckedChange={handleNotationToggle}
-							aria-label="Toggle between word and symbol notation"
-							className="data-[state=checked]:bg-stats-points data-[state=unchecked]:bg-checkbox-label-border"
-						/>
-						<span className="text-sm font-medium text-stats-label">
-							Symbols
-						</span>
-					</div>
-
-					{/* Regenerate Button */}
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={generateNewQuestion}
-						title="Generate a new question"
-						className="text-xl px-3 border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover"
-					>
-						🎲
-					</Button>
-				</div>
-			</div>
+			<ControlPanel
+				difficulty={{
+					value: currentLevel,
+					onChange: (level) => setLevel(level as 1 | 2 | 3 | 4 | 5),
+					options: Object.entries(DIFFICULTY_LABELS).map(([value, label]) => [
+						Number(value),
+						label,
+					]),
+				}}
+				notation={{
+					value: notationType,
+					onChange: handleNotationToggle,
+				}}
+				onShuffle={generateNewQuestion}
+			/>
 
 			{/* Question Title */}
 			<div className="text-center">
@@ -268,7 +228,6 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 			<div className="max-w-2xl mx-auto w-full space-y-3">
 				<Input
 					ref={inputRef}
-					id={expressionInputId}
 					type="text"
 					value={userAnswer}
 					onChange={(e) => setUserAnswer(e.target.value)}

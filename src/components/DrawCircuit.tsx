@@ -1,14 +1,17 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import {
 	convertToNotation,
 	getNotationType,
 	type NotationType,
 	setNotationType,
 } from "@/lib/config";
-import { useDrawCircuit, type DrawCircuitDifficulty } from "@/lib/useDrawCircuit";
+import {
+	useDrawCircuit,
+	type DrawCircuitDifficulty,
+} from "@/lib/useDrawCircuit";
 import { CircuitDrawer } from "@/lib/CircuitDrawer";
+import { ControlPanel } from "@/components/ControlPanel";
 
 /**
  * DrawCircuit Component - Interactive Circuit Drawing Game
@@ -30,11 +33,11 @@ const DIFFICULTY_LABELS = {
 	5: "A-Level",
 } as const;
 
-export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
-	const difficultySelectId = useId();
-	const canvasId = useId();
-	const interpretedExprId = useId();
+// Constant IDs for canvas and interpreted expression display
+const CANVAS_ID = "draw-circuit-canvas";
+const INTERPRETED_EXPR_ID = "interpreted-expression";
 
+export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 	const {
 		currentLevel,
 		currentExpression,
@@ -50,7 +53,8 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 	} = useDrawCircuit(onScoreUpdate);
 
 	const [notationType, setNotationTypeState] = useState<NotationType>("word");
-	const [currentInterpretedExpression, setCurrentInterpretedExpression] = useState("Q = ?");
+	const [currentInterpretedExpression, setCurrentInterpretedExpression] =
+		useState("Q = ?");
 	const [removeButtonEnabled, setRemoveButtonEnabled] = useState(false);
 
 	const circuitDrawerRef = useRef<CircuitDrawer | null>(null);
@@ -72,18 +76,18 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 
 			// Create new drawer
 			circuitDrawerRef.current = new CircuitDrawer(
-				canvasId,
+				CANVAS_ID,
 				() => isAnswered,
 				notationType,
 				(expr) => setCurrentInterpretedExpression(expr),
-				(enabled) => setRemoveButtonEnabled(enabled)
+				(enabled) => setRemoveButtonEnabled(enabled),
 			);
 
 			// Start the drawer with current expression
 			circuitDrawerRef.current.start(
 				currentExpression,
 				interpretedExprRef.current,
-				currentLevel
+				currentLevel,
 			);
 		}
 
@@ -93,7 +97,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				circuitDrawerRef.current.destroy();
 			}
 		};
-	}, [currentExpression, currentLevel, canvasId, notationType]);
+	}, [currentExpression, currentLevel, notationType]);
 
 	// Update notation when it changes
 	useEffect(() => {
@@ -154,31 +158,24 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Control Panel */}
-			<div className="p-4 rounded-lg border-2 bg-stats-card-bg border-stats-card-border">
-				<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-					{/* Difficulty Selector */}
-					<div className="flex items-center gap-3">
-						<label
-							htmlFor={difficultySelectId}
-							className="font-medium text-sm whitespace-nowrap text-stats-label"
-						>
-							Difficulty:
-						</label>
-						<select
-							id={difficultySelectId}
-							value={currentLevel}
-							onChange={handleDifficultyChange}
-							className="px-3 py-1.5 rounded-md border-2 bg-background border-checkbox-label-border hover:border-checkbox-label-border-hover text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-checkbox-label-border-hover"
-						>
-							{Object.entries(DIFFICULTY_LABELS).map(([value, label]) => (
-								<option key={value} value={value}>
-									{label}
-								</option>
-							))}
-						</select>
-					</div>
-
-					{/* Help Toggle */}
+			<ControlPanel
+				difficulty={{
+					value: currentLevel,
+					onChange: (level) =>
+						handleDifficultyChange({
+							target: { value: level.toString() },
+						} as React.ChangeEvent<HTMLSelectElement>),
+					options: Object.entries(DIFFICULTY_LABELS).map(([value, label]) => [
+						Number(value),
+						label,
+					]),
+				}}
+				notation={{
+					value: notationType,
+					onChange: handleNotationToggle,
+				}}
+				onShuffle={handleRandomQuestion}
+				additionalControls={
 					<div className="flex items-center gap-2">
 						<label className="flex items-center gap-2 text-sm text-stats-label whitespace-nowrap cursor-pointer">
 							<input
@@ -190,33 +187,8 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 							Show expression so far
 						</label>
 					</div>
-
-					{/* Notation Toggle */}
-					<div className="flex items-center gap-3">
-						<span className="text-sm font-medium text-stats-label">Words</span>
-						<Switch
-							checked={notationType === "symbol"}
-							onCheckedChange={handleNotationToggle}
-							aria-label="Toggle between word and symbol notation"
-							className="data-[state=checked]:bg-stats-points data-[state=unchecked]:bg-checkbox-label-border"
-						/>
-						<span className="text-sm font-medium text-stats-label">
-							Symbols
-						</span>
-					</div>
-
-					{/* Random Button */}
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={handleRandomQuestion}
-						title="Pick a random expression from current difficulty"
-						className="text-xl px-3 border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover"
-					>
-						🎲
-					</Button>
-				</div>
-			</div>
+				}
+			/>
 
 			{/* Question Title */}
 			<div className="text-center">
@@ -265,11 +237,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 							data-gate-type="OR"
 						>
 							<div className="gate-icon">
-								<img
-									src="/img/svg/or.svg"
-									alt="OR Gate"
-									className="gate-svg"
-								/>
+								<img src="/img/svg/or.svg" alt="OR Gate" className="gate-svg" />
 							</div>
 						</div>
 						<div
@@ -330,7 +298,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				<div className="flex-1 min-w-0 bg-stats-card-bg border-2 border-stats-card-border rounded-lg flex items-center justify-center overflow-hidden">
 					<canvas
 						ref={canvasRef}
-						id={canvasId}
+						id={CANVAS_ID}
 						width="750"
 						height="500"
 						className="max-w-full h-auto cursor-crosshair"
@@ -344,7 +312,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				<div className="bg-stats-card-bg border-2 border-stats-card-border rounded-lg p-4">
 					<div
 						ref={interpretedExprRef}
-						id={interpretedExprId}
+						id={INTERPRETED_EXPR_ID}
 						className="text-lg font-mono text-center text-stats-label"
 					>
 						{currentInterpretedExpression}

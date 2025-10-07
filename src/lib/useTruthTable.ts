@@ -16,47 +16,48 @@ import {
 
 export type TruthTableDifficulty = 1 | 2 | 3 | 4 | 5;
 
-const STORAGE_KEY = 'truthTableDifficulty';
+const STORAGE_KEY = "truthTableDifficulty";
 
 // Helper to get initial difficulty from localStorage
 const getInitialDifficulty = (): TruthTableDifficulty => {
-  if (typeof window === 'undefined') return 1;
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = parseInt(stored, 10);
-      if (parsed >= 1 && parsed <= 5) {
-        return parsed as TruthTableDifficulty;
-      }
-    }
-  } catch (e) {
-    console.error('Error reading difficulty from localStorage:', e);
-  }
-  return 1;
+	if (typeof window === "undefined") return 1;
+	try {
+		const stored = localStorage.getItem(STORAGE_KEY);
+		if (stored) {
+			const parsed = parseInt(stored, 10);
+			if (parsed >= 1 && parsed <= 5) {
+				return parsed as TruthTableDifficulty;
+			}
+		}
+	} catch (e) {
+		console.error("Error reading difficulty from localStorage:", e);
+	}
+	return 1;
 };
 
 // Helper to generate initial question based on difficulty
 const generateInitialQuestion = (level: TruthTableDifficulty) => {
-  const levelKey = `level${level}` as keyof typeof expressionDatabase;
-  const expressions = expressionDatabase[levelKey];
-  const expression = expressions[Math.floor(Math.random() * expressions.length)];
-  
-  const parsed = parseExpressionForTable(expression);
-  const outputVar = expression.split(" = ")[0].trim();
-  const data = calculateTruthTableData(
-    expression,
-    parsed.inputs,
-    parsed.intermediateExpressions,
-    false // showIntermediateColumns defaults to false
-  );
-  
-  return {
-    expression,
-    inputs: parsed.inputs,
-    intermediateExpressions: parsed.intermediateExpressions,
-    outputVariable: outputVar,
-    truthTableData: data,
-  };
+	const levelKey = `level${level}` as keyof typeof expressionDatabase;
+	const expressions = expressionDatabase[levelKey];
+	const expression =
+		expressions[Math.floor(Math.random() * expressions.length)];
+
+	const parsed = parseExpressionForTable(expression);
+	const outputVar = expression.split(" = ")[0].trim();
+	const data = calculateTruthTableData(
+		expression,
+		parsed.inputs,
+		parsed.intermediateExpressions,
+		false, // showIntermediateColumns defaults to false
+	);
+
+	return {
+		expression,
+		inputs: parsed.inputs,
+		intermediateExpressions: parsed.intermediateExpressions,
+		outputVariable: outputVar,
+		truthTableData: data,
+	};
 };
 
 /**
@@ -124,17 +125,24 @@ interface UseTruthTableReturn {
 export function useTruthTable({
 	onScoreUpdate,
 }: UseTruthTableProps = {}): UseTruthTableReturn {
-	const [currentLevel, setCurrentLevel] = useState<TruthTableDifficulty>(getInitialDifficulty);
-	
+	const [currentLevel, setCurrentLevel] =
+		useState<TruthTableDifficulty>(getInitialDifficulty);
+
 	// Initialize with a question based on saved difficulty
 	const initialQuestion = generateInitialQuestion(getInitialDifficulty());
-	const [currentExpression, setCurrentExpression] = useState(initialQuestion.expression);
-	const [inputs, setInputs] = useState<string[]>(initialQuestion.inputs);
-	const [intermediateExpressions, setIntermediateExpressions] = useState<string[]>(
-		initialQuestion.intermediateExpressions
+	const [currentExpression, setCurrentExpression] = useState(
+		initialQuestion.expression,
 	);
-	const [truthTableData, setTruthTableData] = useState<TruthTableRow[]>(initialQuestion.truthTableData);
-	const [outputVariable, setOutputVariable] = useState(initialQuestion.outputVariable);
+	const [inputs, setInputs] = useState<string[]>(initialQuestion.inputs);
+	const [intermediateExpressions, setIntermediateExpressions] = useState<
+		string[]
+	>(initialQuestion.intermediateExpressions);
+	const [truthTableData, setTruthTableData] = useState<TruthTableRow[]>(
+		initialQuestion.truthTableData,
+	);
+	const [outputVariable, setOutputVariable] = useState(
+		initialQuestion.outputVariable,
+	);
 
 	const [userAnswers, setUserAnswers] = useState<Map<string, "0" | "1" | "">>(
 		new Map(),
@@ -154,7 +162,7 @@ export function useTruthTable({
 		try {
 			localStorage.setItem(STORAGE_KEY, currentLevel.toString());
 		} catch (e) {
-			console.error('Error saving difficulty to localStorage:', e);
+			console.error("Error saving difficulty to localStorage:", e);
 		}
 	}, [currentLevel]);
 
