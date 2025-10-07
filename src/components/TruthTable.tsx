@@ -63,11 +63,6 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 		getNotationType(),
 	);
 
-	// Generate first question on mount
-	useEffect(() => {
-		generateNewQuestion();
-	}, [generateNewQuestion]);
-
 	// Render circuit when question changes
 	useEffect(() => {
 		if (circuitRef.current && currentExpression) {

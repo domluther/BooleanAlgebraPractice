@@ -35,6 +35,30 @@ const getInitialDifficulty = (): TruthTableDifficulty => {
   return 1;
 };
 
+// Helper to generate initial question based on difficulty
+const generateInitialQuestion = (level: TruthTableDifficulty) => {
+  const levelKey = `level${level}` as keyof typeof expressionDatabase;
+  const expressions = expressionDatabase[levelKey];
+  const expression = expressions[Math.floor(Math.random() * expressions.length)];
+  
+  const parsed = parseExpressionForTable(expression);
+  const outputVar = expression.split(" = ")[0].trim();
+  const data = calculateTruthTableData(
+    expression,
+    parsed.inputs,
+    parsed.intermediateExpressions,
+    false // showIntermediateColumns defaults to false
+  );
+  
+  return {
+    expression,
+    inputs: parsed.inputs,
+    intermediateExpressions: parsed.intermediateExpressions,
+    outputVariable: outputVar,
+    truthTableData: data,
+  };
+};
+
 /**
  * User's answer for a single cell in the truth table
  */
@@ -101,13 +125,16 @@ export function useTruthTable({
 	onScoreUpdate,
 }: UseTruthTableProps = {}): UseTruthTableReturn {
 	const [currentLevel, setCurrentLevel] = useState<TruthTableDifficulty>(getInitialDifficulty);
-	const [currentExpression, setCurrentExpression] = useState("");
-	const [inputs, setInputs] = useState<string[]>([]);
-	const [intermediateExpressions, setIntermediateExpressions] = useState<
-		string[]
-	>([]);
-	const [truthTableData, setTruthTableData] = useState<TruthTableRow[]>([]);
-	const [outputVariable, setOutputVariable] = useState("");
+	
+	// Initialize with a question based on saved difficulty
+	const initialQuestion = generateInitialQuestion(getInitialDifficulty());
+	const [currentExpression, setCurrentExpression] = useState(initialQuestion.expression);
+	const [inputs, setInputs] = useState<string[]>(initialQuestion.inputs);
+	const [intermediateExpressions, setIntermediateExpressions] = useState<string[]>(
+		initialQuestion.intermediateExpressions
+	);
+	const [truthTableData, setTruthTableData] = useState<TruthTableRow[]>(initialQuestion.truthTableData);
+	const [outputVariable, setOutputVariable] = useState(initialQuestion.outputVariable);
 
 	const [userAnswers, setUserAnswers] = useState<Map<string, "0" | "1" | "">>(
 		new Map(),

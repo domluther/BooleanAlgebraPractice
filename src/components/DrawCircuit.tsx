@@ -102,13 +102,6 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 		}
 	}, [notationType]);
 
-	// Generate initial question
-	useEffect(() => {
-		if (!currentExpression) {
-			generateQuestion();
-		}
-	}, [currentExpression, generateQuestion]);
-
 	const handleDifficultyChange = (
 		event: React.ChangeEvent<HTMLSelectElement>,
 	) => {

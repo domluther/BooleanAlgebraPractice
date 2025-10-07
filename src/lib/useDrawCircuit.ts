@@ -31,6 +31,20 @@ const getInitialDifficulty = (): DrawCircuitDifficulty => {
   return 1;
 };
 
+// Helper to generate initial question based on difficulty
+const generateInitialQuestion = (level: DrawCircuitDifficulty): string => {
+  const levelKey = `level${level}` as keyof typeof expressionDatabase;
+  const expressions = expressionDatabase[levelKey];
+  let expression = expressions[Math.floor(Math.random() * expressions.length)];
+  
+  // Harder modes: shuffle expression to randomize input/output variables
+  if (level >= 3) {
+    expression = shuffleExpression(expression);
+  }
+  
+  return expression;
+};
+
 interface UseDrawCircuitReturn {
   // State
   currentLevel: DrawCircuitDifficulty;
@@ -59,7 +73,11 @@ export function useDrawCircuit(
   onScoreUpdate?: (isCorrect: boolean, questionType: string) => void
 ): UseDrawCircuitReturn {
   const [currentLevel, setCurrentLevel] = useState<DrawCircuitDifficulty>(getInitialDifficulty);
-  const [currentExpression, setCurrentExpression] = useState('');
+  const [currentExpression, setCurrentExpression] = useState(() => {
+    // Generate initial question based on saved difficulty
+    const initialLevel = getInitialDifficulty();
+    return generateInitialQuestion(initialLevel);
+  });
   const [isAnswered, setIsAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState('');
