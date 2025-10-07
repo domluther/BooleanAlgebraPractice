@@ -1,0 +1,13 @@
+{
+  "type": "module",
+  "name": "boolean-algebra-practice",
+  "version": "1.0.0",
+  "description": "Interactive Boolean Algebra Practice Tool",
+  "scripts": {
+    "test": "node tests/run-tests.js",
+    "test:variations": "node tests/expression-variations.test.js",
+    "test:normalization": "node tests/normalization.test.js"
+  },
+  "keywords": ["boolean", "algebra", "education", "interactive"],
+  "author": "Your Name"
+}
