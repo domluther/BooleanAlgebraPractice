@@ -1,11 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-	normalizeExpression,
+	areExpressionsLogicallyEquivalent,
+	evaluateExpression,
 	generateAllAcceptedAnswers,
 	getInputVariables,
-	evaluateExpression,
+	normalizeExpression,
 	shuffleExpression,
-	areExpressionsLogicallyEquivalent,
 } from "../expressionUtils";
 
 /**

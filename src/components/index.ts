@@ -3,19 +3,16 @@
  * Export all reusable components for easy importing
  */
 
+export { ExpressionWriting } from "./ExpressionWriting";
+export { Footer } from "./Footer";
+export { Header } from "./Header";
+// Game Mode Components
+export { NameThat } from "./NameThat";
 // OLD TEMPLATE COMPONENTS - For reference only, delete after migration
 export { CapacityCalculator } from "./old_CapacityCalculator";
 export { FileSizeCalculator } from "./old_FileSizeCalculator";
-export { UnitConverter } from "./old_UnitConverter";
 export { MultipleChoice } from "./old_MultipleChoice";
-
-// Game Mode Components
-export { NameThat } from "./NameThat";
-export { ExpressionWriting } from "./ExpressionWriting";
-export { TruthTable } from "./TruthTable";
-
-export { Footer } from "./Footer";
-export { Header } from "./Header";
+export { UnitConverter } from "./old_UnitConverter";
 export type {
 	QuizButtonProps,
 	QuizButtonSize,
@@ -30,6 +27,7 @@ export { SiteLayout } from "./SiteLayout";
 export { SiteNavigation } from "./SiteNavigation";
 // Modal Components
 export { StatsModal } from "./StatsModal";
+export { TruthTable } from "./TruthTable";
 
 /**
  * Usage Example:

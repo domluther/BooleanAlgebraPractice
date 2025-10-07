@@ -35,36 +35,61 @@ export interface ScoreData {
 		timestamp: number;
 		correct: boolean;
 		questionType: string;
+		points?: number;
 	}>;
 }
+
+/**
+ * Score table mapping game modes and difficulty levels to points
+ * Based on legacy implementation
+ */
+const SCORE_TABLE: Record<string, Record<number, number>> = {
+	nameThat: { 1: 1, 2: 2, 3: 4 },
+	writeExpression: { 1: 3, 2: 5, 3: 7, 4: 10, 5: 15 },
+	truthTable: { 1: 4, 2: 8, 3: 12, 4: 20, 5: 25 },
+	drawCircuit: { 1: 3, 2: 6, 3: 10, 4: 15, 5: 20 },
+	scenario: { 1: 4, 2: 6, 3: 10, 4: 15 },
+};
+
+/**
+ * Expert mode multiplier (applies to all modes)
+ */
+const EXPERT_MODE_MULTIPLIER = 3;
 
 const blankScoreData: ScoreData = {
 	attempts: 0,
 	correct: 0,
 	streak: 0,
 	byType: {
-		"Converting Units": {
+		"Name That": {
 			attempts: 0,
 			correct: 0,
 			totalPoints: 0,
 			bestStreak: 0,
 			currentStreak: 0,
 		},
-		"Capacity Calculator": {
+		"Expression Writing": {
 			attempts: 0,
 			correct: 0,
 			totalPoints: 0,
 			bestStreak: 0,
 			currentStreak: 0,
 		},
-		"File Size Calculator": {
+		"Truth Table": {
 			attempts: 0,
 			correct: 0,
 			totalPoints: 0,
 			bestStreak: 0,
 			currentStreak: 0,
 		},
-		"Multiple Choice": {
+		"Draw Circuit": {
+			attempts: 0,
+			correct: 0,
+			totalPoints: 0,
+			bestStreak: 0,
+			currentStreak: 0,
+		},
+		Scenario: {
 			attempts: 0,
 			correct: 0,
 			totalPoints: 0,
@@ -161,7 +186,37 @@ export class ScoreManager {
 		this.saveScores();
 	}
 
-	recordScore(isCorrect: boolean, questionType: string): void {
+	/**
+	 * Calculate points for a correct answer based on mode, level, and expert mode
+	 * @param mode - Game mode (nameThat, writeExpression, truthTable, drawCircuit, scenario)
+	 * @param level - Difficulty level (1-5 depending on mode)
+	 * @param isExpert - Whether expert mode is enabled (3x multiplier)
+	 * @returns Number of points awarded
+	 */
+	private calculatePoints(
+		mode: string,
+		level: number,
+		isExpert: boolean,
+	): number {
+		const basePoints = SCORE_TABLE[mode]?.[level] || 1;
+		return isExpert ? basePoints * EXPERT_MODE_MULTIPLIER : basePoints;
+	}
+
+	/**
+	 * Record a score with proper point calculation
+	 * @param isCorrect - Whether the answer was correct
+	 * @param questionType - Type of question (e.g., "Name That", "Expression Writing")
+	 * @param mode - Game mode key (nameThat, writeExpression, truthTable, drawCircuit, scenario)
+	 * @param level - Difficulty level (1-5)
+	 * @param isExpert - Whether expert mode is enabled
+	 */
+	recordScore(
+		isCorrect: boolean,
+		questionType: string,
+		mode?: string,
+		level?: number,
+		isExpert?: boolean,
+	): void {
 		if (!this.scores) {
 			this.scores = blankScoreData;
 		}
@@ -182,6 +237,8 @@ export class ScoreManager {
 		this.scores.attempts++;
 		typeData.attempts++;
 
+		let pointsAwarded = 0;
+
 		if (isCorrect) {
 			this.scores.correct++;
 			typeData.correct++;
@@ -198,9 +255,16 @@ export class ScoreManager {
 				}
 			}
 
-			// Award points (1 point per correct answer for now)
+			// Calculate and award points
+			if (mode && level !== undefined) {
+				pointsAwarded = this.calculatePoints(mode, level, isExpert || false);
+			} else {
+				// Fallback to 1 point if mode/level not provided (for backward compatibility)
+				pointsAwarded = 1;
+			}
+
 			if (typeData.totalPoints !== undefined) {
-				typeData.totalPoints++;
+				typeData.totalPoints += pointsAwarded;
 			}
 		} else {
 			this.scores.streak = 0;
@@ -211,11 +275,12 @@ export class ScoreManager {
 			}
 		}
 
-		// Add to history (keep last 50 entries)
+		// Add to history (keep last 20 entries)
 		this.scores.history.unshift({
 			timestamp: Date.now(),
 			correct: isCorrect,
 			questionType: questionType || "unknown",
+			points: pointsAwarded,
 		});
 
 		if (this.scores.history.length > 20) {
@@ -229,7 +294,13 @@ export class ScoreManager {
 		const totalAttempts = this.scores.attempts;
 		const totalCorrect = this.scores.correct;
 		const streak = this.scores.streak;
-		const totalPoints = totalCorrect;
+
+		// Calculate total points from all question types
+		let totalPoints = 0;
+		Object.values(this.scores.byType).forEach((typeData) => {
+			totalPoints += typeData.totalPoints || 0;
+		});
+
 		const accuracy =
 			totalAttempts > 0 ? (totalCorrect / totalAttempts) * 100 : 0;
 

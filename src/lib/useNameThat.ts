@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { expressionDatabase } from "./data";
 import {
 	areExpressionsLogicallyEquivalent,
@@ -50,9 +50,15 @@ interface UseNameThatReturn {
 interface UseNameThatOptions {
 	/**
 	 * Optional callback to record score externally (e.g., with ScoreManager)
-	 * Called with (isCorrect, questionType) when an answer is checked
+	 * Called with (isCorrect, questionType, mode, level, isExpert) when an answer is checked
 	 */
-	onScoreUpdate?: (isCorrect: boolean, questionType: string) => void;
+	onScoreUpdate?: (
+		isCorrect: boolean,
+		questionType: string,
+		mode?: string,
+		level?: number,
+		isExpert?: boolean,
+	) => void;
 }
 
 /**
@@ -232,7 +238,9 @@ function generateStaticTableHTML(expression: string): string {
 	const numCombinations = 2 ** inputs.length;
 
 	let tableHTML = '<table class="truth-table"><thead><tr>';
-	inputs.forEach((input) => (tableHTML += `<th class="input-header">${input}</th>`));
+	inputs.forEach(
+		(input) => (tableHTML += `<th class="input-header">${input}</th>`),
+	);
 	tableHTML += `<th class="output-header">${outputVariable}</th></tr></thead><tbody>`;
 
 	for (let i = 0; i < numCombinations; i++) {
@@ -367,7 +375,13 @@ export function useNameThat(options?: UseNameThatOptions): UseNameThatReturn {
 
 			// Call external score recording callback if provided
 			if (options?.onScoreUpdate) {
-				options.onScoreUpdate(correct, getQuestionType());
+				options.onScoreUpdate(
+					correct,
+					getQuestionType(),
+					"nameThat",
+					currentLevel,
+					false, // NameThat doesn't have expert mode
+				);
 			}
 
 			// Generate feedback message

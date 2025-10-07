@@ -6,7 +6,13 @@ import { ModeMenu } from "./ModeMenu";
 
 interface SharedLayoutProps {
 	children: (
-		recordScoreAndUpdate: (isCorrect: boolean, questionType: string) => void,
+		recordScoreAndUpdate: (
+			isCorrect: boolean,
+			questionType: string,
+			mode?: string,
+			level?: number,
+			isExpert?: boolean,
+		) => void,
 	) => React.ReactNode;
 }
 
@@ -26,8 +32,14 @@ export function useSharedLayout() {
 	const overallStats = scoreManager.getOverallStats();
 
 	// Function to record score and trigger re-render
-	const recordScoreAndUpdate = (isCorrect: boolean, questionType: string) => {
-		scoreManager.recordScore(isCorrect, questionType);
+	const recordScoreAndUpdate = (
+		isCorrect: boolean,
+		questionType: string,
+		mode?: string,
+		level?: number,
+		isExpert?: boolean,
+	) => {
+		scoreManager.recordScore(isCorrect, questionType, mode, level, isExpert);
 		setScoreUpdateTrigger((prev) => prev + 1);
 	};
 

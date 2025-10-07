@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
-import { useNameThat } from "@/lib/useNameThat";
 import {
 	convertToNotation,
 	getNotationType,
-	setNotationType,
 	type NotationType,
+	setNotationType,
 } from "@/lib/config";
+import { useNameThat } from "@/lib/useNameThat";
 
 /**
  * NameThat Component - Logic Gate Identification Game
@@ -183,34 +183,33 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 					</Button>
 				</div>
 			</div>
-
-		{/* Question Title */}
-		<div className="text-center">
-			<h2 className="text-xl font-semibold sm:text-2xl">{questionTitle}</h2>
-		</div>
-
-		{/* Circuit/Truth Table Display */}
-		{currentLevel === 3 ? (
-			// Level 3: Truth table without card wrapper
-			<div className="flex items-center justify-center min-h-[150px]">
-				<div
-					ref={circuitRef}
-					className="truth-table-display"
-					style={{ minHeight: "120px" }}
-				/>
+			{/* Question Title */}
+			<div className="text-center">
+				<h2 className="text-xl font-semibold sm:text-2xl">{questionTitle}</h2>
 			</div>
-		) : (
-			// Level 1 & 2: Circuit with card wrapper
-			<div className="border-2 rounded-lg bg-card border-stats-card-border">
-				<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-[150px]">
+			{/* Circuit/Truth Table Display */}
+			{currentLevel === 3 ? (
+				// Level 3: Truth table without card wrapper
+				<div className="flex items-center justify-center min-h-[150px]">
 					<div
 						ref={circuitRef}
-						className="circuit-display"
+						className="truth-table-display"
 						style={{ minHeight: "120px" }}
 					/>
 				</div>
-			</div>
-		)}			{/* Answer Options */}
+			) : (
+				// Level 1 & 2: Circuit with card wrapper
+				<div className="border-2 rounded-lg bg-card border-stats-card-border">
+					<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-[150px]">
+						<div
+							ref={circuitRef}
+							className="circuit-display"
+							style={{ minHeight: "120px" }}
+						/>
+					</div>
+				</div>
+			)}{" "}
+			{/* Answer Options */}
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{currentQuestion.options.map((option, index) => {
 					const displayOption = convertToNotation(option, notationType);
@@ -250,7 +249,6 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 					);
 				})}
 			</div>
-
 			{/* Feedback Message */}
 			{isAnswered && feedbackMessage && (
 				<div
@@ -263,7 +261,6 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 					{feedbackMessage}
 				</div>
 			)}
-
 			{/* Next Button */}
 			{isAnswered && (
 				<Button
@@ -274,7 +271,6 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 					Next Question →
 				</Button>
 			)}
-
 			{/* Keyboard Shortcuts Help */}
 			<div className="py-2 text-sm text-center text-stats-label font-medium">
 				💡 Use keys 1-4 for quick answers

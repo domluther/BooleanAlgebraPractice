@@ -3,14 +3,14 @@ import { TruthTable } from "@/components";
 import { SharedLayout } from "@/components/SharedLayout";
 
 export const Route = createFileRoute("/truthtable")({
-component: TruthTablePage,
+	component: TruthTablePage,
 });
 
 function TruthTablePage() {
 	return (
-<SharedLayout>
+		<SharedLayout>
 			{(recordScoreAndUpdate) => (
-<TruthTable onScoreUpdate={recordScoreAndUpdate} />
+				<TruthTable onScoreUpdate={recordScoreAndUpdate} />
 			)}
 		</SharedLayout>
 	);

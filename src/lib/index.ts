@@ -2,23 +2,19 @@
  * Core library exports for Boolean Algebra Practice
  */
 
+// Circuit generation
+export { CircuitGenerator } from "./CircuitGenerator";
+export * from "./config";
 // Data and configuration
 export * from "./data";
-export * from "./config";
-
 // Utilities
 export * from "./expressionUtils";
+export * from "./navigationConfig";
 export * from "./numberUtils";
 export * from "./quizHooks";
 export * from "./scoreManager";
-export * from "./utils";
-
-// Game hooks
-export { useNameThat } from "./useNameThat";
-
-// Circuit generation
-export { CircuitGenerator } from "./CircuitGenerator";
-
 // Site configuration
 export * from "./siteConfig";
-export * from "./navigationConfig";
+// Game hooks
+export { useNameThat } from "./useNameThat";
+export * from "./utils";

@@ -1,6 +1,6 @@
 /**
  * Truth Table Utilities
- * 
+ *
  * Functions for generating and validating truth tables for Boolean expressions.
  * Ported from legacy/js/truth-table-utils.js
  */
@@ -10,11 +10,11 @@ import { evaluateExpression, getInputVariables } from "./expressionUtils";
 /**
  * Checks if two Boolean expressions produce the same truth table.
  * Used for generating distractor options in NameThat Level 3.
- * 
+ *
  * @example
  * hasSameTruthTable("Q = (B AND C) OR A", "Q = A OR (B AND C)") // true
  * hasSameTruthTable("Q = A AND B", "Q = A OR B") // false
- * 
+ *
  * @param expr1 - First Boolean expression (e.g., "Q = (B AND C) OR A")
  * @param expr2 - Second Boolean expression (e.g., "Q = A OR (B AND C)")
  * @returns True if both expressions produce identical truth tables
@@ -94,11 +94,11 @@ export interface TruthTableRow {
 
 /**
  * Parses a boolean expression to extract input variables and intermediate sub-expressions.
- * 
+ *
  * @example
  * parseExpressionForTable("Q = A AND (B OR C)")
  * // Returns: { inputs: ['A', 'B', 'C'], intermediateExpressions: ['B OR C'] }
- * 
+ *
  * @param expression - The boolean expression string (e.g., "Q = A AND (B OR C)")
  * @returns Object containing sorted inputs and intermediate expressions
  */
@@ -122,7 +122,7 @@ export function parseExpressionForTable(expression: string): ParsedExpression {
 /**
  * Generates all possible input combinations for a given set of inputs.
  * Uses binary counting to generate all 2^n combinations.
- * 
+ *
  * @example
  * generateInputCombinations(['A', 'B'])
  * // Returns: [
@@ -131,13 +131,11 @@ export function parseExpressionForTable(expression: string): ParsedExpression {
  * //   { A: true, B: false },
  * //   { A: true, B: true }
  * // ]
- * 
+ *
  * @param inputs - Array of input variable names
  * @returns Array of objects, each representing a row of input values
  */
-export function generateInputCombinations(
-	inputs: string[],
-): TruthTableRow[] {
+export function generateInputCombinations(inputs: string[]): TruthTableRow[] {
 	const numInputs = inputs.length;
 	const numCombinations = 2 ** numInputs;
 	const combinations: TruthTableRow[] = [];
@@ -155,7 +153,7 @@ export function generateInputCombinations(
 
 /**
  * Calculates the full data for a truth table, including intermediate and final outputs.
- * 
+ *
  * @param expression - The full expression string, e.g., "Q = A AND B"
  * @param inputs - Array of input variable names
  * @param intermediateExpressions - Array of intermediate expression strings
@@ -206,7 +204,7 @@ export interface ExpertModeValidationResult {
 /**
  * Performs order-independent validation for expert mode.
  * In expert mode, users can enter rows in any order, so we need to find matching rows.
- * 
+ *
  * @param userRows - The rows of data entered by the user
  * @param correctData - The correct, pre-calculated truth table data
  * @returns Validation result indicating correctness and which rows matched

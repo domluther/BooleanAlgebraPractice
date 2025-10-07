@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
-import { useExpressionWriting } from "@/lib/useExpressionWriting";
 import {
 	getNotationType,
-	setNotationType,
 	type NotationType,
+	setNotationType,
 } from "@/lib/config";
+import { useExpressionWriting } from "@/lib/useExpressionWriting";
 
 /**
  * ExpressionWriting Component - Boolean Expression Writing Game

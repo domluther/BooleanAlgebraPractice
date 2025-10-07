@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
+	convertToNotation,
 	convertToSymbolNotation,
 	convertToWordNotation,
-	convertToNotation,
-	getNotationType,
-	setNotationType,
-	notationMaps,
 	difficultyLabels,
+	getNotationType,
 	modeSettings,
+	notationMaps,
+	setNotationType,
 } from "../config";
 
 /**

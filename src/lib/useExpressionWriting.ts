@@ -1,12 +1,12 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
+import { convertToWordNotation, type NotationType } from "./config";
 import { expressionDatabase } from "./data";
 import {
+	areExpressionsLogicallyEquivalent,
 	generateAllAcceptedAnswers,
 	normalizeExpression,
 	shuffleExpression,
-	areExpressionsLogicallyEquivalent,
 } from "./expressionUtils";
-import { convertToWordNotation, type NotationType } from "./config";
 
 /**
  * useExpressionWriting - React hook for Expression Writing game mode
@@ -43,9 +43,15 @@ interface UseExpressionWritingReturn {
 interface UseExpressionWritingOptions {
 	/**
 	 * Optional callback to record score externally (e.g., with ScoreManager)
-	 * Called with (isCorrect, questionType) when an answer is checked
+	 * Called with (isCorrect, questionType, mode, level, isExpert) when an answer is checked
 	 */
-	onScoreUpdate?: (isCorrect: boolean, questionType: string) => void;
+	onScoreUpdate?: (
+		isCorrect: boolean,
+		questionType: string,
+		mode?: string,
+		level?: number,
+		isExpert?: boolean,
+	) => void;
 }
 
 /**
@@ -146,7 +152,13 @@ export function useExpressionWriting(
 
 				// Still record as incorrect attempt
 				if (options?.onScoreUpdate) {
-					options.onScoreUpdate(false, getQuestionType());
+					options.onScoreUpdate(
+						false,
+						getQuestionType(),
+						"writeExpression",
+						currentLevel,
+						false, // Expression Writing doesn't have expert mode yet
+					);
 				}
 				return;
 			}
@@ -176,7 +188,13 @@ export function useExpressionWriting(
 
 			// Call external score recording callback if provided
 			if (options?.onScoreUpdate) {
-				options.onScoreUpdate(correct, getQuestionType());
+				options.onScoreUpdate(
+					correct,
+					getQuestionType(),
+					"writeExpression",
+					currentLevel,
+					false, // Expression Writing doesn't have expert mode yet
+				);
 			}
 
 			// Generate feedback message
@@ -188,10 +206,15 @@ export function useExpressionWriting(
 				);
 			}
 		},
-		[isAnswered, userAnswer, currentQuestion, options, getQuestionType],
-	);
-
-	/**
+		[
+			isAnswered,
+			userAnswer,
+			currentQuestion,
+			currentLevel,
+			options,
+			getQuestionType,
+		],
+	); /**
 	 * Generate a new question based on current level
 	 */
 	const generateNewQuestion = useCallback(() => {

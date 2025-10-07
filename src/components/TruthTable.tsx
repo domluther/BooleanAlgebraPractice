@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
-import { useTruthTable } from "@/lib/useTruthTable";
 import {
-	getNotationType,
-	setNotationType,
 	convertToNotation,
+	getNotationType,
 	type NotationType,
+	setNotationType,
 } from "@/lib/config";
+import { useTruthTable } from "@/lib/useTruthTable";
 
 /**
  * TruthTable Component - Boolean Truth Table Game
@@ -176,7 +176,9 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 
 						{/* Notation Toggle */}
 						<div className="flex items-center gap-3">
-							<span className="text-sm font-medium text-stats-label">Words</span>
+							<span className="text-sm font-medium text-stats-label">
+								Words
+							</span>
 							<Switch
 								checked={notationType === "symbol"}
 								onCheckedChange={handleNotationToggle}
@@ -242,7 +244,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 							style={{ minHeight: "120px" }}
 						/>
 					</div>
-					
+
 					{/* Expression Label */}
 					<div className="text-center pb-2">
 						<p className="text-base font-mono font-medium text-muted-foreground">
