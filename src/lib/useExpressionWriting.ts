@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { convertToWordNotation, type NotationType } from "./config";
 import { expressionDatabase } from "./data";
 import {
@@ -7,6 +7,25 @@ import {
 	normalizeExpression,
 	shuffleExpression,
 } from "./expressionUtils";
+
+const STORAGE_KEY = 'expressionWritingDifficulty';
+
+// Helper to get initial difficulty from localStorage
+const getInitialDifficulty = (): number => {
+  if (typeof window === 'undefined') return 1;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = parseInt(stored, 10);
+      if (parsed >= 1 && parsed <= 5) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Error reading difficulty from localStorage:', e);
+  }
+  return 1;
+};
 
 /**
  * useExpressionWriting - React hook for Expression Writing game mode
@@ -114,14 +133,25 @@ function generateQuestion(level: number): Question {
 export function useExpressionWriting(
 	options?: UseExpressionWritingOptions,
 ): UseExpressionWritingReturn {
-	const [currentLevel, setCurrentLevel] = useState(1);
-	const [currentQuestion, setCurrentQuestion] = useState<Question>(() =>
-		generateQuestion(1),
-	);
+	const [currentLevel, setCurrentLevel] = useState(getInitialDifficulty);
+	const [currentQuestion, setCurrentQuestion] = useState<Question>(() => {
+		// Generate question based on the initial difficulty level
+		const initialLevel = getInitialDifficulty();
+		return generateQuestion(initialLevel);
+	});
 	const [userAnswer, setUserAnswer] = useState("");
 	const [isAnswered, setIsAnswered] = useState(false);
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 	const [feedbackMessage, setFeedbackMessage] = useState("");
+
+	// Save difficulty to localStorage whenever it changes
+	useEffect(() => {
+		try {
+			localStorage.setItem(STORAGE_KEY, currentLevel.toString());
+		} catch (e) {
+			console.error('Error saving difficulty to localStorage:', e);
+		}
+	}, [currentLevel]);
 
 	/**
 	 * Get the question type for score tracking

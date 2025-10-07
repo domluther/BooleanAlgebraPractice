@@ -16,6 +16,7 @@ import { Route as Old_multiplechoiceRouteImport } from './routes/old_multiplecho
 import { Route as Old_filesizeRouteImport } from './routes/old_filesize'
 import { Route as Old_capacitycalculatorRouteImport } from './routes/old_capacitycalculator'
 import { Route as NamethatRouteImport } from './routes/namethat'
+import { Route as DrawcircuitRouteImport } from './routes/drawcircuit'
 import { Route as IndexRouteImport } from './routes/index'
 
 const WriteexpressionRoute = WriteexpressionRouteImport.update({
@@ -53,6 +54,11 @@ const NamethatRoute = NamethatRouteImport.update({
   path: '/namethat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DrawcircuitRoute = DrawcircuitRouteImport.update({
+  id: '/drawcircuit',
+  path: '/drawcircuit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -61,6 +67,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/drawcircuit': typeof DrawcircuitRoute
   '/namethat': typeof NamethatRoute
   '/old_capacitycalculator': typeof Old_capacitycalculatorRoute
   '/old_filesize': typeof Old_filesizeRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/drawcircuit': typeof DrawcircuitRoute
   '/namethat': typeof NamethatRoute
   '/old_capacitycalculator': typeof Old_capacitycalculatorRoute
   '/old_filesize': typeof Old_filesizeRoute
@@ -82,6 +90,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/drawcircuit': typeof DrawcircuitRoute
   '/namethat': typeof NamethatRoute
   '/old_capacitycalculator': typeof Old_capacitycalculatorRoute
   '/old_filesize': typeof Old_filesizeRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/drawcircuit'
     | '/namethat'
     | '/old_capacitycalculator'
     | '/old_filesize'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/drawcircuit'
     | '/namethat'
     | '/old_capacitycalculator'
     | '/old_filesize'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/drawcircuit'
     | '/namethat'
     | '/old_capacitycalculator'
     | '/old_filesize'
@@ -125,6 +137,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DrawcircuitRoute: typeof DrawcircuitRoute
   NamethatRoute: typeof NamethatRoute
   Old_capacitycalculatorRoute: typeof Old_capacitycalculatorRoute
   Old_filesizeRoute: typeof Old_filesizeRoute
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NamethatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/drawcircuit': {
+      id: '/drawcircuit'
+      path: '/drawcircuit'
+      fullPath: '/drawcircuit'
+      preLoaderRoute: typeof DrawcircuitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -197,6 +217,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DrawcircuitRoute: DrawcircuitRoute,
   NamethatRoute: NamethatRoute,
   Old_capacitycalculatorRoute: Old_capacitycalculatorRoute,
   Old_filesizeRoute: Old_filesizeRoute,

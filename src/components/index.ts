@@ -3,6 +3,7 @@
  * Export all reusable components for easy importing
  */
 
+export { DrawCircuit } from "./DrawCircuit";
 export { ExpressionWriting } from "./ExpressionWriting";
 export { Footer } from "./Footer";
 export { Header } from "./Header";

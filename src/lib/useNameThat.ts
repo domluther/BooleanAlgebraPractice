@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { expressionDatabase } from "./data";
 import {
 	areExpressionsLogicallyEquivalent,
@@ -6,6 +6,25 @@ import {
 	getInputVariables,
 } from "./expressionUtils";
 import { hasSameTruthTable } from "./truthTableUtils";
+
+const STORAGE_KEY = 'nameThatDifficulty';
+
+// Helper to get initial difficulty from localStorage
+const getInitialDifficulty = (): number => {
+  if (typeof window === 'undefined') return 1;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = parseInt(stored, 10);
+      if (parsed >= 1 && parsed <= 3) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Error reading difficulty from localStorage:', e);
+  }
+  return 1;
+};
 
 /**
  * useNameThat - React hook for NameThat game mode
@@ -343,13 +362,29 @@ function getQuestionTitle(level: number): string {
  * Custom hook for NameThat game logic
  */
 export function useNameThat(options?: UseNameThatOptions): UseNameThatReturn {
-	const [currentLevel, setCurrentLevel] = useState(1);
-	const [currentQuestion, setCurrentQuestion] = useState<Question>(() =>
-		generateLevel1Question(),
-	);
+	const [currentLevel, setCurrentLevel] = useState(getInitialDifficulty);
+	const [currentQuestion, setCurrentQuestion] = useState<Question>(() => {
+		// Generate question based on the initial difficulty level
+		const initialLevel = getInitialDifficulty();
+		if (initialLevel === 2) {
+			return generateLevel2Question();
+		} else if (initialLevel === 3) {
+			return generateLevel3Question();
+		}
+		return generateLevel1Question();
+	});
 	const [isAnswered, setIsAnswered] = useState(false);
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 	const [feedbackMessage, setFeedbackMessage] = useState("");
+
+	// Save difficulty to localStorage whenever it changes
+	useEffect(() => {
+		try {
+			localStorage.setItem(STORAGE_KEY, currentLevel.toString());
+		} catch (e) {
+			console.error('Error saving difficulty to localStorage:', e);
+		}
+	}, [currentLevel]);
 
 	const questionTitle = getQuestionTitle(currentLevel);
 

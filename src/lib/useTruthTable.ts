@@ -5,7 +5,7 @@
  * Supports 5 difficulty levels and two modes: normal (fill outputs) and expert (fill everything).
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { expressionDatabase } from "./data";
 import {
 	calculateTruthTableData,
@@ -15,6 +15,25 @@ import {
 } from "./truthTableUtils";
 
 export type TruthTableDifficulty = 1 | 2 | 3 | 4 | 5;
+
+const STORAGE_KEY = 'truthTableDifficulty';
+
+// Helper to get initial difficulty from localStorage
+const getInitialDifficulty = (): TruthTableDifficulty => {
+  if (typeof window === 'undefined') return 1;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = parseInt(stored, 10);
+      if (parsed >= 1 && parsed <= 5) {
+        return parsed as TruthTableDifficulty;
+      }
+    }
+  } catch (e) {
+    console.error('Error reading difficulty from localStorage:', e);
+  }
+  return 1;
+};
 
 /**
  * User's answer for a single cell in the truth table
@@ -81,7 +100,7 @@ interface UseTruthTableReturn {
 export function useTruthTable({
 	onScoreUpdate,
 }: UseTruthTableProps = {}): UseTruthTableReturn {
-	const [currentLevel, setCurrentLevel] = useState<TruthTableDifficulty>(1);
+	const [currentLevel, setCurrentLevel] = useState<TruthTableDifficulty>(getInitialDifficulty);
 	const [currentExpression, setCurrentExpression] = useState("");
 	const [inputs, setInputs] = useState<string[]>([]);
 	const [intermediateExpressions, setIntermediateExpressions] = useState<
@@ -102,6 +121,15 @@ export function useTruthTable({
 
 	const [showIntermediateColumns, setShowIntermediateColumns] = useState(false);
 	const [expertMode, setExpertMode] = useState(false);
+
+	// Save difficulty to localStorage whenever it changes
+	useEffect(() => {
+		try {
+			localStorage.setItem(STORAGE_KEY, currentLevel.toString());
+		} catch (e) {
+			console.error('Error saving difficulty to localStorage:', e);
+		}
+	}, [currentLevel]);
 
 	/**
 	 * Generates a new truth table question based on current difficulty
