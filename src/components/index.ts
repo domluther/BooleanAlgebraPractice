@@ -3,8 +3,12 @@
  * Export all reusable components for easy importing
  */
 
-export { CapacityCalculator } from "./CapacityCalculator";
-export { FileSizeCalculator } from "./FileSizeCalculator";
+// OLD TEMPLATE COMPONENTS - For reference only, delete after migration
+export { CapacityCalculator } from "./old_CapacityCalculator";
+export { FileSizeCalculator } from "./old_FileSizeCalculator";
+export { UnitConverter } from "./old_UnitConverter";
+export { MultipleChoice } from "./old_MultipleChoice";
+
 export { Footer } from "./Footer";
 export { Header } from "./Header";
 export type {
@@ -21,7 +25,6 @@ export { SiteLayout } from "./SiteLayout";
 export { SiteNavigation } from "./SiteNavigation";
 // Modal Components
 export { StatsModal } from "./StatsModal";
-export { UnitConverter } from "./UnitConverter";
 
 /**
  * Usage Example:

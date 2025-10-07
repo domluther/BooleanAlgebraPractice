@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CapacityCalculator } from "@/components/CapacityCalculator";
 import { SharedLayout } from "@/components/SharedLayout";
 
-export const Route = createFileRoute("/capacitycalculator")({
+export const Route = createFileRoute("/old_capacitycalculator")({
 	component: CapacityCalculatorPage,
 });
 
@@ -13,5 +13,5 @@ function CapacityCalculatorPage() {
 				<CapacityCalculator onScoreUpdate={recordScoreAndUpdate} />
 			)}
 		</SharedLayout>
-	);
+	)
 }

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { MultipleChoice } from "@/components/MultipleChoice";
 import { SharedLayout } from "@/components/SharedLayout";
 
-export const Route = createFileRoute("/multiplechoice")({
+export const Route = createFileRoute("/old_multiplechoice")({
 	component: MultipleChoicePage,
 });
 
@@ -13,5 +13,5 @@ function MultipleChoicePage() {
 				<MultipleChoice onScoreUpdate={recordScoreAndUpdate} />
 			)}
 		</SharedLayout>
-	);
+	)
 }

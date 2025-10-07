@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { FileSizeCalculator } from "@/components/FileSizeCalculator";
 import { SharedLayout } from "@/components/SharedLayout";
 
-export const Route = createFileRoute("/filesize")({
+export const Route = createFileRoute("/old_filesize")({
 	component: FileSizePage,
 });
 
@@ -13,5 +13,5 @@ function FileSizePage() {
 				<FileSizeCalculator onScoreUpdate={recordScoreAndUpdate} />
 			)}
 		</SharedLayout>
-	);
+	)
 }

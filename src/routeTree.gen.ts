@@ -9,30 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UnitconverterRouteImport } from './routes/unitconverter'
-import { Route as MultiplechoiceRouteImport } from './routes/multiplechoice'
-import { Route as FilesizeRouteImport } from './routes/filesize'
-import { Route as CapacitycalculatorRouteImport } from './routes/capacitycalculator'
+import { Route as Old_unitconverterRouteImport } from './routes/old_unitconverter'
+import { Route as Old_multiplechoiceRouteImport } from './routes/old_multiplechoice'
+import { Route as Old_filesizeRouteImport } from './routes/old_filesize'
+import { Route as Old_capacitycalculatorRouteImport } from './routes/old_capacitycalculator'
 import { Route as IndexRouteImport } from './routes/index'
 
-const UnitconverterRoute = UnitconverterRouteImport.update({
-  id: '/unitconverter',
-  path: '/unitconverter',
+const Old_unitconverterRoute = Old_unitconverterRouteImport.update({
+  id: '/old_unitconverter',
+  path: '/old_unitconverter',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MultiplechoiceRoute = MultiplechoiceRouteImport.update({
-  id: '/multiplechoice',
-  path: '/multiplechoice',
+const Old_multiplechoiceRoute = Old_multiplechoiceRouteImport.update({
+  id: '/old_multiplechoice',
+  path: '/old_multiplechoice',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FilesizeRoute = FilesizeRouteImport.update({
-  id: '/filesize',
-  path: '/filesize',
+const Old_filesizeRoute = Old_filesizeRouteImport.update({
+  id: '/old_filesize',
+  path: '/old_filesize',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CapacitycalculatorRoute = CapacitycalculatorRouteImport.update({
-  id: '/capacitycalculator',
-  path: '/capacitycalculator',
+const Old_capacitycalculatorRoute = Old_capacitycalculatorRouteImport.update({
+  id: '/old_capacitycalculator',
+  path: '/old_capacitycalculator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -43,86 +43,86 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/capacitycalculator': typeof CapacitycalculatorRoute
-  '/filesize': typeof FilesizeRoute
-  '/multiplechoice': typeof MultiplechoiceRoute
-  '/unitconverter': typeof UnitconverterRoute
+  '/old_capacitycalculator': typeof Old_capacitycalculatorRoute
+  '/old_filesize': typeof Old_filesizeRoute
+  '/old_multiplechoice': typeof Old_multiplechoiceRoute
+  '/old_unitconverter': typeof Old_unitconverterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/capacitycalculator': typeof CapacitycalculatorRoute
-  '/filesize': typeof FilesizeRoute
-  '/multiplechoice': typeof MultiplechoiceRoute
-  '/unitconverter': typeof UnitconverterRoute
+  '/old_capacitycalculator': typeof Old_capacitycalculatorRoute
+  '/old_filesize': typeof Old_filesizeRoute
+  '/old_multiplechoice': typeof Old_multiplechoiceRoute
+  '/old_unitconverter': typeof Old_unitconverterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/capacitycalculator': typeof CapacitycalculatorRoute
-  '/filesize': typeof FilesizeRoute
-  '/multiplechoice': typeof MultiplechoiceRoute
-  '/unitconverter': typeof UnitconverterRoute
+  '/old_capacitycalculator': typeof Old_capacitycalculatorRoute
+  '/old_filesize': typeof Old_filesizeRoute
+  '/old_multiplechoice': typeof Old_multiplechoiceRoute
+  '/old_unitconverter': typeof Old_unitconverterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/capacitycalculator'
-    | '/filesize'
-    | '/multiplechoice'
-    | '/unitconverter'
+    | '/old_capacitycalculator'
+    | '/old_filesize'
+    | '/old_multiplechoice'
+    | '/old_unitconverter'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/capacitycalculator'
-    | '/filesize'
-    | '/multiplechoice'
-    | '/unitconverter'
+    | '/old_capacitycalculator'
+    | '/old_filesize'
+    | '/old_multiplechoice'
+    | '/old_unitconverter'
   id:
     | '__root__'
     | '/'
-    | '/capacitycalculator'
-    | '/filesize'
-    | '/multiplechoice'
-    | '/unitconverter'
+    | '/old_capacitycalculator'
+    | '/old_filesize'
+    | '/old_multiplechoice'
+    | '/old_unitconverter'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CapacitycalculatorRoute: typeof CapacitycalculatorRoute
-  FilesizeRoute: typeof FilesizeRoute
-  MultiplechoiceRoute: typeof MultiplechoiceRoute
-  UnitconverterRoute: typeof UnitconverterRoute
+  Old_capacitycalculatorRoute: typeof Old_capacitycalculatorRoute
+  Old_filesizeRoute: typeof Old_filesizeRoute
+  Old_multiplechoiceRoute: typeof Old_multiplechoiceRoute
+  Old_unitconverterRoute: typeof Old_unitconverterRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/unitconverter': {
-      id: '/unitconverter'
-      path: '/unitconverter'
-      fullPath: '/unitconverter'
-      preLoaderRoute: typeof UnitconverterRouteImport
+    '/old_unitconverter': {
+      id: '/old_unitconverter'
+      path: '/old_unitconverter'
+      fullPath: '/old_unitconverter'
+      preLoaderRoute: typeof Old_unitconverterRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/multiplechoice': {
-      id: '/multiplechoice'
-      path: '/multiplechoice'
-      fullPath: '/multiplechoice'
-      preLoaderRoute: typeof MultiplechoiceRouteImport
+    '/old_multiplechoice': {
+      id: '/old_multiplechoice'
+      path: '/old_multiplechoice'
+      fullPath: '/old_multiplechoice'
+      preLoaderRoute: typeof Old_multiplechoiceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/filesize': {
-      id: '/filesize'
-      path: '/filesize'
-      fullPath: '/filesize'
-      preLoaderRoute: typeof FilesizeRouteImport
+    '/old_filesize': {
+      id: '/old_filesize'
+      path: '/old_filesize'
+      fullPath: '/old_filesize'
+      preLoaderRoute: typeof Old_filesizeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/capacitycalculator': {
-      id: '/capacitycalculator'
-      path: '/capacitycalculator'
-      fullPath: '/capacitycalculator'
-      preLoaderRoute: typeof CapacitycalculatorRouteImport
+    '/old_capacitycalculator': {
+      id: '/old_capacitycalculator'
+      path: '/old_capacitycalculator'
+      fullPath: '/old_capacitycalculator'
+      preLoaderRoute: typeof Old_capacitycalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -137,10 +137,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CapacitycalculatorRoute: CapacitycalculatorRoute,
-  FilesizeRoute: FilesizeRoute,
-  MultiplechoiceRoute: MultiplechoiceRoute,
-  UnitconverterRoute: UnitconverterRoute,
+  Old_capacitycalculatorRoute: Old_capacitycalculatorRoute,
+  Old_filesizeRoute: Old_filesizeRoute,
+  Old_multiplechoiceRoute: Old_multiplechoiceRoute,
+  Old_unitconverterRoute: Old_unitconverterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
