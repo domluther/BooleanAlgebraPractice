@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WriteexpressionRouteImport } from './routes/writeexpression'
 import { Route as Old_unitconverterRouteImport } from './routes/old_unitconverter'
 import { Route as Old_multiplechoiceRouteImport } from './routes/old_multiplechoice'
 import { Route as Old_filesizeRouteImport } from './routes/old_filesize'
@@ -16,6 +17,11 @@ import { Route as Old_capacitycalculatorRouteImport } from './routes/old_capacit
 import { Route as NamethatRouteImport } from './routes/namethat'
 import { Route as IndexRouteImport } from './routes/index'
 
+const WriteexpressionRoute = WriteexpressionRouteImport.update({
+  id: '/writeexpression',
+  path: '/writeexpression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Old_unitconverterRoute = Old_unitconverterRouteImport.update({
   id: '/old_unitconverter',
   path: '/old_unitconverter',
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/old_filesize': typeof Old_filesizeRoute
   '/old_multiplechoice': typeof Old_multiplechoiceRoute
   '/old_unitconverter': typeof Old_unitconverterRoute
+  '/writeexpression': typeof WriteexpressionRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/old_filesize': typeof Old_filesizeRoute
   '/old_multiplechoice': typeof Old_multiplechoiceRoute
   '/old_unitconverter': typeof Old_unitconverterRoute
+  '/writeexpression': typeof WriteexpressionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/old_filesize': typeof Old_filesizeRoute
   '/old_multiplechoice': typeof Old_multiplechoiceRoute
   '/old_unitconverter': typeof Old_unitconverterRoute
+  '/writeexpression': typeof WriteexpressionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/old_filesize'
     | '/old_multiplechoice'
     | '/old_unitconverter'
+    | '/writeexpression'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/old_filesize'
     | '/old_multiplechoice'
     | '/old_unitconverter'
+    | '/writeexpression'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/old_filesize'
     | '/old_multiplechoice'
     | '/old_unitconverter'
+    | '/writeexpression'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,10 +118,18 @@ export interface RootRouteChildren {
   Old_filesizeRoute: typeof Old_filesizeRoute
   Old_multiplechoiceRoute: typeof Old_multiplechoiceRoute
   Old_unitconverterRoute: typeof Old_unitconverterRoute
+  WriteexpressionRoute: typeof WriteexpressionRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/writeexpression': {
+      id: '/writeexpression'
+      path: '/writeexpression'
+      fullPath: '/writeexpression'
+      preLoaderRoute: typeof WriteexpressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/old_unitconverter': {
       id: '/old_unitconverter'
       path: '/old_unitconverter'
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   Old_filesizeRoute: Old_filesizeRoute,
   Old_multiplechoiceRoute: Old_multiplechoiceRoute,
   Old_unitconverterRoute: Old_unitconverterRoute,
+  WriteexpressionRoute: WriteexpressionRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

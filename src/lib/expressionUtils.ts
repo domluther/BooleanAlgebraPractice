@@ -234,7 +234,8 @@ function _generateExpressionVariations(expression: string): string[] {
 			// Use parentheses if originally had them or if operand is complex
 			const needsParens =
 				ast.hasParens ||
-				ast.operand!.type === "AND" || ast.operand!.type === "OR" ||
+				ast.operand!.type === "AND" ||
+				ast.operand!.type === "OR" ||
 				ast.operand!.type === "XOR";
 
 			if (needsParens) {
@@ -285,7 +286,8 @@ function _generateExpressionVariations(expression: string): string[] {
 			// Always use parentheses around the entire NOT expression when it has complex operands
 			const needsParens =
 				ast.hasParens ||
-				ast.operand!.type === "AND" || ast.operand!.type === "OR" ||
+				ast.operand!.type === "AND" ||
+				ast.operand!.type === "OR" ||
 				ast.operand!.type === "XOR";
 
 			if (needsParens) {

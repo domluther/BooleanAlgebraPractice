@@ -10,7 +10,7 @@ type QuizMode = {
 // Mode button data
 const QUIZ_MODES: QuizMode[] = [
 	{ label: "Name That", path: "/namethat", emoji: "🎯" },
-	{ label: "Expression Writing", path: "/expressionWriting", emoji: "✍️" },
+	{ label: "Expression Writing", path: "/writeexpression", emoji: "✍️" },
 	{ label: "Truth Tables", path: "/truthTables", emoji: "📊" },
 	{ label: "Draw Circuit", path: "/drawCircuit", emoji: "🔌" },
 	{ label: "Scenarios", path: "/scenarios", emoji: "📝" },
