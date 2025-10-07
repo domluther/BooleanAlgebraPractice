@@ -6,5 +6,5 @@ export const Route = createFileRoute("/")({
 
 function IndexPage() {
 	// Redirect to the default route (unit converter)
-	return <Navigate to="/unitconverter" />;
+	return <Navigate to="/namethat" />;
 }

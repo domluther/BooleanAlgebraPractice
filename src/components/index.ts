@@ -9,6 +9,9 @@ export { FileSizeCalculator } from "./old_FileSizeCalculator";
 export { UnitConverter } from "./old_UnitConverter";
 export { MultipleChoice } from "./old_MultipleChoice";
 
+// Game Mode Components
+export { NameThat } from "./NameThat";
+
 export { Footer } from "./Footer";
 export { Header } from "./Header";
 export type {
