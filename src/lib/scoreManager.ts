@@ -21,13 +21,16 @@ export interface ScoreData {
 	attempts: number;
 	correct: number;
 	streak: number;
-	byType: Record<string, { 
-		attempts: number; 
-		correct: number;
-		totalPoints: number;
-		bestStreak: number;
-		currentStreak: number;
-	}>;
+	byType: Record<
+		string,
+		{
+			attempts: number;
+			correct: number;
+			totalPoints: number;
+			bestStreak: number;
+			currentStreak: number;
+		}
+	>;
 	history: Array<{
 		timestamp: number;
 		correct: boolean;
@@ -40,10 +43,34 @@ const blankScoreData: ScoreData = {
 	correct: 0,
 	streak: 0,
 	byType: {
-		"Converting Units": { attempts: 0, correct: 0, totalPoints: 0, bestStreak: 0, currentStreak: 0 },
-		"Capacity Calculator": { attempts: 0, correct: 0, totalPoints: 0, bestStreak: 0, currentStreak: 0 },
-		"File Size Calculator": { attempts: 0, correct: 0, totalPoints: 0, bestStreak: 0, currentStreak: 0 },
-		"Multiple Choice": { attempts: 0, correct: 0, totalPoints: 0, bestStreak: 0, currentStreak: 0 },
+		"Converting Units": {
+			attempts: 0,
+			correct: 0,
+			totalPoints: 0,
+			bestStreak: 0,
+			currentStreak: 0,
+		},
+		"Capacity Calculator": {
+			attempts: 0,
+			correct: 0,
+			totalPoints: 0,
+			bestStreak: 0,
+			currentStreak: 0,
+		},
+		"File Size Calculator": {
+			attempts: 0,
+			correct: 0,
+			totalPoints: 0,
+			bestStreak: 0,
+			currentStreak: 0,
+		},
+		"Multiple Choice": {
+			attempts: 0,
+			correct: 0,
+			totalPoints: 0,
+			bestStreak: 0,
+			currentStreak: 0,
+		},
 	},
 	history: [],
 };
@@ -141,12 +168,12 @@ export class ScoreManager {
 
 		// Initialize question type if it doesn't exist
 		if (!this.scores.byType[questionType]) {
-			this.scores.byType[questionType] = { 
-				attempts: 0, 
+			this.scores.byType[questionType] = {
+				attempts: 0,
 				correct: 0,
 				totalPoints: 0,
 				bestStreak: 0,
-				currentStreak: 0
+				currentStreak: 0,
 			};
 		}
 
@@ -154,27 +181,30 @@ export class ScoreManager {
 
 		this.scores.attempts++;
 		typeData.attempts++;
-		
+
 		if (isCorrect) {
 			this.scores.correct++;
 			typeData.correct++;
 			this.scores.streak++;
-			
+
 			// Update streak tracking for this question type
 			if (typeData.currentStreak !== undefined) {
 				typeData.currentStreak++;
-				if (typeData.bestStreak !== undefined && typeData.currentStreak > typeData.bestStreak) {
+				if (
+					typeData.bestStreak !== undefined &&
+					typeData.currentStreak > typeData.bestStreak
+				) {
 					typeData.bestStreak = typeData.currentStreak;
 				}
 			}
-			
+
 			// Award points (1 point per correct answer for now)
 			if (typeData.totalPoints !== undefined) {
 				typeData.totalPoints++;
 			}
 		} else {
 			this.scores.streak = 0;
-			
+
 			// Reset current streak for this question type
 			if (typeData.currentStreak !== undefined) {
 				typeData.currentStreak = 0;

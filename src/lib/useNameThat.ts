@@ -1,42 +1,44 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback } from "react";
+import { expressionDatabase } from "./data";
+import { areExpressionsLogicallyEquivalent } from "./expressionUtils";
 
 /**
  * useNameThat - React hook for NameThat game mode
- * 
+ *
  * Manages game state for identifying logic gates and circuits.
- * 
+ *
  * Levels:
  * - Level 1: Single GCSE logic gates (AND, OR, NOT) or invalid gates (NONE)
  * - Level 2: Two-gate combinations from level2NoOverlap dataset (future)
  * - Level 3: Truth table identification (future)
  */
 
-type GateType = 'AND' | 'OR' | 'NOT' | 'NONE'
+type GateType = "AND" | "OR" | "NOT" | "NONE";
 
 interface InvalidGate {
-	svg: string
-	reason: string
+	svg: string;
+	reason: string;
 }
 
 interface Question {
-	expression: string
-	correctAnswer: string
-	options: string[]
-	invalidGateSVG?: string
-	reason?: string
+	expression: string;
+	correctAnswer: string;
+	options: string[];
+	invalidGateSVG?: string;
+	reason?: string;
 }
 
 interface UseNameThatReturn {
-	currentLevel: number
-	currentQuestion: Question
-	isAnswered: boolean
-	isCorrect: boolean | null
-	feedbackMessage: string
-	questionTitle: string
-	checkAnswer: (answer: string) => void
-	generateNewQuestion: () => void
-	reset: () => void
-	setLevel: (level: number) => void
+	currentLevel: number;
+	currentQuestion: Question;
+	isAnswered: boolean;
+	isCorrect: boolean | null;
+	feedbackMessage: string;
+	questionTitle: string;
+	checkAnswer: (answer: string) => void;
+	generateNewQuestion: () => void;
+	reset: () => void;
+	setLevel: (level: number) => void;
 }
 
 interface UseNameThatOptions {
@@ -44,7 +46,7 @@ interface UseNameThatOptions {
 	 * Optional callback to record score externally (e.g., with ScoreManager)
 	 * Called with (isCorrect, questionType) when an answer is checked
 	 */
-	onScoreUpdate?: (isCorrect: boolean, questionType: string) => void
+	onScoreUpdate?: (isCorrect: boolean, questionType: string) => void;
 }
 
 /**
@@ -59,7 +61,8 @@ const INVALID_GATES: InvalidGate[] = [
 		<line x1="120" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
 		<text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
 		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`,
-		reason: 'The bubble is on the wrong side of this NOT gate. It should be at the output.'
+		reason:
+			"The bubble is on the wrong side of this NOT gate. It should be at the output.",
 	},
 	{
 		svg: `<path d="M 86 35 A 25 25 0 0 0 86 85 L 113 85 L 113 35 Z" fill="none" stroke="#333" stroke-width="2"/>
@@ -69,7 +72,8 @@ const INVALID_GATES: InvalidGate[] = [
 		<text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
 		<text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
 		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`,
-		reason: 'It is a backwards AND gate. The curved side should be on the right.'
+		reason:
+			"It is a backwards AND gate. The curved side should be on the right.",
 	},
 	{
 		svg: `<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="#333" stroke-width="2"/>
@@ -80,7 +84,7 @@ const INVALID_GATES: InvalidGate[] = [
 		<text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
 		<text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
 		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`,
-		reason: 'The bubble makes it a NAND gate - an AND followed by a NOT.'
+		reason: "The bubble makes it a NAND gate - an AND followed by a NOT.",
 	},
 	{
 		svg: `<path d="M 55 35 Q 70 60 55 85" fill="none" stroke="#333" stroke-width="2"/>
@@ -91,23 +95,23 @@ const INVALID_GATES: InvalidGate[] = [
 		<text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
 		<text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
 		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`,
-		reason: 'The extra curved line makes it an XOR gate, used at A-Level.'
-	}
-]
+		reason: "The extra curved line makes it an XOR gate, used at A-Level.",
+	},
+];
 
 /**
  * Get expression string for a given gate type
  */
 function getGateExpression(gate: GateType): string {
 	switch (gate) {
-		case 'AND':
-			return 'Q = A AND B'
-		case 'OR':
-			return 'Q = A OR B'
-		case 'NOT':
-			return 'Q = NOT A'
-		case 'NONE':
-			return 'INVALID_GATE'
+		case "AND":
+			return "Q = A AND B";
+		case "OR":
+			return "Q = A OR B";
+		case "NOT":
+			return "Q = NOT A";
+		case "NONE":
+			return "INVALID_GATE";
 	}
 }
 
@@ -115,7 +119,7 @@ function getGateExpression(gate: GateType): string {
  * Select a random invalid gate configuration
  */
 function getRandomInvalidGate(): InvalidGate {
-	return INVALID_GATES[Math.floor(Math.random() * INVALID_GATES.length)]
+	return INVALID_GATES[Math.floor(Math.random() * INVALID_GATES.length)];
 }
 
 /**
@@ -123,33 +127,90 @@ function getRandomInvalidGate(): InvalidGate {
  * Distribution: AND, OR, NOT appear once each, NONE appears twice for balance
  */
 function generateRandomGateType(): GateType {
-	const gates: GateType[] = ['AND', 'OR', 'NOT', 'NONE', 'NONE']
-	return gates[Math.floor(Math.random() * gates.length)]
+	const gates: GateType[] = ["AND", "OR", "NOT", "NONE", "NONE"];
+	return gates[Math.floor(Math.random() * gates.length)];
 }
 
 /**
  * Generate a Level 1 question
  */
 function generateLevel1Question(): Question {
-	const gateType = generateRandomGateType()
-	const options = ['AND', 'OR', 'NOT', 'NONE']
+	const gateType = generateRandomGateType();
+	const options = ["AND", "OR", "NOT", "NONE"];
 
-	if (gateType === 'NONE') {
-		const invalidGate = getRandomInvalidGate()
+	if (gateType === "NONE") {
+		const invalidGate = getRandomInvalidGate();
 		return {
 			expression: getGateExpression(gateType),
 			correctAnswer: gateType,
 			options,
 			invalidGateSVG: `<svg width="200" height="120" viewBox="0 0 200 120">${invalidGate.svg}</svg>`,
-			reason: invalidGate.reason
-		}
+			reason: invalidGate.reason,
+		};
 	}
 
 	return {
 		expression: getGateExpression(gateType),
 		correctAnswer: gateType,
-		options
+		options,
+	};
+}
+
+/**
+ * Generate a Level 2 question
+ * Shows a circuit with 2 gates and asks user to identify the expression
+ */
+function generateLevel2Question(): Question {
+	const expressions = expressionDatabase.level2NoOverlap;
+
+	// 1. Select a correct expression
+	const correctExpression =
+		expressions[Math.floor(Math.random() * expressions.length)];
+
+	// 2. Get 3 other expressions with different truth tables for options
+	const options = [correctExpression];
+	const otherExpressions = expressions.filter(
+		(expr) => expr !== correctExpression,
+	);
+	const maxAttempts = otherExpressions.length;
+	let attempts = 0;
+
+	// Try to find expressions that produce different truth tables
+	while (
+		options.length < 4 &&
+		otherExpressions.length > 0 &&
+		attempts < maxAttempts
+	) {
+		const randomIndex = Math.floor(Math.random() * otherExpressions.length);
+		const candidateExpression = otherExpressions.splice(randomIndex, 1)[0];
+
+		// Only add if it has a different truth table than the correct answer
+		if (
+			!areExpressionsLogicallyEquivalent(correctExpression, candidateExpression)
+		) {
+			options.push(candidateExpression);
+		}
+		attempts++;
 	}
+
+	// If we couldn't find enough different expressions, fill with random ones as fallback
+	while (options.length < 4 && otherExpressions.length > 0) {
+		const randomIndex = Math.floor(Math.random() * otherExpressions.length);
+		const randomExpression = otherExpressions.splice(randomIndex, 1)[0];
+		options.push(randomExpression);
+	}
+
+	// 3. Shuffle the options so the correct answer isn't always first
+	for (let i = options.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[options[i], options[j]] = [options[j], options[i]];
+	}
+
+	return {
+		expression: correctExpression,
+		correctAnswer: correctExpression,
+		options,
+	};
 }
 
 /**
@@ -158,13 +219,13 @@ function generateLevel1Question(): Question {
 function getQuestionTitle(level: number): string {
 	switch (level) {
 		case 1:
-			return 'Name that GCSE logic gate'
+			return "Name that GCSE logic gate";
 		case 2:
-			return 'Name that logic diagram'
+			return "Name that logic diagram";
 		case 3:
-			return 'Name that truth table'
+			return "Name that truth table";
 		default:
-			return 'Name that GCSE logic gate'
+			return "Name that GCSE logic gate";
 	}
 }
 
@@ -172,21 +233,23 @@ function getQuestionTitle(level: number): string {
  * Custom hook for NameThat game logic
  */
 export function useNameThat(options?: UseNameThatOptions): UseNameThatReturn {
-	const [currentLevel, setCurrentLevel] = useState(1)
-	const [currentQuestion, setCurrentQuestion] = useState<Question>(() => generateLevel1Question())
-	const [isAnswered, setIsAnswered] = useState(false)
-	const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
-	const [feedbackMessage, setFeedbackMessage] = useState('')
+	const [currentLevel, setCurrentLevel] = useState(1);
+	const [currentQuestion, setCurrentQuestion] = useState<Question>(() =>
+		generateLevel1Question(),
+	);
+	const [isAnswered, setIsAnswered] = useState(false);
+	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+	const [feedbackMessage, setFeedbackMessage] = useState("");
 
-	const questionTitle = getQuestionTitle(currentLevel)
+	const questionTitle = getQuestionTitle(currentLevel);
 
 	/**
 	 * Get the question type for score tracking
 	 * Using "Name That" to match legacy format (not level-specific)
 	 */
 	const getQuestionType = useCallback(() => {
-		return 'Name That'
-	}, [])
+		return "Name That";
+	}, []);
 
 	/**
 	 * Check if the user's answer is correct
@@ -194,76 +257,80 @@ export function useNameThat(options?: UseNameThatOptions): UseNameThatReturn {
 	const checkAnswer = useCallback(
 		(answer: string) => {
 			// Prevent answering twice
-			if (isAnswered) return
+			if (isAnswered) return;
 
-			setIsAnswered(true)
-			const correct = answer === currentQuestion.correctAnswer
-			setIsCorrect(correct)
+			setIsAnswered(true);
+			const correct = answer === currentQuestion.correctAnswer;
+			setIsCorrect(correct);
 
 			// Call external score recording callback if provided
 			if (options?.onScoreUpdate) {
-				options.onScoreUpdate(correct, getQuestionType())
+				options.onScoreUpdate(correct, getQuestionType());
 			}
 
 			// Generate feedback message
-			let message: string
+			let message: string;
 			if (correct) {
-				if (currentLevel === 1 && currentQuestion.correctAnswer === 'NONE') {
-					message = `Correct! This is not a GCSE logic gate. ${currentQuestion.reason}`
+				if (currentLevel === 1 && currentQuestion.correctAnswer === "NONE") {
+					message = `Correct! This is not a GCSE logic gate. ${currentQuestion.reason}`;
 				} else {
-					message = 'Correct! Well done!'
+					message = "Correct! Well done!";
 				}
 			} else {
-				if (currentLevel === 1 && currentQuestion.correctAnswer === 'NONE') {
-					message = `Incorrect! This is not a GCSE logic gate. ${currentQuestion.reason}`
+				if (currentLevel === 1 && currentQuestion.correctAnswer === "NONE") {
+					message = `Incorrect! This is not a GCSE logic gate. ${currentQuestion.reason}`;
 				} else {
-					message = `Incorrect! The correct answer is ${currentQuestion.correctAnswer}!`
+					message = `Incorrect! The correct answer is ${currentQuestion.correctAnswer}!`;
 				}
 			}
 
-			setFeedbackMessage(message)
+			setFeedbackMessage(message);
 		},
-		[isAnswered, currentQuestion, currentLevel, options, getQuestionType]
-	)
+		[isAnswered, currentQuestion, currentLevel, options, getQuestionType],
+	);
 
 	/**
 	 * Generate a new question based on current level
 	 */
 	const generateNewQuestion = useCallback(() => {
-		setIsAnswered(false)
-		setIsCorrect(null)
-		setFeedbackMessage('')
+		setIsAnswered(false);
+		setIsCorrect(null);
+		setFeedbackMessage("");
 
 		if (currentLevel === 1) {
-			setCurrentQuestion(generateLevel1Question())
+			setCurrentQuestion(generateLevel1Question());
+		} else if (currentLevel === 2) {
+			setCurrentQuestion(generateLevel2Question());
 		}
-		// Level 2 and 3 will be implemented later
-	}, [currentLevel])
+		// Level 3 will be implemented later
+	}, [currentLevel]);
 
 	/**
 	 * Reset the game state
 	 */
 	const reset = useCallback(() => {
-		setIsAnswered(false)
-		setIsCorrect(null)
-		setFeedbackMessage('')
-		setCurrentQuestion(generateLevel1Question())
-	}, [])
+		setIsAnswered(false);
+		setIsCorrect(null);
+		setFeedbackMessage("");
+		setCurrentQuestion(generateLevel1Question());
+	}, []);
 
 	/**
 	 * Change the difficulty level
 	 */
 	const setLevel = useCallback((level: number) => {
-		setCurrentLevel(level)
-		setIsAnswered(false)
-		setIsCorrect(null)
-		setFeedbackMessage('')
+		setCurrentLevel(level);
+		setIsAnswered(false);
+		setIsCorrect(null);
+		setFeedbackMessage("");
 
 		if (level === 1) {
-			setCurrentQuestion(generateLevel1Question())
+			setCurrentQuestion(generateLevel1Question());
+		} else if (level === 2) {
+			setCurrentQuestion(generateLevel2Question());
 		}
-		// Level 2 and 3 will be implemented later
-	}, [])
+		// Level 3 will be implemented later
+	}, []);
 
 	return {
 		currentLevel,
@@ -275,6 +342,6 @@ export function useNameThat(options?: UseNameThatOptions): UseNameThatReturn {
 		checkAnswer,
 		generateNewQuestion,
 		reset,
-		setLevel
-	}
+		setLevel,
+	};
 }

@@ -13,5 +13,5 @@ function UnitConverterPage() {
 				<UnitConverter onScoreUpdate={recordScoreAndUpdate} />
 			)}
 		</SharedLayout>
-	)
+	);
 }

@@ -13,5 +13,5 @@ function CapacityCalculatorPage() {
 				<CapacityCalculator onScoreUpdate={recordScoreAndUpdate} />
 			)}
 		</SharedLayout>
-	)
+	);
 }

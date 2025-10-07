@@ -13,5 +13,5 @@ function MultipleChoicePage() {
 				<MultipleChoice onScoreUpdate={recordScoreAndUpdate} />
 			)}
 		</SharedLayout>
-	)
+	);
 }

@@ -13,5 +13,5 @@ function FileSizePage() {
 				<FileSizeCalculator onScoreUpdate={recordScoreAndUpdate} />
 			)}
 		</SharedLayout>
-	)
+	);
 }
