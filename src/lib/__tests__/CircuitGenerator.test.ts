@@ -340,7 +340,7 @@ describe("CircuitGenerator", () => {
 		it("should use hardcoded template for simple AND", () => {
 			const ast = generator.parseExpression("Q = A AND B");
 			const layout = generator.layoutNodes(ast!);
-			const result = generator["renderSimpleCircuit"](layout!);
+			const result = generator.renderSimpleCircuit(layout!);
 			expect(result).not.toBeNull();
 			expect(result).toContain("A");
 			expect(result).toContain("B");
@@ -349,7 +349,7 @@ describe("CircuitGenerator", () => {
 		it("should use hardcoded template for simple OR", () => {
 			const ast = generator.parseExpression("Q = A OR B");
 			const layout = generator.layoutNodes(ast!);
-			const result = generator["renderSimpleCircuit"](layout!);
+			const result = generator.renderSimpleCircuit(layout!);
 			expect(result).not.toBeNull();
 			expect(result).toContain("A");
 			expect(result).toContain("B");
@@ -358,7 +358,7 @@ describe("CircuitGenerator", () => {
 		it("should use hardcoded template for simple XOR", () => {
 			const ast = generator.parseExpression("Q = A XOR B");
 			const layout = generator.layoutNodes(ast!);
-			const result = generator["renderSimpleCircuit"](layout!);
+			const result = generator.renderSimpleCircuit(layout!);
 			expect(result).not.toBeNull();
 			expect(result).toContain("A");
 			expect(result).toContain("B");
@@ -367,7 +367,7 @@ describe("CircuitGenerator", () => {
 		it("should use hardcoded template for simple NOT", () => {
 			const ast = generator.parseExpression("Q = NOT A");
 			const layout = generator.layoutNodes(ast!);
-			const result = generator["renderSimpleCircuit"](layout!);
+			const result = generator.renderSimpleCircuit(layout!);
 			expect(result).not.toBeNull();
 			expect(result).toContain("A");
 		});
@@ -375,7 +375,7 @@ describe("CircuitGenerator", () => {
 		it("should return null for complex circuits", () => {
 			const ast = generator.parseExpression("Q = (A AND B) OR C");
 			const layout = generator.layoutNodes(ast!);
-			const result = generator["renderSimpleCircuit"](layout!);
+			const result = generator.renderSimpleCircuit(layout!);
 			expect(result).toBeNull();
 		});
 	});
@@ -442,7 +442,7 @@ describe("CircuitGenerator", () => {
 			const layout = generator.layoutNodes(ast!);
 			const variables = new Set<string>();
 
-			generator["collectVariables"](layout, variables);
+			generator.collectVariables(layout, variables);
 
 			expect(variables.has("A")).toBe(true);
 			expect(variables.has("B")).toBe(true);
@@ -454,7 +454,7 @@ describe("CircuitGenerator", () => {
 			const layout = generator.layoutNodes(ast!);
 			const variables = new Set<string>();
 
-			generator["collectVariables"](layout, variables);
+			generator.collectVariables(layout, variables);
 
 			expect(variables.has("A")).toBe(true);
 			expect(variables.has("B")).toBe(true);
@@ -468,7 +468,7 @@ describe("CircuitGenerator", () => {
 			const layout = generator.layoutNodes(ast!);
 			const variables = new Set<string>();
 
-			generator["collectVariables"](layout, variables);
+			generator.collectVariables(layout, variables);
 
 			expect(variables.has("A")).toBe(true);
 			expect(variables.size).toBe(1);
@@ -479,7 +479,7 @@ describe("CircuitGenerator", () => {
 		it("should calculate output point for variable", () => {
 			const ast = generator.parseExpression("Q = A");
 			const layout = generator.layoutNodes(ast!);
-			const output = generator["getOutputPoint"](layout);
+			const output = generator.getOutputPoint(layout);
 
 			expect(output.x).toBeDefined();
 			expect(output.y).toBeDefined();
@@ -488,7 +488,7 @@ describe("CircuitGenerator", () => {
 		it("should calculate output point for gate", () => {
 			const ast = generator.parseExpression("Q = A AND B");
 			const layout = generator.layoutNodes(ast!);
-			const output = generator["getOutputPoint"](layout);
+			const output = generator.getOutputPoint(layout);
 
 			expect(output.x).toBeDefined();
 			expect(output.y).toBeDefined();

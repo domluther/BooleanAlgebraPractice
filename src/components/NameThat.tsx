@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
@@ -24,6 +24,8 @@ interface NameThatProps {
 }
 
 export function NameThat({ onScoreUpdate }: NameThatProps) {
+	const difficultySelectId = useId();
+
 	const {
 		currentLevel,
 		currentQuestion,
@@ -45,7 +47,12 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 
 	// Render circuit when question changes
 	useEffect(() => {
-		if (currentLevel === 3 && circuitRef.current) {
+		if (!circuitRef.current) return;
+
+		// Always clear previous content first
+		circuitRef.current.innerHTML = "";
+
+		if (currentLevel === 3) {
 			// Level 3: Display truth table HTML
 			if (currentQuestion.truthTableHTML) {
 				circuitRef.current.innerHTML = currentQuestion.truthTableHTML;
@@ -53,14 +60,8 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 				circuitRef.current.innerHTML =
 					'<p class="text-destructive">Error: No truth table data</p>';
 			}
-		} else if (
-			circuitRef.current &&
-			currentQuestion.expression !== "INVALID_GATE"
-		) {
+		} else if (currentQuestion.expression !== "INVALID_GATE") {
 			// Level 1 & 2: Display circuit
-			// Clear previous circuit
-			circuitRef.current.innerHTML = "";
-
 			// Generate new circuit
 			try {
 				circuitGeneratorRef.current.generateCircuit(
@@ -72,18 +73,28 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 				circuitRef.current.innerHTML =
 					'<p class="text-destructive">Error rendering circuit</p>';
 			}
-		} else if (circuitRef.current && currentQuestion.invalidGateSVG) {
+		} else if (currentQuestion.invalidGateSVG) {
 			// Level 1 NONE option: Render invalid gate SVG
 			circuitRef.current.innerHTML = currentQuestion.invalidGateSVG;
 		}
+
+		// Cleanup function to clear content when component unmounts or before next render
+		return () => {
+			if (circuitRef.current) {
+				circuitRef.current.innerHTML = "";
+			}
+		};
 	}, [currentQuestion, currentLevel]);
 
-	const handleAnswerClick = (answer: string) => {
-		if (!isAnswered) {
-			setSelectedAnswer(answer);
-			checkAnswer(answer);
-		}
-	};
+	const handleAnswerClick = useCallback(
+		(answer: string) => {
+			if (!isAnswered) {
+				setSelectedAnswer(answer);
+				checkAnswer(answer);
+			}
+		},
+		[isAnswered, checkAnswer],
+	);
 
 	const handleNotationToggle = (checked: boolean) => {
 		const newNotation: NotationType = checked ? "symbol" : "word";
@@ -102,10 +113,12 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 		}
 	};
 
-	// Reset selected answer when generating new question
+	// Reset selected answer when starting new question
 	useEffect(() => {
-		setSelectedAnswer(null);
-	}, [currentQuestion]);
+		if (!isAnswered) {
+			setSelectedAnswer(null);
+		}
+	}, [isAnswered]);
 
 	// Global keyboard shortcuts
 	useEffect(() => {
@@ -121,17 +134,20 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 
 			const key = event.key;
 			if (key >= "1" && key <= "4") {
-				const index = parseInt(key) - 1;
+				const index = parseInt(key, 10) - 1;
 				if (index < currentQuestion.options.length) {
 					handleAnswerClick(currentQuestion.options[index]);
 				}
 			}
 		};
-
 		window.addEventListener("keydown", handleGlobalKeyPress);
 		return () => window.removeEventListener("keydown", handleGlobalKeyPress);
-	}, [isAnswered, currentQuestion.options, generateNewQuestion]);
-
+	}, [
+		isAnswered,
+		currentQuestion.options,
+		generateNewQuestion,
+		handleAnswerClick,
+	]);
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Control Panel */}
@@ -140,13 +156,13 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 					{/* Difficulty Selector */}
 					<div className="flex items-center gap-3">
 						<label
-							htmlFor="difficulty-select"
+							htmlFor={difficultySelectId}
 							className="font-medium text-sm whitespace-nowrap text-stats-label"
 						>
 							Difficulty:
 						</label>
 						<select
-							id="difficulty-select"
+							id={difficultySelectId}
 							value={currentLevel}
 							onChange={(e) => setLevel(Number(e.target.value) as 1 | 2 | 3)}
 							className="px-3 py-1.5 rounded-md border-2 bg-background border-checkbox-label-border hover:border-checkbox-label-border-hover text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-checkbox-label-border-hover"
@@ -188,27 +204,15 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 				<h2 className="text-xl font-semibold sm:text-2xl">{questionTitle}</h2>
 			</div>
 			{/* Circuit/Truth Table Display */}
-			{currentLevel === 3 ? (
-				// Level 3: Truth table without card wrapper
-				<div className="flex items-center justify-center min-h-[150px]">
+			<div className="border-2 rounded-lg bg-card border-stats-card-border">
+				<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-[150px]">
 					<div
 						ref={circuitRef}
-						className="truth-table-display"
+						className={currentLevel === 3 ? "truth-table-display" : "circuit-display"}
 						style={{ minHeight: "120px" }}
 					/>
 				</div>
-			) : (
-				// Level 1 & 2: Circuit with card wrapper
-				<div className="border-2 rounded-lg bg-card border-stats-card-border">
-					<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-[150px]">
-						<div
-							ref={circuitRef}
-							className="circuit-display"
-							style={{ minHeight: "120px" }}
-						/>
-					</div>
-				</div>
-			)}{" "}
+			</div>
 			{/* Answer Options */}
 			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{currentQuestion.options.map((option, index) => {

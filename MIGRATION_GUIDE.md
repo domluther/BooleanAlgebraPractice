@@ -22,11 +22,11 @@ This document tracks the migration of Boolean Algebra Practice from a vanilla Ja
 
 ### Implementation Order
 - ✅ **Phase 0:** Site config and navigation setup (DONE)
-- 🔄 **Phase 1:** NameThat mode (Level 1 ✅ → Level 2 ✅ → Level 3 ⏳)
+- ✅ **Phase 1:** NameThat mode (DONE - All 3 levels)
 - ✅ **Phase 2:** Expression Writing mode (DONE - All 5 levels)
-- ⏳ **Phase 3:** Truth Table mode
-- ⏳ **Phase 4:** Draw Circuit mode
-- ⏳ **Phase 5:** Scenario mode
+- ✅ **Phase 3:** Truth Table mode (DONE - All 5 levels + Expert mode)
+- ⏳ **Phase 4:** Draw Circuit mode (NOT STARTED)
+- ⏳ **Phase 5:** Scenario mode (NOT STARTED)
 
 ## 📁 File Organization
 
@@ -166,10 +166,11 @@ type QuestionDisplay =
 - [x] Create `NameThat.tsx` component with Level 1 UI
 - [x] Test Level 1 end-to-end
 - [x] Add Level 2 (tests → hook → UI)
-- [ ] Add Level 3 (tests → hook → UI) - DEFERRED
+- [x] Add Level 3 (truth table identification with multiple choice)
 - [x] Add keyboard shortcuts (1-4 for answers, Enter for next)
 - [x] Add notation toggle (Word/Symbol mode)
 - [x] Polish styling with semantic CSS variables
+- [x] Integrate proper scoring (1, 2, 4 points for levels 1-3)
 
 ## 🎮 Expression Writing Mode Migration Plan
 
@@ -198,6 +199,7 @@ type QuestionDisplay =
 - [x] Create `/writeexpression` route with SharedLayout
 - [x] Add keyboard shortcuts (Enter to submit/continue)
 - [x] Polish styling with semantic CSS variables
+- [x] Integrate proper scoring (3, 5, 7, 10, 15 points for levels 1-5)
 - [x] Integrate score tracking via ScoreManager
 
 ### Key Features Implemented
@@ -209,9 +211,49 @@ type QuestionDisplay =
 - **Keyboard Support:** Enter key for submit/next with anti-double-trigger logic
 - **Responsive Design:** Narrower, centered input and buttons on larger screens
 
+## 🎮 Truth Table Mode Migration Plan
+
+### Mode Overview
+**File:** `legacy/js/truth-table.js`  
+**Purpose:** Fill in truth tables for Boolean expressions  
+**Levels:**
+1. **Easy:** 2-input expressions (4 rows)
+2. **Medium:** 2-input with intermediate columns
+3. **Hard:** 3-input expressions (8 rows)
+4. **Expert:** 3-input with intermediate columns
+5. **A-Level:** Complex 3-input with XOR gates
+
+### Implementation Checklist
+- [x] Port truth table utilities (`truthTableUtils.ts`)
+- [x] Create `useTruthTable` hook with all 5 difficulty levels
+- [x] Implement normal mode (output column only)
+- [x] Implement expert mode (all cells, order-independent validation)
+- [x] Add intermediate columns toggle
+- [x] Create `TruthTable.tsx` component with:
+  - [x] Control panel (difficulty, notation, intermediate toggle, expert toggle)
+  - [x] Circuit display above expression
+  - [x] Interactive HTML table with dropdown selects
+  - [x] Cell validation with color coding
+  - [x] Submit and Next Question buttons
+- [x] Create `/truthtable` route with SharedLayout
+- [x] Add proper scoring (4, 8, 12, 20, 25 points for levels 1-5)
+- [x] Add expert mode multiplier (3x points)
+- [x] Polish styling with semantic CSS variables
+
+### Key Features Implemented
+- **Two Game Modes:**
+  - **Normal Mode:** Fill in output column only, can retry incorrect cells
+  - **Expert Mode:** Fill in ALL cells (inputs + intermediates + output), order-independent row matching, 3x points
+- **Interactive Table:** Dropdown selects for each cell with 0/1 options
+- **Smart Validation:** 
+  - Normal mode validates output column cell-by-cell
+  - Expert mode uses order-independent row matching (handles shuffled input order)
+- **Intermediate Columns Toggle:** Show/hide intermediate sub-expressions
+- **Circuit Display:** Shows circuit diagram above expression label
+
 ## 📊 Score System
 
-**Current Implementation:** `src/lib/scoreManager.ts` (already migrated)
+**Current Implementation:** `src/lib/scoreManager.ts` (✅ COMPLETE)
 
 ### Points by Mode & Difficulty
 ```typescript
@@ -225,6 +267,15 @@ const SCORE_TABLE = {
 ```
 
 **Expert Mode:** Points × 3
+
+### Implementation Details
+- ✅ Proper point calculation based on mode and difficulty level
+- ✅ Expert mode 3x multiplier for Truth Table mode
+- ✅ All game modes grouped correctly in stats (Name That, Expression Writing, Truth Table)
+- ✅ Removed old placeholder modes from initial scoreData
+- ✅ Point totals calculated from byType data (not just counting correct answers)
+
+````
 
 ## 🎨 Styling Reference
 
@@ -307,49 +358,66 @@ Document as they're implemented...
 - **Phase 0: Site Setup**
   - Site configuration (`siteConfig.ts`)
   - Mode menu navigation (`ModeMenu.tsx`)
-  - Score manager (`scoreManager.ts`)
+  - Score manager (`scoreManager.ts`) with proper point calculation
   - Basic routing structure with TanStack Router
   - Theme provider with light/dark mode
   - Semantic CSS variables in `index.css`
 
-- **Phase 1: NameThat Mode (Partial)**
+- **Phase 1: NameThat Mode (COMPLETE)**
   - Level 1: Single GCSE logic gates (AND/OR/NOT/NONE) ✅
   - Level 2: Two-gate combinations ✅
-  - Level 3: Truth table identification (deferred)
+  - Level 3: Truth table identification ✅
   - Circuit generator with SVG rendering
   - Keyboard shortcuts (1-4, Enter)
   - Notation toggle (Word/Symbol)
-  - Score tracking integration
+  - Score tracking integration (1, 2, 4 points by level)
   - Semantic color theming
 
-- **Phase 2: Expression Writing Mode (Complete)**
+- **Phase 2: Expression Writing Mode (COMPLETE)**
   - All 5 difficulty levels (Easy → A-Level) ✅
   - Answer validation (exact match + logical equivalence) ✅
   - Notation consistency checking ✅
   - Text input with symbol helper buttons ✅
   - Conditional XOR button (A-Level only) ✅
   - Keyboard shortcuts (Enter to submit/continue) ✅
-  - Score tracking integration ✅
+  - Score tracking integration (3, 5, 7, 10, 15 points by level) ✅
+  - Semantic color theming ✅
+
+- **Phase 3: Truth Table Mode (COMPLETE)**
+  - All 5 difficulty levels (Easy → A-Level) ✅
+  - Normal mode (output column only, can retry) ✅
+  - Expert mode (all cells, order-independent validation, 3x points) ✅
+  - Intermediate columns toggle ✅
+  - Interactive HTML table with dropdown selects ✅
+  - Cell validation with color coding ✅
+  - Circuit display above expression ✅
+  - Keyboard shortcuts ✅
+  - Score tracking integration (4, 8, 12, 20, 25 points by level) ✅
+  - Expert mode multiplier (3x points) ✅
   - Semantic color theming ✅
 
 ### 🔄 In Progress
-- N/A - Ready for next phase
+- N/A - Ready for Phase 4
 
 ### ⏳ Next Up
-- **Phase 3: Truth Table Mode**
-  - Port truth table utilities
-  - Create `useTruthTable` hook
-  - Build TruthTable component
-  - Add 5 difficulty levels
+- **Phase 4: Draw Circuit Mode** (NOT STARTED)
+  - Port draw circuit utilities
+  - Create `useDrawCircuit` hook
+  - Build interactive circuit builder
+  - Implement drag and drop gates
+  - Wire connection system
+  - Circuit validation
+  - 5 difficulty levels
+  - Score tracking (3, 6, 10, 15, 20 points by level)
   
-- **Phase 4: Draw Circuit Mode**
-  - Interactive circuit building
-  - Drag and drop gates
-  - Wire connections
-  
-- **Phase 5: Scenario Mode**
+- **Phase 5: Scenario Mode** (NOT STARTED)
+  - Port scenario utilities
+  - Create `useScenario` hook
+  - Build Scenario component
   - Real-world logic problems
   - Multi-step challenges
+  - 4 difficulty levels
+  - Score tracking (4, 6, 10, 15 points by level)
 
 ## 📝 Notes for Future AI Agents
 
@@ -367,16 +435,26 @@ Document as they're implemented...
 - ❌ Don't rewrite working game logic - port it with types
 - ❌ Don't use hardcoded Tailwind colors like `bg-blue-600`
 - ❌ Don't skip writing tests
-- ❌ Don't implement all modes at once - finish NameThat first
 - ✅ Do maintain feature parity with legacy implementation
 - ✅ Do use TypeScript strictly
 - ✅ Do test thoroughly before moving on
+- ✅ Do pass mode, level, and isExpert parameters to onScoreUpdate callbacks
 
 ### Getting Oriented:
 1. Run the legacy site: Open `/legacy/index.html` in browser
 2. Play each mode to understand the user experience
 3. Read the legacy JavaScript for that mode
 4. Check for existing tests in `/legacy/tests/`
+5. Understand the scoring system - different modes and levels award different points
+
+### Score Integration Checklist:
+When implementing a new mode, ensure:
+1. ✅ Hook accepts `onScoreUpdate` callback with signature: `(isCorrect, questionType, mode, level, isExpert)`
+2. ✅ Call `onScoreUpdate` with consistent questionType (e.g., "Name That", "Truth Table")
+3. ✅ Pass mode key matching SCORE_TABLE (e.g., "nameThat", "truthTable")
+4. ✅ Pass current difficulty level (1-5)
+5. ✅ Pass isExpert flag if mode has expert mode
+6. ✅ Initialize mode in blankScoreData.byType in scoreManager.ts
 5. Plan your migration approach
 
 ## 🔗 Useful Links
@@ -390,6 +468,11 @@ Document as they're implemented...
 
 **Last Updated:** October 7, 2025  
 **By:** AI Assistant  
-**Next Milestone:** Truth Table Mode or NameThat Level 3
+**Next Milestone:** Draw Circuit Mode
 
-**Completion Status:** 2 of 5 game modes complete (40%)
+**Completion Status:** 3 of 5 game modes complete (60%)
+- ✅ Name That (3 levels)
+- ✅ Expression Writing (5 levels)
+- ✅ Truth Table (5 levels + expert mode)
+- ⏳ Draw Circuit (not started)
+- ⏳ Scenario (not started)

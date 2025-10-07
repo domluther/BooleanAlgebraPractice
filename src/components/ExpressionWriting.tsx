@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -38,6 +38,9 @@ const SYMBOL_BUTTONS = [
 ];
 
 export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
+	const difficultySelectId = useId();
+	const expressionInputId = useId();
+
 	const {
 		currentLevel,
 		currentQuestion,
@@ -165,13 +168,13 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 					{/* Difficulty Selector */}
 					<div className="flex items-center gap-3">
 						<label
-							htmlFor="difficulty-select"
+							htmlFor={difficultySelectId}
 							className="font-medium text-sm whitespace-nowrap text-stats-label"
 						>
 							Difficulty:
 						</label>
 						<select
-							id="difficulty-select"
+							id={difficultySelectId}
 							value={currentLevel}
 							onChange={(e) =>
 								setLevel(Number(e.target.value) as 1 | 2 | 3 | 4 | 5)
@@ -265,7 +268,7 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 			<div className="max-w-2xl mx-auto w-full space-y-3">
 				<Input
 					ref={inputRef}
-					id="expression-input"
+					id={expressionInputId}
 					type="text"
 					value={userAnswer}
 					onChange={(e) => setUserAnswer(e.target.value)}

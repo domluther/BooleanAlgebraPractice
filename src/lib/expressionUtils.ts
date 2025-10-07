@@ -640,7 +640,7 @@ export function evaluateExpression(
 			.replace(/\bXOR\b/g, "^");
 
 		// Use Function constructor to evaluate (safe in this controlled context)
-		const func = new Function("return " + evalExpression);
+		const func = new Function(`return ${evalExpression}`);
 		return func();
 	} catch (error) {
 		console.error("Error evaluating expression:", expression, error);

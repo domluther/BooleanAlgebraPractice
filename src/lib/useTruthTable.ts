@@ -168,15 +168,7 @@ export function useTruthTable({
 			// Normal mode: validate only output column
 			checkNormalModeAnswer();
 		}
-	}, [
-		isAnswered,
-		expertMode,
-		userAnswers,
-		truthTableData,
-		outputVariable,
-		inputs,
-		intermediateExpressions,
-	]);
+	}, [isAnswered, expertMode]);
 
 	/**
 	 * Checks answer in normal mode (output column only required)

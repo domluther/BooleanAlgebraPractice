@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
@@ -33,6 +33,8 @@ const DIFFICULTY_LABELS = {
 } as const;
 
 export function TruthTable({ onScoreUpdate }: TruthTableProps) {
+	const difficultySelectId = useId();
+
 	const {
 		currentLevel,
 		currentExpression,
@@ -64,7 +66,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 	// Generate first question on mount
 	useEffect(() => {
 		generateNewQuestion();
-	}, []);
+	}, [generateNewQuestion]);
 
 	// Render circuit when question changes
 	useEffect(() => {
@@ -86,12 +88,10 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 		}
 	}, [currentExpression]);
 
-	// Regenerate table when level or toggles change
+	// Regenerate table when level changes
 	useEffect(() => {
-		if (currentExpression) {
-			generateNewQuestion();
-		}
-	}, [currentLevel]);
+		generateNewQuestion();
+	}, [generateNewQuestion]);
 
 	const handleNotationToggle = (checked: boolean) => {
 		const newNotation: NotationType = checked ? "symbol" : "word";
@@ -153,13 +153,13 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 						{/* Difficulty Selector */}
 						<div className="flex items-center gap-3">
 							<label
-								htmlFor="difficulty-select"
+								htmlFor={difficultySelectId}
 								className="font-medium text-sm whitespace-nowrap text-stats-label"
 							>
 								Difficulty:
 							</label>
 							<select
-								id="difficulty-select"
+								id={difficultySelectId}
 								value={currentLevel}
 								onChange={(e) =>
 									setLevel(Number(e.target.value) as 1 | 2 | 3 | 4 | 5)
@@ -271,7 +271,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 
 							{/* Intermediate Headers */}
 							{showIntermediateColumns &&
-								intermediateExpressions.map((expr, index) => {
+								intermediateExpressions.map((expr) => {
 									const displayExpr = convertToNotation(expr, notationType);
 									const truncated =
 										displayExpr.length > 10
@@ -279,7 +279,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 											: displayExpr;
 									return (
 										<th
-											key={`intermediate_${index}`}
+											key={expr}
 											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-stats-card-bg text-stats-label"
 											title={displayExpr}
 										>
@@ -287,7 +287,6 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 										</th>
 									);
 								})}
-
 							{/* Output Header */}
 							<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-stats-card-bg text-stats-points">
 								{outputVariable}
@@ -296,7 +295,9 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 					</thead>
 					<tbody>
 						{truthTableData.map((row, rowIndex) => (
-							<tr key={rowIndex}>
+							<tr
+								key={`row-${inputs.map((input) => (row[input] ? "1" : "0")).join("-")}`}
+							>
 								{/* Input Cells */}
 								{inputs.map((input) => (
 									<td

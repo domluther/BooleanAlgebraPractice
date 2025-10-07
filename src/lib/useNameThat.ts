@@ -238,9 +238,9 @@ function generateStaticTableHTML(expression: string): string {
 	const numCombinations = 2 ** inputs.length;
 
 	let tableHTML = '<table class="truth-table"><thead><tr>';
-	inputs.forEach(
-		(input) => (tableHTML += `<th class="input-header">${input}</th>`),
-	);
+	for (const input of inputs) {
+		tableHTML += `<th class="input-header">${input}</th>`;
+	}
 	tableHTML += `<th class="output-header">${outputVariable}</th></tr></thead><tbody>`;
 
 	for (let i = 0; i < numCombinations; i++) {
