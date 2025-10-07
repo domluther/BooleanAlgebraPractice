@@ -234,7 +234,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 			</div>
 
 			{/* Circuit Display with Expression Label */}
-			<div className="border-2 rounded-lg bg-card border-stats-card-border bg-stats-card-bg ">
+			<div className="border-2 rounded-lg border-stats-card-border bg-stats-card-bg ">
 				<div className="flex flex-col gap-4">
 					{/* Circuit */}
 					<div className="flex items-center justify-center rounded-lg min-h-[150px]">
