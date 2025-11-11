@@ -221,7 +221,7 @@ export function useTruthTable({
 	/**
 	 * Checks the user's answers against the correct truth table
 	 */
-	const checkAnswer = useCallback(() => {
+	const checkAnswer = () => {
 		if (isAnswered) return;
 
 		if (expertMode) {
@@ -231,7 +231,7 @@ export function useTruthTable({
 			// Normal mode: validate only output column
 			checkNormalModeAnswer();
 		}
-	}, [isAnswered, expertMode]);
+	};
 
 	/**
 	 * Checks answer in normal mode (output column only required)
