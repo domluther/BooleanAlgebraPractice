@@ -84,7 +84,7 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 		},
 	],
 	2: [
-		// Level 2 - More complex scenarios with 3-4 inputs
+		// Level 2 - More complex scenarios with 3 inputs
 		{
 			title: "Bank Vault Access",
 			scenario:
@@ -140,6 +140,85 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 			expression: "Q = A AND NOT B",
 		},
 		{
+			title: "Library Bonus",
+			scenario:
+				"A library gives out a free bookmark (Q) when a special token is shown while borrowing either a fiction book or a non-fiction book.",
+			inputs: {
+				T: "Token is shown",
+				F: "Fiction book borrowed",
+				N: "Non-fiction book borrowed",
+			},
+			expression: "Q = T AND (F OR N)",
+		},
+		{
+			title: "Coffee Shop Discount",
+			scenario:
+				"A coffee shop offers a discount (Q) if a customer has a loyalty card and it's not a weekend. The discount is also available if the customer orders before 8am.",
+			inputs: {
+				L: "Customer has loyalty card",
+				W: "It's a weekend",
+				E: "Order is before 8am",
+			},
+			expression: "Q = (L AND NOT W) OR E",
+		},
+		{
+			title: "Cinema Entry",
+			scenario:
+				"A cinema will let someone watch a 15-rated film (Q) if they have a valid ticket and they are not under 15 years old.",
+			inputs: {
+				T: "Has a valid ticket",
+				U: "Under 15 years old",
+			},
+			expression: "Q = T AND NOT U",
+		},
+		{
+			title: "School Trip Permission",
+			scenario:
+				"A student can go on a school trip (Q) if they have returned a permission slip and have not received a detention. They also need to have paid the trip fee.",
+			inputs: {
+				P: "Permission slip returned",
+				D: "Received a detention",
+				F: "Trip fee paid",
+			},
+			expression: "Q = P AND NOT D AND F",
+		},
+		{
+			title: "Microwave Operation",
+			scenario:
+				"A microwave will start heating (Q) if the door is closed and the start button is pressed while the child lock is not activated.",
+			inputs: {
+				D: "Door is closed",
+				S: "Start button is pressed",
+				C: "Child lock is activated",
+			},
+			expression: "Q = D AND S AND NOT C",
+		},
+		{
+			title: "Park Entry",
+			scenario:
+				"A theme park ride will allow passengers (Q) if they meet the height requirement and are not feeling unwell. The ride operator can also override this for safety tests.",
+			inputs: {
+				H: "Meets height requirement",
+				U: "Feeling unwell",
+				O: "Operator override is active",
+			},
+			expression: "Q = (H AND NOT U) OR O",
+		},
+		{
+			title: "Email Notification",
+			scenario:
+				"Your phone will show an email notification (Q) if a new email arrives while you're not in silent mode or if the email is marked as urgent.",
+			inputs: {
+				E: "New email arrives",
+				S: "Phone is in silent mode",
+				U: "Email is marked urgent",
+			},
+			expression: "Q = E AND (NOT S OR U)",
+		},
+	],
+	3: [
+		// Level 3 - More wordy scenarios
+		{
 			title: "Gym Access",
 			scenario:
 				"A gym grants access to discounted memberships (Q) only if one of the following applies: The person is under 21 and has a university ID, or they are aged 65 or older and show proof of residency.",
@@ -151,20 +230,6 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 			},
 			expression: "Q = (A AND B) OR (C AND D)",
 		},
-		{
-			title: "Library Bonus",
-			scenario:
-				"A library gives out a free bookmark (Q) when a special token is shown while borrowing either a fiction book or a non-fiction book.",
-			inputs: {
-				T: "Token is shown",
-				F: "Fiction book borrowed",
-				N: "Non-fiction book borrowed",
-			},
-			expression: "Q = T AND (F OR N)",
-		},
-	],
-	3: [
-		// Level 3 - More wordy scenarios
 		{
 			title: "Server Access Control",
 			scenario:
