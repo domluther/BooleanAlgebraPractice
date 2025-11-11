@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SharedLayout } from "@/components/SharedLayout";
 import { DrawCircuit } from "@/components/DrawCircuit";
+import { SharedLayout } from "@/components/SharedLayout";
 
 export const Route = createFileRoute("/drawcircuit")({
 	component: DrawCircuitPage,

@@ -2,12 +2,12 @@
 // Hook for managing Draw Circuit game state and logic
 // Ported from legacy/js/draw-circuit.js
 
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { expressionDatabase } from "./data";
 import {
+	areExpressionsLogicallyEquivalent,
 	generateAllAcceptedAnswers,
 	shuffleExpression,
-	areExpressionsLogicallyEquivalent,
 } from "./expressionUtils";
 
 export type DrawCircuitDifficulty = 1 | 2 | 3 | 4 | 5;

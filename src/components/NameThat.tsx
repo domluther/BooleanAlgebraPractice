@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
 import {
@@ -8,7 +9,6 @@ import {
 	setNotationType,
 } from "@/lib/config";
 import { useNameThat } from "@/lib/useNameThat";
-import { ControlPanel } from "@/components/ControlPanel";
 
 /**
  * NameThat Component - Logic Gate Identification Game

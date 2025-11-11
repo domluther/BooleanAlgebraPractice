@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
+import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { CircuitDrawer } from "@/lib/CircuitDrawer";
 import {
 	convertToNotation,
 	getNotationType,
 	type NotationType,
 	setNotationType,
 } from "@/lib/config";
-import { useScenario, type ScenarioDifficulty } from "@/lib/useScenario";
-import { ControlPanel } from "@/components/ControlPanel";
-import { CircuitDrawer } from "@/lib/CircuitDrawer";
+import { type ScenarioDifficulty, useScenario } from "@/lib/useScenario";
 
 /**
  * Scenario Component - Real-World Boolean Logic Scenarios
@@ -99,12 +99,18 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const interpretedExprRef = useRef<HTMLDivElement>(null);
 	const circuitDrawerRef = useRef<CircuitDrawer | null>(null);
+	const isAnsweredRef = useRef(isAnswered); // Ref to track isAnswered for CircuitDrawer
 	const [currentInterpretedExpression, setCurrentInterpretedExpression] =
 		useState("Q = ?");
 	const [removeButtonEnabled, setRemoveButtonEnabled] = useState(false);
 
 	// Expression input ref
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	// Update isAnsweredRef when isAnswered changes
+	useEffect(() => {
+		isAnsweredRef.current = isAnswered;
+	}, [isAnswered]);
 
 	const handleNotationToggle = (checked: boolean) => {
 		const newNotation: NotationType = checked ? "symbol" : "word";
@@ -124,10 +130,10 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 				circuitDrawerRef.current.destroy();
 			}
 
-			// Create new drawer
+			// Create new drawer - use ref to access current isAnswered value
 			circuitDrawerRef.current = new CircuitDrawer(
 				CANVAS_ID,
-				() => isAnswered,
+				() => isAnsweredRef.current,
 				notationType,
 				(expr) => setCurrentInterpretedExpression(expr),
 				(enabled) => setRemoveButtonEnabled(enabled),
@@ -148,7 +154,8 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 				circuitDrawerRef.current = null;
 			}
 		};
-	}, [currentExpression, currentLevel, questionType, notationType, isAnswered]);
+	}, [currentExpression, currentLevel, questionType, notationType]);
+	// Removed isAnswered from dependencies - we don't want to recreate the drawer when checking answers
 
 	// Update notation when it changes (for circuit drawer)
 	useEffect(() => {
@@ -261,18 +268,12 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 		setUserAnswer_TruthTable(rowIndex, columnName, value);
 	};
 
-	const title = questionType === "expression" ? "Write the Boolean expression for this scenario:" : questionType === "truth-table" ? "Complete the truth table for this scenario:" : "Draw the logic circuit for this scenario:";
-
-	const getQuestionTypeIcon = () => {
-		switch (questionType) {
-			case "expression":
-				return "✏️ Expression";
-			case "truth-table":
-				return "📊 Truth Table";
-			case "draw-circuit":
-				return "⚡ Circuit";
-		}
-	};
+	const title =
+		questionType === "expression"
+			? "Write the Boolean expression for this scenario:"
+			: questionType === "truth-table"
+				? "Complete the truth table for this scenario:"
+				: "Draw the logic circuit for this scenario:";
 
 	if (!currentScenario) {
 		return <div>Loading scenario...</div>;
@@ -296,18 +297,44 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 				}}
 				onShuffle={generateQuestion}
 				additionalControls={
-					<div className="text-sm font-medium text-stats-label whitespace-nowrap">
-						{getQuestionTypeIcon()}
-					</div>
+					questionType === "truth-table" ? (
+						<>
+							<div className="flex items-center gap-3">
+								<span className="text-sm font-medium text-stats-label">
+									Show Intermediate Columns
+								</span>
+								<Switch
+									checked={showIntermediateColumns}
+									onCheckedChange={setShowIntermediateColumns}
+									disabled={isAnswered}
+									aria-label="Toggle intermediate columns"
+									className="data-[state=checked]:bg-stats-points data-[state=unchecked]:bg-checkbox-label-border"
+								/>
+							</div>
+
+							{/* Expert Mode Toggle */}
+							<div className="flex items-center gap-3">
+								<span className="text-sm font-medium text-stats-label">
+									Expert Mode
+								</span>
+								<Switch
+									checked={expertMode}
+									onCheckedChange={setExpertMode}
+									disabled={isAnswered}
+									aria-label="Toggle expert mode"
+									className="data-[state=checked]:bg-stats-points data-[state=unchecked]:bg-checkbox-label-border"
+								/>
+							</div>
+						</>
+					) : (
+						""
+					)
 				}
 			/>
 
 			<div className="text-center">
-				<h2 className="text-xl font-semibold sm:text-2xl">
-					{title}
-				</h2>
+				<h2 className="text-xl font-semibold sm:text-2xl">{title}</h2>
 			</div>
-
 
 			{/* Scenario Card */}
 			<div className="p-6 rounded-lg border-2 bg-stats-card-bg">
@@ -319,23 +346,46 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 					{currentScenario.scenario}
 				</p>
 
-				<div className="space-y-2 border-t-2 pt-4 mt-4">
-					<p className="font-semibold text-stats-label">Variables:</p>
-					{Object.entries(currentScenario.inputs).map(([variable, meaning]) => (
-						<p key={variable} className="text-sm">
-							<span className="font-mono font-bold text-stats-points">
-								{variable}
-							</span>
-							: {meaning}
-						</p>
-					))}
+				<div className="border-checkbox-label-border overflow-x-auto">
+					<table className="w-full border-collapse border-2 border-checkbox-label-border rounded-lg overflow-hidden">
+						<thead>
+							<tr className="bg-muted">
+								<th className="text-left py-3 px-4 font-semibold text-stats-label border-b-2 border-r border-checkbox-label-border">
+									Input
+								</th>
+								<th className="text-left py-3 px-4 font-semibold text-stats-label border-b-2 border-checkbox-label-border">
+									Criteria (True / False)
+								</th>
+							</tr>
+						</thead>
+						<tbody className="bg-background">
+							{Object.entries(currentScenario.inputs).map(
+								([variable, meaning], index, arr) => (
+									<tr
+										key={variable}
+										className={`hover:bg-stats-card-bg/30 transition-colors ${
+											index !== arr.length - 1
+												? "border-b border-checkbox-label-border/50"
+												: ""
+										}`}
+									>
+										<td className="py-3 px-4 align-top">
+											<strong className="font-mono text-lg text-stats-points">
+												{variable}
+											</strong>
+										</td>
+										<td className="py-3 px-4">{meaning}</td>
+									</tr>
+								),
+							)}
+						</tbody>
+					</table>
 				</div>
 			</div>
 
 			{/* Question Type: Expression Writing */}
 			{questionType === "expression" && (
 				<>
-
 					{/* Input Field */}
 					<div className="max-w-2xl mx-auto w-full space-y-3">
 						<Input
@@ -350,82 +400,51 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 						/>
 					</div>
 
-			{/* Symbol Helper Buttons - Only in Symbol Mode */}
-			{notationType === "symbol" && (
-				<>
-					<div className="flex flex-wrap gap-2 justify-center">
-						{SYMBOL_BUTTONS.filter(
-							(btn) => btn.word !== "XOR" || currentLevel === 4,
-						).map((btn) => (
-							<Button
-								key={btn.word}
-								variant="outline"
-								size="sm"
-								onClick={() => insertSymbol(btn.symbol)}
-								disabled={isAnswered}
-								className="border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover px-4"
-								title={
-									btn.shortcut
-										? `${btn.word} (${btn.symbol}) - Press ${btn.shortcut}`
-										: `${btn.word} (${btn.symbol})`
-								}
-							>
-								<span className="font-bold text-lg">{btn.symbol}</span>
-							</Button>
-						))}
-					</div>
-					<div className="text-center text-sm text-stats-label">
-						Keyboard: ^ (AND), v (OR), ! (NOT)
-					</div>
-				</>
-			)}
+					{/* Symbol Helper Buttons - Only in Symbol Mode */}
+					{notationType === "symbol" && (
+						<>
+							<div className="flex flex-wrap gap-2 justify-center">
+								{SYMBOL_BUTTONS.filter(
+									(btn) => btn.word !== "XOR" || currentLevel === 4,
+								).map((btn) => (
+									<Button
+										key={btn.word}
+										variant="outline"
+										size="sm"
+										onClick={() => insertSymbol(btn.symbol)}
+										disabled={isAnswered}
+										className="border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover px-4"
+										title={
+											btn.shortcut
+												? `${btn.word} (${btn.symbol}) - Press ${btn.shortcut}`
+												: `${btn.word} (${btn.symbol})`
+										}
+									>
+										<span className="font-bold text-lg">{btn.symbol}</span>
+									</Button>
+								))}
+							</div>
+							<div className="text-center text-sm text-stats-label">
+								Keyboard: ^ (AND), v (OR), ! (NOT)
+							</div>
+						</>
+					)}
 				</>
 			)}
 
 			{/* Question Type: Truth Table */}
 			{questionType === "truth-table" && (
 				<>
-					{/* Truth Table Options */}
-					<div className="flex flex-col sm:flex-row items-center justify-center gap-6 p-4 bg-stats-card-bg rounded-lg border-2">
-						{/* Intermediate Columns Toggle */}
-						<div className="flex items-center gap-3">
-							<span className="text-sm font-medium text-stats-label">
-								Show Intermediate Columns
-							</span>
-							<Switch
-								checked={showIntermediateColumns}
-								onCheckedChange={setShowIntermediateColumns}
-								disabled={isAnswered}
-								aria-label="Toggle intermediate columns"
-								className="data-[state=checked]:bg-stats-points data-[state=unchecked]:bg-checkbox-label-border"
-							/>
-						</div>
-
-						{/* Expert Mode Toggle */}
-						<div className="flex items-center gap-3">
-							<span className="text-sm font-medium text-stats-label">
-								Expert Mode
-							</span>
-							<Switch
-								checked={expertMode}
-								onCheckedChange={setExpertMode}
-								disabled={isAnswered}
-								aria-label="Toggle expert mode"
-								className="data-[state=checked]:bg-stats-points data-[state=unchecked]:bg-checkbox-label-border"
-							/>
-						</div>
-					</div>
-
 					{/* Truth Table */}
 					<div className="overflow-x-auto">
 						<table className="w-full border-collapse border-2 border-checkbox-label-border">
 							<thead>
-								<tr className="bg-stats-card-bg">
+								<tr>
 									{/* Input Headers */}
 									{inputs.map((input) => (
 										<th
 											key={input}
-											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border text-stats-label"
+											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-gray-300 text-gray-800"
 										>
 											{input}
 										</th>
@@ -435,13 +454,13 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 										intermediateExpressions.map((expr, index) => (
 											<th
 												key={`inter-${index}`}
-												className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-stats-card-bg text-stats-label"
+												className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-yellow-200 text-yellow-900"
 											>
 												{convertToNotation(expr, notationType)}
 											</th>
 										))}
 									{/* Output Header */}
-									<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-stats-card-bg text-stats-points">
+									<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-teal-300 text-teal-900">
 										{outputVariable}
 									</th>
 								</tr>
@@ -450,12 +469,13 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 								{truthTableData.map((row, rowIndex) => (
 									<tr
 										key={`row-${inputs.map((input) => (row[input] ? "1" : "0")).join("-")}`}
+										className="group"
 									>
 										{/* Input Cells */}
 										{inputs.map((input) => (
 											<td
 												key={input}
-												className="px-4 py-2 text-center border border-checkbox-label-border"
+												className="px-4 py-2 text-center border border-checkbox-label-border bg-gray-100 group-hover:bg-gray-200 transition-colors"
 											>
 												{expertMode ? (
 													<select
@@ -469,7 +489,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 														}
 														disabled={isAnswered}
 														className={getCellClassName(
-															"w-full px-2 py-1 rounded border bg-background text-center",
+															"w-16 px-2 py-1 rounded border bg-background text-center",
 															rowIndex,
 															input,
 														)}
@@ -493,7 +513,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 												return (
 													<td
 														key={columnName}
-														className="px-4 py-2 text-center border border-checkbox-label-border"
+														className="px-4 py-2 text-center border border-checkbox-label-border bg-yellow-50 group-hover:bg-yellow-100 transition-colors"
 													>
 														<select
 															value={getCellValue(rowIndex, columnName)}
@@ -506,7 +526,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 															}
 															disabled={isAnswered}
 															className={getCellClassName(
-																"w-full px-2 py-1 rounded border bg-background text-center",
+																"w-16 px-2 py-1 rounded border bg-background text-center",
 																rowIndex,
 																columnName,
 															)}
@@ -520,7 +540,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 											})}
 
 										{/* Output Cell */}
-										<td className="px-4 py-2 text-center border border-checkbox-label-border bg-stats-card-bg/30">
+										<td className="px-4 py-2 text-center border border-checkbox-label-border bg-teal-100 group-hover:bg-teal-200 transition-colors">
 											<select
 												value={getCellValue(rowIndex, outputVariable)}
 												onChange={(e) =>
@@ -532,7 +552,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 												}
 												disabled={isAnswered}
 												className={getCellClassName(
-													"w-full px-2 py-1 rounded border bg-background text-center font-semibold",
+													"w-16 px-2 py-1 rounded border bg-background text-center font-semibold",
 													rowIndex,
 													outputVariable,
 												)}
@@ -563,7 +583,6 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 			{/* Question Type: Draw Circuit */}
 			{questionType === "draw-circuit" && (
 				<>
-
 					{/* Circuit Drawing Area */}
 					<div className="flex gap-6 flex-wrap lg:flex-nowrap">
 						{/* Toolbox */}
@@ -595,7 +614,11 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 									data-gate-type="OR"
 								>
 									<div className="gate-icon">
-										<img src="/img/svg/or.svg" alt="OR Gate" className="gate-svg" />
+										<img
+											src="/img/svg/or.svg"
+											alt="OR Gate"
+											className="gate-svg"
+										/>
 									</div>
 								</div>
 								<div
@@ -680,19 +703,6 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 				</>
 			)}
 
-			{/* Check Answer Button */}
-			{!isAnswered && (
-				<div className="max-w-md mx-auto w-full">
-					<Button
-						onClick={handleCheckAnswer}
-						size="lg"
-						className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
-					>
-						Check Answer
-					</Button>
-				</div>
-			)}
-
 			{/* Feedback Message */}
 			{feedbackMessage && (
 				<div
@@ -701,22 +711,64 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 							? "bg-feedback-success-bg text-feedback-success-text border-stats-streak"
 							: "bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low"
 					}`}
-				>
-					{feedbackMessage}
-				</div>
+					dangerouslySetInnerHTML={{ __html: feedbackMessage }}
+				/>
 			)}
 
-			{/* Next Button */}
-			{isAnswered && (
-				<div className="max-w-md mx-auto w-full">
-					<Button
-						onClick={nextQuestion}
-						size="lg"
-						className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
-					>
-						Next Question →
-					</Button>
+			{/* Action Buttons - Different layout for circuit questions */}
+			{questionType === "draw-circuit" ? (
+				<div className="flex justify-center gap-4">
+					{!isAnswered && (
+						<div className="max-w-md mx-auto w-full">
+							<Button
+								onClick={handleCheckAnswer}
+								size="lg"
+								className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+							>
+								Mark My Answer
+							</Button>
+						</div>
+					)}
+					{(isAnswered || feedbackMessage) && (
+						<div className="max-w-md mx-auto w-full">
+							<Button
+								onClick={nextQuestion}
+								size="lg"
+								className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+							>
+								Next Question →
+							</Button>
+						</div>
+					)}
 				</div>
+			) : (
+				<>
+					{/* Check Answer Button for other question types */}
+					{!isAnswered && (
+						<div className="max-w-md mx-auto w-full">
+							<Button
+								onClick={handleCheckAnswer}
+								size="lg"
+								className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+							>
+								Check Answer
+							</Button>
+						</div>
+					)}
+
+					{/* Next Button for other question types */}
+					{isAnswered && (
+						<div className="max-w-md mx-auto w-full">
+							<Button
+								onClick={nextQuestion}
+								size="lg"
+								className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+							>
+								Next Question →
+							</Button>
+						</div>
+					)}
+				</>
 			)}
 		</div>
 	);

@@ -3,8 +3,8 @@
  * Export all reusable components for easy importing
  */
 
-export { ControlPanel } from "./ControlPanel";
 export type { DifficultyConfig, NotationConfig } from "./ControlPanel";
+export { ControlPanel } from "./ControlPanel";
 export { DrawCircuit } from "./DrawCircuit";
 export { ExpressionWriting } from "./ExpressionWriting";
 export { Footer } from "./Footer";
@@ -22,9 +22,9 @@ export type {
 	QuizButtonVariant,
 } from "./QuizButton";
 export { QuizButton } from "./QuizButton";
+export { Scenario } from "./Scenario";
 // Utility Components
 export { ScoreButton } from "./ScoreButton";
-export { Scenario } from "./Scenario";
 export { SharedLayout, useSharedLayout } from "./SharedLayout";
 // Layout Components
 export { SiteLayout } from "./SiteLayout";

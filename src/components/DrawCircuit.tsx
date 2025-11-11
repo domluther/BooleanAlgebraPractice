@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
+import { CircuitDrawer } from "@/lib/CircuitDrawer";
 import {
 	convertToNotation,
 	getNotationType,
@@ -7,11 +9,9 @@ import {
 	setNotationType,
 } from "@/lib/config";
 import {
-	useDrawCircuit,
 	type DrawCircuitDifficulty,
+	useDrawCircuit,
 } from "@/lib/useDrawCircuit";
-import { CircuitDrawer } from "@/lib/CircuitDrawer";
-import { ControlPanel } from "@/components/ControlPanel";
 
 /**
  * DrawCircuit Component - Interactive Circuit Drawing Game
@@ -334,26 +334,26 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 
 			<div className="flex justify-center gap-4">
 				{!isAnswered && (
-				<div className="max-w-md mx-auto w-full">
-					<Button
-						onClick={handleCheckAnswer}
-						size="lg"
-						className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
-					>
-						Mark My Answer
-					</Button>
-				</div>
+					<div className="max-w-md mx-auto w-full">
+						<Button
+							onClick={handleCheckAnswer}
+							size="lg"
+							className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+						>
+							Mark My Answer
+						</Button>
+					</div>
 				)}
 				{(isAnswered || feedbackMessage) && (
-				<div className="max-w-md mx-auto w-full">
-					<Button
-						onClick={handleNextQuestion}
-						size="lg"
-						className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
-					>
-						Next Question →
-					</Button>
-				</div>
+					<div className="max-w-md mx-auto w-full">
+						<Button
+							onClick={handleNextQuestion}
+							size="lg"
+							className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+						>
+							Next Question →
+						</Button>
+					</div>
 				)}
 			</div>
 		</div>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
@@ -8,7 +9,6 @@ import {
 	setNotationType,
 } from "@/lib/config";
 import { useExpressionWriting } from "@/lib/useExpressionWriting";
-import { ControlPanel } from "@/components/ControlPanel";
 
 /**
  * ExpressionWriting Component - Boolean Expression Writing Game

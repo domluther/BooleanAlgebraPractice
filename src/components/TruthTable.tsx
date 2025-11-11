@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
@@ -9,7 +10,6 @@ import {
 	setNotationType,
 } from "@/lib/config";
 import { useTruthTable } from "@/lib/useTruthTable";
-import { ControlPanel } from "@/components/ControlPanel";
 
 /**
  * TruthTable Component - Boolean Truth Table Game
@@ -199,7 +199,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 
 					{/* Expression Label */}
 					<div className="text-center pb-2">
-						<p className="text-base font-mono font-medium text-muted-foreground">
+						<p className="text-base font-mono font-bold text-muted-foreground">
 							{displayExpression}
 						</p>
 					</div>
@@ -215,7 +215,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 							{inputs.map((input) => (
 								<th
 									key={input}
-									className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-stats-card-bg text-stats-label"
+									className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-gray-300 text-gray-800"
 								>
 									{input}
 								</th>
@@ -232,7 +232,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 									return (
 										<th
 											key={expr}
-											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-stats-card-bg text-stats-label"
+											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-yellow-200 text-yellow-900"
 											title={displayExpr}
 										>
 											{truncated}
@@ -240,7 +240,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 									);
 								})}
 							{/* Output Header */}
-							<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-stats-card-bg text-stats-points">
+							<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-teal-300 text-teal-900">
 								{outputVariable}
 							</th>
 						</tr>
@@ -249,12 +249,13 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 						{truthTableData.map((row, rowIndex) => (
 							<tr
 								key={`row-${inputs.map((input) => (row[input] ? "1" : "0")).join("-")}`}
+								className="group"
 							>
 								{/* Input Cells */}
 								{inputs.map((input) => (
 									<td
 										key={input}
-										className="px-4 py-2 text-center border border-checkbox-label-border"
+										className="px-4 py-2 text-center border border-checkbox-label-border bg-gray-100 group-hover:bg-gray-200 transition-colors"
 									>
 										{expertMode ? (
 											<select
@@ -264,7 +265,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 												}
 												disabled={isAnswered}
 												className={getCellClassName(
-													"w-full px-2 py-1 rounded border bg-background text-center",
+													"w-16 px-2 py-1 rounded border bg-background text-center",
 													rowIndex,
 													input,
 												)}
@@ -288,7 +289,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 										return (
 											<td
 												key={columnName}
-												className="px-4 py-2 text-center border border-checkbox-label-border"
+												className="px-4 py-2 text-center border border-checkbox-label-border bg-yellow-50 group-hover:bg-yellow-100 transition-colors"
 											>
 												<select
 													value={getCellValue(rowIndex, columnName)}
@@ -301,7 +302,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 													}
 													disabled={isAnswered}
 													className={getCellClassName(
-														"w-full px-2 py-1 rounded border bg-background text-center",
+														"w-16 px-2 py-1 rounded border bg-background text-center",
 														rowIndex,
 														columnName,
 													)}
@@ -315,7 +316,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 									})}
 
 								{/* Output Cell */}
-								<td className="px-4 py-2 text-center border border-checkbox-label-border bg-stats-card-bg/30">
+								<td className="px-4 py-2 text-center border border-checkbox-label-border bg-teal-100 group-hover:bg-teal-200 transition-colors">
 									<select
 										value={getCellValue(rowIndex, outputVariable)}
 										onChange={(e) =>
@@ -323,7 +324,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 										}
 										disabled={isAnswered}
 										className={getCellClassName(
-											"w-full px-2 py-1 rounded border bg-background text-center font-semibold",
+											"w-16 px-2 py-1 rounded border bg-background text-center font-semibold",
 											rowIndex,
 											outputVariable,
 										)}
@@ -350,7 +351,6 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 						Mark My Answer
 					</Button>
 				</div>
-				
 			)}
 
 			{/* Feedback Message */}

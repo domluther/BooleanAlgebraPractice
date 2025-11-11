@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { convertToWordNotation, type NotationType } from "./config";
 import { expressionDatabase } from "./data";
 import {

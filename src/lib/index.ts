@@ -12,11 +12,11 @@ export * from "./expressionUtils";
 export * from "./navigationConfig";
 export * from "./numberUtils";
 export * from "./quizHooks";
+export * from "./scenarioData";
 export * from "./scoreManager";
 // Site configuration
 export * from "./siteConfig";
 // Game hooks
 export { useNameThat } from "./useNameThat";
 export { useScenario } from "./useScenario";
-export * from "./scenarioData";
 export * from "./utils";

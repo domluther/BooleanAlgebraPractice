@@ -5,7 +5,7 @@
  * Supports 5 difficulty levels and two modes: normal (fill outputs) and expert (fill everything).
  */
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { expressionDatabase } from "./data";
 import {
 	calculateTruthTableData,

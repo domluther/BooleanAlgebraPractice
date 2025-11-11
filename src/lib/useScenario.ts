@@ -2,15 +2,15 @@
 // Custom hook for Scenario Mode
 // Orchestrates expression/truth-table/draw-circuit question types with real-world scenarios
 
-import { useState, useCallback, useEffect } from "react";
-import { type ScenarioQuestion, getRandomScenario } from "./scenarioData";
+import { useCallback, useEffect, useState } from "react";
 import {
-	generateAllAcceptedAnswers,
 	areExpressionsLogicallyEquivalent,
+	generateAllAcceptedAnswers,
 } from "./expressionUtils";
+import { getRandomScenario, type ScenarioQuestion } from "./scenarioData";
 import {
-	parseExpressionForTable,
 	calculateTruthTableData,
+	parseExpressionForTable,
 	type TruthTableRow,
 } from "./truthTableUtils";
 
@@ -133,6 +133,12 @@ export function useScenario({
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 	const [feedbackMessage, setFeedbackMessage] = useState("");
 
+	// Track attempt state for scoring (especially for circuit drawing)
+	const [hasAttemptedCurrentQuestion, setHasAttemptedCurrentQuestion] =
+		useState(false);
+	const [questionWasAnsweredCorrectly, setQuestionWasAnsweredCorrectly] =
+		useState(false);
+
 	// Expression state
 	const [userAnswer, setUserAnswer] = useState("");
 
@@ -178,26 +184,62 @@ export function useScenario({
 		}
 	}, [currentScenario, questionType, showIntermediateColumns]);
 
-	const setDifficulty = useCallback((level: ScenarioDifficulty) => {
-		setCurrentLevel(level);
-		saveDifficulty(level);
+	const setDifficulty = useCallback(
+		(level: ScenarioDifficulty) => {
+			// If moving away from circuit question that was attempted but not answered correctly,
+			// record it as an incorrect attempt
+			if (
+				questionType === "draw-circuit" &&
+				currentScenario &&
+				hasAttemptedCurrentQuestion &&
+				!questionWasAnsweredCorrectly &&
+				onScoreUpdate
+			) {
+				onScoreUpdate(false, "Scenario", "scenario", currentLevel, false);
+			}
 
-		// Generate new question with the new level
-		const newScenario = getRandomScenario(level);
-		const newQuestionType = selectRandomQuestionType();
+			setCurrentLevel(level);
+			saveDifficulty(level);
 
-		setCurrentScenario(newScenario);
-		setQuestionType(newQuestionType);
-		setIsAnswered(false);
-		setIsCorrect(null);
-		setFeedbackMessage("");
-		setUserAnswer("");
-		setUserAnswers({});
-		setCellValidations({});
-		setHelpEnabled(false);
-	}, []);
+			// Generate new question with the new level
+			const newScenario = getRandomScenario(level);
+			const newQuestionType = selectRandomQuestionType();
+
+			setCurrentScenario(newScenario);
+			setQuestionType(newQuestionType);
+			setIsAnswered(false);
+			setIsCorrect(null);
+			setFeedbackMessage("");
+			setUserAnswer("");
+			setUserAnswers({});
+			setCellValidations({});
+			setHelpEnabled(false);
+			setHasAttemptedCurrentQuestion(false);
+			setQuestionWasAnsweredCorrectly(false);
+		},
+		[
+			questionType,
+			currentScenario,
+			hasAttemptedCurrentQuestion,
+			questionWasAnsweredCorrectly,
+			currentLevel,
+			onScoreUpdate,
+		],
+	);
 
 	const generateQuestion = useCallback(() => {
+		// If moving away from circuit question that was attempted but not answered correctly,
+		// record it as an incorrect attempt
+		if (
+			questionType === "draw-circuit" &&
+			currentScenario &&
+			hasAttemptedCurrentQuestion &&
+			!questionWasAnsweredCorrectly &&
+			onScoreUpdate
+		) {
+			onScoreUpdate(false, "Scenario", "scenario", currentLevel, false);
+		}
+
 		const newScenario = getRandomScenario(currentLevel);
 		const newQuestionType = selectRandomQuestionType();
 
@@ -210,7 +252,16 @@ export function useScenario({
 		setUserAnswers({});
 		setCellValidations({});
 		setHelpEnabled(false);
-	}, [currentLevel]);
+		setHasAttemptedCurrentQuestion(false);
+		setQuestionWasAnsweredCorrectly(false);
+	}, [
+		questionType,
+		currentScenario,
+		hasAttemptedCurrentQuestion,
+		questionWasAnsweredCorrectly,
+		currentLevel,
+		onScoreUpdate,
+	]);
 
 	const setUserAnswer_TruthTable = useCallback(
 		(rowIndex: number, columnName: string, value: string) => {
@@ -352,12 +403,17 @@ export function useScenario({
 	const checkCircuitAnswer = useCallback(
 		(userExpression: string) => {
 			if (!currentScenario) return;
+			if (isAnswered) return; // Don't check if already answered correctly
 
 			const trimmedAnswer = userExpression.trim();
 			if (!trimmedAnswer || trimmedAnswer === "Q = ?") {
 				setFeedbackMessage("Please draw a circuit");
+				setIsCorrect(false);
 				return;
 			}
+
+			// Mark that user has attempted this question
+			setHasAttemptedCurrentQuestion(true);
 
 			const acceptedAnswers = generateAllAcceptedAnswers(
 				currentScenario.expression,
@@ -370,23 +426,26 @@ export function useScenario({
 			const correct =
 				acceptedAnswers.includes(trimmedAnswer) || logicallyEquivalent;
 
-			setIsCorrect(correct);
-			setIsAnswered(true);
-
 			if (correct) {
-				setFeedbackMessage("✅ Correct! Well done!");
+				// Only record score and lock answer when correct
+				if (onScoreUpdate) {
+					onScoreUpdate(true, "Scenario", "scenario", currentLevel, false);
+				}
+				setQuestionWasAnsweredCorrectly(true);
+				setFeedbackMessage("✅ Correct! The circuit matches the expression.");
+				setIsCorrect(true);
+				setIsAnswered(true); // Lock the answer only when correct
 			} else {
+				// Allow continued editing - don't lock the answer
 				setFeedbackMessage(
-					`❌ Incorrect. The correct answer was: ${currentScenario.expression}`,
+					`❌ Incorrect. Your circuit diagram does not match the target expression.<br/>You can continue editing your circuit and try again, or move on to the next question.`,
 				);
-			}
-
-			// Record score
-			if (onScoreUpdate) {
-				onScoreUpdate(correct, "Scenario", "scenario", currentLevel, false);
+				setIsCorrect(false);
+				// Don't set isAnswered to true - allow user to keep editing
+				// Don't record score yet - wait until they get it right or move on
 			}
 		},
-		[currentScenario, currentLevel, onScoreUpdate],
+		[currentScenario, currentLevel, onScoreUpdate, isAnswered],
 	);
 
 	const checkAnswer = useCallback(() => {
