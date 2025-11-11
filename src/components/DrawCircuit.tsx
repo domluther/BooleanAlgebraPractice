@@ -198,7 +198,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 			</div>
 
 			{/* Target Expression Display */}
-			<div className="border-2 rounded-lg bg-card border-stats-card-border">
+			<div className="border-2 rounded-lg bg-card">
 				<div className="bg-stats-card-bg rounded-lg p-3 text-center">
 					<div className="text-xl font-semibold font-mono">
 						{targetExpressionDisplay}
@@ -209,7 +209,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 			{/* Circuit Drawing Area */}
 			<div className="flex gap-6 flex-wrap lg:flex-nowrap">
 				{/* Toolbox */}
-				<div className="flex-shrink-0 w-full sm:w-48 bg-stats-card-bg rounded-lg p-4 border-2 border-stats-card-border">
+				<div className="flex-shrink-0 w-full sm:w-48 bg-stats-card-bg rounded-lg p-4 border-2">
 					<h3 className="text-center text-stats-label font-semibold mb-4 text-lg">
 						Logic Gates
 					</h3>
@@ -295,7 +295,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				</div>
 
 				{/* Canvas Container */}
-				<div className="flex-1 min-w-0 bg-stats-card-bg border-2 border-stats-card-border rounded-lg flex items-center justify-center overflow-hidden">
+				<div className="flex-1 min-w-0 bg-stats-card-bg border-2 rounded-lg flex items-center justify-center overflow-hidden">
 					<canvas
 						ref={canvasRef}
 						id={CANVAS_ID}
@@ -309,7 +309,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 
 			{/* Help Display (Show current circuit interpretation) */}
 			{helpEnabled && (
-				<div className="bg-stats-card-bg border-2 border-stats-card-border rounded-lg p-4">
+				<div className="bg-stats-card-bg border-2 rounded-lg p-4">
 					<div
 						ref={interpretedExprRef}
 						id={INTERPRETED_EXPR_ID}
@@ -334,14 +334,26 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 
 			<div className="flex justify-center gap-4">
 				{!isAnswered && (
-					<Button onClick={handleCheckAnswer} size="lg">
-						Check My Circuit
+				<div className="max-w-md mx-auto w-full">
+					<Button
+						onClick={handleCheckAnswer}
+						size="lg"
+						className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+					>
+						Mark My Answer
 					</Button>
+				</div>
 				)}
 				{(isAnswered || feedbackMessage) && (
-					<Button onClick={handleNextQuestion} size="lg" variant="secondary">
-						Next Question
+				<div className="max-w-md mx-auto w-full">
+					<Button
+						onClick={handleNextQuestion}
+						size="lg"
+						className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+					>
+						Next Question →
 					</Button>
+				</div>
 				)}
 			</div>
 		</div>

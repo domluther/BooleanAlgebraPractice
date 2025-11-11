@@ -17,4 +17,6 @@ export * from "./scoreManager";
 export * from "./siteConfig";
 // Game hooks
 export { useNameThat } from "./useNameThat";
+export { useScenario } from "./useScenario";
+export * from "./scenarioData";
 export * from "./utils";

@@ -24,6 +24,7 @@ export type {
 export { QuizButton } from "./QuizButton";
 // Utility Components
 export { ScoreButton } from "./ScoreButton";
+export { Scenario } from "./Scenario";
 export { SharedLayout, useSharedLayout } from "./SharedLayout";
 // Layout Components
 export { SiteLayout } from "./SiteLayout";

@@ -184,7 +184,7 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 			</div>
 
 			{/* Circuit Display */}
-			<div className="border-2 rounded-lg bg-card border-stats-card-border">
+			<div className="border-2 rounded-lg bg-card">
 				<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-[150px]">
 					<div
 						ref={circuitRef}

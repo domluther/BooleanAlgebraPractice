@@ -186,7 +186,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 			/>
 
 			{/* Circuit Display with Expression Label */}
-			<div className="border-2 rounded-lg border-stats-card-border bg-stats-card-bg ">
+			<div className="border-2 rounded-lg bg-stats-card-bg ">
 				<div className="flex flex-col gap-4">
 					{/* Circuit */}
 					<div className="flex items-center justify-center rounded-lg min-h-[150px]">
@@ -347,9 +347,10 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 						size="lg"
 						className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 					>
-						Check Answer
+						Mark My Answer
 					</Button>
 				</div>
+				
 			)}
 
 			{/* Feedback Message */}

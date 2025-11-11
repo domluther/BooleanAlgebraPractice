@@ -84,7 +84,7 @@ export function ControlPanel({
 	const difficultySelectId = useId();
 
 	return (
-		<div className="p-4 rounded-lg border-2 bg-stats-card-bg border-stats-card-border">
+		<div className="p-4 rounded-lg border-2 bg-stats-card-bg">
 			<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 				{/* Difficulty Selector */}
 				<div className="flex items-center gap-3">

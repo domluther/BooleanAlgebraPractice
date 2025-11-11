@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WriteexpressionRouteImport } from './routes/writeexpression'
 import { Route as TruthtableRouteImport } from './routes/truthtable'
+import { Route as ScenarioRouteImport } from './routes/scenario'
 import { Route as Old_unitconverterRouteImport } from './routes/old_unitconverter'
 import { Route as Old_multiplechoiceRouteImport } from './routes/old_multiplechoice'
 import { Route as Old_filesizeRouteImport } from './routes/old_filesize'
@@ -27,6 +28,11 @@ const WriteexpressionRoute = WriteexpressionRouteImport.update({
 const TruthtableRoute = TruthtableRouteImport.update({
   id: '/truthtable',
   path: '/truthtable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScenarioRoute = ScenarioRouteImport.update({
+  id: '/scenario',
+  path: '/scenario',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Old_unitconverterRoute = Old_unitconverterRouteImport.update({
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/old_filesize': typeof Old_filesizeRoute
   '/old_multiplechoice': typeof Old_multiplechoiceRoute
   '/old_unitconverter': typeof Old_unitconverterRoute
+  '/scenario': typeof ScenarioRoute
   '/truthtable': typeof TruthtableRoute
   '/writeexpression': typeof WriteexpressionRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/old_filesize': typeof Old_filesizeRoute
   '/old_multiplechoice': typeof Old_multiplechoiceRoute
   '/old_unitconverter': typeof Old_unitconverterRoute
+  '/scenario': typeof ScenarioRoute
   '/truthtable': typeof TruthtableRoute
   '/writeexpression': typeof WriteexpressionRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/old_filesize': typeof Old_filesizeRoute
   '/old_multiplechoice': typeof Old_multiplechoiceRoute
   '/old_unitconverter': typeof Old_unitconverterRoute
+  '/scenario': typeof ScenarioRoute
   '/truthtable': typeof TruthtableRoute
   '/writeexpression': typeof WriteexpressionRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/old_filesize'
     | '/old_multiplechoice'
     | '/old_unitconverter'
+    | '/scenario'
     | '/truthtable'
     | '/writeexpression'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/old_filesize'
     | '/old_multiplechoice'
     | '/old_unitconverter'
+    | '/scenario'
     | '/truthtable'
     | '/writeexpression'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/old_filesize'
     | '/old_multiplechoice'
     | '/old_unitconverter'
+    | '/scenario'
     | '/truthtable'
     | '/writeexpression'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   Old_filesizeRoute: typeof Old_filesizeRoute
   Old_multiplechoiceRoute: typeof Old_multiplechoiceRoute
   Old_unitconverterRoute: typeof Old_unitconverterRoute
+  ScenarioRoute: typeof ScenarioRoute
   TruthtableRoute: typeof TruthtableRoute
   WriteexpressionRoute: typeof WriteexpressionRoute
 }
@@ -161,6 +174,13 @@ declare module '@tanstack/react-router' {
       path: '/truthtable'
       fullPath: '/truthtable'
       preLoaderRoute: typeof TruthtableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scenario': {
+      id: '/scenario'
+      path: '/scenario'
+      fullPath: '/scenario'
+      preLoaderRoute: typeof ScenarioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/old_unitconverter': {
@@ -223,6 +243,7 @@ const rootRouteChildren: RootRouteChildren = {
   Old_filesizeRoute: Old_filesizeRoute,
   Old_multiplechoiceRoute: Old_multiplechoiceRoute,
   Old_unitconverterRoute: Old_unitconverterRoute,
+  ScenarioRoute: ScenarioRoute,
   TruthtableRoute: TruthtableRoute,
   WriteexpressionRoute: WriteexpressionRoute,
 }

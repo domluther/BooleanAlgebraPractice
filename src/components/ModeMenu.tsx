@@ -13,7 +13,7 @@ const QUIZ_MODES: QuizMode[] = [
 	{ label: "Expression Writing", path: "/writeexpression", emoji: "✍️" },
 	{ label: "Truth Tables", path: "/truthtable", emoji: "📊" },
 	{ label: "Draw Circuit", path: "/drawCircuit", emoji: "🔌" },
-	{ label: "Scenarios", path: "/scenarios", emoji: "📝" },
+	{ label: "Scenarios", path: "/scenario", emoji: "📝" },
 ];
 
 export const ModeMenu = () => {
