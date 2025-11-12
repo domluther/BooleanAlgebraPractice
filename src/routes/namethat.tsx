@@ -17,7 +17,7 @@ function NameThatRoute() {
 	return (
 		<SharedLayout>
 			{(recordScoreAndUpdate) => (
-				<NameThat level={1} onScoreUpdate={recordScoreAndUpdate} />
+				<NameThat onScoreUpdate={recordScoreAndUpdate} />
 			)}
 		</SharedLayout>
 	);

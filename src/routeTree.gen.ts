@@ -12,10 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WriteexpressionRouteImport } from './routes/writeexpression'
 import { Route as TruthtableRouteImport } from './routes/truthtable'
 import { Route as ScenarioRouteImport } from './routes/scenario'
-import { Route as Old_unitconverterRouteImport } from './routes/old_unitconverter'
-import { Route as Old_multiplechoiceRouteImport } from './routes/old_multiplechoice'
-import { Route as Old_filesizeRouteImport } from './routes/old_filesize'
-import { Route as Old_capacitycalculatorRouteImport } from './routes/old_capacitycalculator'
 import { Route as NamethatRouteImport } from './routes/namethat'
 import { Route as DrawcircuitRouteImport } from './routes/drawcircuit'
 import { Route as IndexRouteImport } from './routes/index'
@@ -33,26 +29,6 @@ const TruthtableRoute = TruthtableRouteImport.update({
 const ScenarioRoute = ScenarioRouteImport.update({
   id: '/scenario',
   path: '/scenario',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Old_unitconverterRoute = Old_unitconverterRouteImport.update({
-  id: '/old_unitconverter',
-  path: '/old_unitconverter',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Old_multiplechoiceRoute = Old_multiplechoiceRouteImport.update({
-  id: '/old_multiplechoice',
-  path: '/old_multiplechoice',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Old_filesizeRoute = Old_filesizeRouteImport.update({
-  id: '/old_filesize',
-  path: '/old_filesize',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Old_capacitycalculatorRoute = Old_capacitycalculatorRouteImport.update({
-  id: '/old_capacitycalculator',
-  path: '/old_capacitycalculator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NamethatRoute = NamethatRouteImport.update({
@@ -75,10 +51,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/drawcircuit': typeof DrawcircuitRoute
   '/namethat': typeof NamethatRoute
-  '/old_capacitycalculator': typeof Old_capacitycalculatorRoute
-  '/old_filesize': typeof Old_filesizeRoute
-  '/old_multiplechoice': typeof Old_multiplechoiceRoute
-  '/old_unitconverter': typeof Old_unitconverterRoute
   '/scenario': typeof ScenarioRoute
   '/truthtable': typeof TruthtableRoute
   '/writeexpression': typeof WriteexpressionRoute
@@ -87,10 +59,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/drawcircuit': typeof DrawcircuitRoute
   '/namethat': typeof NamethatRoute
-  '/old_capacitycalculator': typeof Old_capacitycalculatorRoute
-  '/old_filesize': typeof Old_filesizeRoute
-  '/old_multiplechoice': typeof Old_multiplechoiceRoute
-  '/old_unitconverter': typeof Old_unitconverterRoute
   '/scenario': typeof ScenarioRoute
   '/truthtable': typeof TruthtableRoute
   '/writeexpression': typeof WriteexpressionRoute
@@ -100,10 +68,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/drawcircuit': typeof DrawcircuitRoute
   '/namethat': typeof NamethatRoute
-  '/old_capacitycalculator': typeof Old_capacitycalculatorRoute
-  '/old_filesize': typeof Old_filesizeRoute
-  '/old_multiplechoice': typeof Old_multiplechoiceRoute
-  '/old_unitconverter': typeof Old_unitconverterRoute
   '/scenario': typeof ScenarioRoute
   '/truthtable': typeof TruthtableRoute
   '/writeexpression': typeof WriteexpressionRoute
@@ -114,10 +78,6 @@ export interface FileRouteTypes {
     | '/'
     | '/drawcircuit'
     | '/namethat'
-    | '/old_capacitycalculator'
-    | '/old_filesize'
-    | '/old_multiplechoice'
-    | '/old_unitconverter'
     | '/scenario'
     | '/truthtable'
     | '/writeexpression'
@@ -126,10 +86,6 @@ export interface FileRouteTypes {
     | '/'
     | '/drawcircuit'
     | '/namethat'
-    | '/old_capacitycalculator'
-    | '/old_filesize'
-    | '/old_multiplechoice'
-    | '/old_unitconverter'
     | '/scenario'
     | '/truthtable'
     | '/writeexpression'
@@ -138,10 +94,6 @@ export interface FileRouteTypes {
     | '/'
     | '/drawcircuit'
     | '/namethat'
-    | '/old_capacitycalculator'
-    | '/old_filesize'
-    | '/old_multiplechoice'
-    | '/old_unitconverter'
     | '/scenario'
     | '/truthtable'
     | '/writeexpression'
@@ -151,10 +103,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DrawcircuitRoute: typeof DrawcircuitRoute
   NamethatRoute: typeof NamethatRoute
-  Old_capacitycalculatorRoute: typeof Old_capacitycalculatorRoute
-  Old_filesizeRoute: typeof Old_filesizeRoute
-  Old_multiplechoiceRoute: typeof Old_multiplechoiceRoute
-  Old_unitconverterRoute: typeof Old_unitconverterRoute
   ScenarioRoute: typeof ScenarioRoute
   TruthtableRoute: typeof TruthtableRoute
   WriteexpressionRoute: typeof WriteexpressionRoute
@@ -181,34 +129,6 @@ declare module '@tanstack/react-router' {
       path: '/scenario'
       fullPath: '/scenario'
       preLoaderRoute: typeof ScenarioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/old_unitconverter': {
-      id: '/old_unitconverter'
-      path: '/old_unitconverter'
-      fullPath: '/old_unitconverter'
-      preLoaderRoute: typeof Old_unitconverterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/old_multiplechoice': {
-      id: '/old_multiplechoice'
-      path: '/old_multiplechoice'
-      fullPath: '/old_multiplechoice'
-      preLoaderRoute: typeof Old_multiplechoiceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/old_filesize': {
-      id: '/old_filesize'
-      path: '/old_filesize'
-      fullPath: '/old_filesize'
-      preLoaderRoute: typeof Old_filesizeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/old_capacitycalculator': {
-      id: '/old_capacitycalculator'
-      path: '/old_capacitycalculator'
-      fullPath: '/old_capacitycalculator'
-      preLoaderRoute: typeof Old_capacitycalculatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/namethat': {
@@ -239,10 +159,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DrawcircuitRoute: DrawcircuitRoute,
   NamethatRoute: NamethatRoute,
-  Old_capacitycalculatorRoute: Old_capacitycalculatorRoute,
-  Old_filesizeRoute: Old_filesizeRoute,
-  Old_multiplechoiceRoute: Old_multiplechoiceRoute,
-  Old_unitconverterRoute: Old_unitconverterRoute,
   ScenarioRoute: ScenarioRoute,
   TruthtableRoute: TruthtableRoute,
   WriteexpressionRoute: WriteexpressionRoute,

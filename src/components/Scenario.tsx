@@ -326,6 +326,18 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 								/>
 							</div>
 						</>
+					) : questionType === "draw-circuit" ? (
+						<div className="flex items-center gap-2">
+							<label className="flex items-center gap-2 text-sm text-stats-label whitespace-nowrap cursor-pointer">
+								<input
+									type="checkbox"
+									checked={helpEnabled}
+									onChange={() => toggleHelp()}
+									className="h-4 w-4 rounded border-checkbox-label-border text-stats-points focus:ring-2 focus:ring-ring cursor-pointer"
+								/>
+								Show expression so far
+							</label>
+						</div>
 					) : (
 						""
 					)
