@@ -73,6 +73,36 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 			expression: "Q = A AND B",
 		},
 		{
+			title: "BFL Reward",
+			scenario:
+				"A student will get a BFL 1 (Q) if they work well in lesson AND don't forget their equipment.",
+			inputs: {
+				E: "Forgotten equipment",
+				W: "Worked well in lesson",
+			},
+			expression: "Q = W AND NOT E",
+		},
+		{
+			title: "Rewarding behaviour",
+			scenario:
+				"A student will get a BFL 1 (Q) if they work well in lesson AND don't forget their equipment.",
+			inputs: {
+				H: "Have their equipment",
+				W: "Worked well in lesson",
+			},
+			expression: "Q = W AND H",
+		},
+		{
+			title: "Follow an influencer",
+			scenario:
+				"A user will follow an influencer (Q) if they make good content AND they don't keep saying 6 7.",
+			inputs: {
+				C: "Make good content",
+				K: "Keep saying 6 7",
+			},
+			expression: "Q = C AND NOT K",
+		},
+		{
 			title: "Emergency Exit",
 			scenario:
 				"An emergency exit will open (Q) if either the fire alarm is activated OR the manual override is pressed.",
@@ -144,9 +174,9 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 			scenario:
 				"A library gives out a free bookmark (Q) when a special token is shown while borrowing either a fiction book or a non-fiction book.",
 			inputs: {
-				T: "Token is shown",
 				F: "Fiction book borrowed",
 				N: "Non-fiction book borrowed",
+				T: "Token is shown",
 			},
 			expression: "Q = T AND (F OR N)",
 		},
@@ -155,9 +185,9 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 			scenario:
 				"A coffee shop offers a discount (Q) if a customer has a loyalty card and it's not a weekend. The discount is also available if the customer orders before 8am.",
 			inputs: {
+				E: "Order is before 8am",
 				L: "Customer has loyalty card",
 				W: "It's a weekend",
-				E: "Order is before 8am",
 			},
 			expression: "Q = (L AND NOT W) OR E",
 		},
@@ -176,9 +206,9 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 			scenario:
 				"A student can go on a school trip (Q) if they have returned a permission slip and have not received a detention. They also need to have paid the trip fee.",
 			inputs: {
-				P: "Permission slip returned",
 				D: "Received a detention",
 				F: "Trip fee paid",
+				P: "Permission slip returned",
 			},
 			expression: "Q = P AND NOT D AND F",
 		},
@@ -187,9 +217,9 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 			scenario:
 				"A microwave will start heating (Q) if the door is closed and the start button is pressed while the child lock is not activated.",
 			inputs: {
+				C: "Child lock is activated",
 				D: "Door is closed",
 				S: "Start button is pressed",
-				C: "Child lock is activated",
 			},
 			expression: "Q = D AND S AND NOT C",
 		},
@@ -199,8 +229,8 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 				"A theme park ride will allow passengers (Q) if they meet the height requirement and are not feeling unwell. The ride operator can also override this for safety tests.",
 			inputs: {
 				H: "Meets height requirement",
-				U: "Feeling unwell",
 				O: "Operator override is active",
+				U: "Feeling unwell",
 			},
 			expression: "Q = (H AND NOT U) OR O",
 		},

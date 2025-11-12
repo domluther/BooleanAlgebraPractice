@@ -11,11 +11,6 @@ export { Footer } from "./Footer";
 export { Header } from "./Header";
 // Game Mode Components
 export { NameThat } from "./NameThat";
-// OLD TEMPLATE COMPONENTS - For reference only, delete after migration
-export { CapacityCalculator } from "./old_CapacityCalculator";
-export { FileSizeCalculator } from "./old_FileSizeCalculator";
-export { MultipleChoice } from "./old_MultipleChoice";
-export { UnitConverter } from "./old_UnitConverter";
 export type {
 	QuizButtonProps,
 	QuizButtonSize,
@@ -33,19 +28,3 @@ export { SiteNavigation } from "./SiteNavigation";
 export { StatsModal } from "./StatsModal";
 export { TruthTable } from "./TruthTable";
 
-/**
- * Usage Example:
- *
- * import {
- *   SiteLayout,
- *   SimpleQuizBody,
- *   StatsModal,
- *   QuizButton,
- *   ScoreButton,
- *   HintPanel,
- *   Header,
- *   Footer,
- *   CapacityCalculator,
- *   FileSizeCalculator
- * } from "@/components";
- */

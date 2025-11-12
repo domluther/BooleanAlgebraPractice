@@ -188,6 +188,31 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 		}
 	};
 
+	// Global keyboard handler for Enter key (defined after handlers)
+	useEffect(() => {
+		const handleGlobalKeyPress = (event: KeyboardEvent) => {
+			// Don't handle Enter if it's from an input field (handled separately)
+			const target = event.target as HTMLElement;
+			if (target.tagName === "INPUT") {
+				return;
+			}
+
+			if (event.key === "Enter") {
+				event.preventDefault();
+				if (isAnswered) {
+					// Move to next question when answered
+					nextQuestion();
+				} else if (questionType !== "expression") {
+					// Mark answer when not answered (but not for expression which has its own handler)
+					handleCheckAnswer();
+				}
+			}
+		};
+
+		window.addEventListener("keydown", handleGlobalKeyPress);
+		return () => window.removeEventListener("keydown", handleGlobalKeyPress);
+	}, [isAnswered, nextQuestion, questionType, handleCheckAnswer]);
+
 	const insertSymbol = (symbol: string) => {
 		if (inputRef.current) {
 			const input = inputRef.current;
@@ -211,7 +236,9 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 
 	const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
 		if (event.key === "Enter" && !isAnswered) {
+			event.preventDefault();
 			handleCheckAnswer();
+			return;
 		}
 
 		if (notationType === "symbol") {
@@ -780,6 +807,15 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 							</Button>
 						</div>
 					)}
+
+					{/* Keyboard Shortcuts Help */}
+					<div className="py-2 text-sm text-center text-stats-label font-medium">
+						{isAnswered
+							? "💡 Press Enter for next question"
+							: questionType === "expression"
+								? "💡 Type your answer and press Enter to check"
+								: "💡 Press Enter to check answer"}
+					</div>
 				</>
 			)}
 		</div>

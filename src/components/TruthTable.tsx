@@ -87,6 +87,26 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 		generateNewQuestion();
 	}, [generateNewQuestion]);
 
+	// Global keyboard handler for Enter key
+	useEffect(() => {
+		const handleGlobalKeyPress = (event: KeyboardEvent) => {
+			if (event.key === "Enter") {
+				if (isAnswered) {
+					// Move to next question when answered
+					event.preventDefault();
+					generateNewQuestion();
+				} else {
+					// Mark answer when not answered
+					event.preventDefault();
+					checkAnswer();
+				}
+			}
+		};
+
+		window.addEventListener("keydown", handleGlobalKeyPress);
+		return () => window.removeEventListener("keydown", handleGlobalKeyPress);
+	}, [isAnswered, generateNewQuestion, checkAnswer]);
+
 	const handleNotationToggle = (checked: boolean) => {
 		const newNotation: NotationType = checked ? "symbol" : "word";
 		setNotationTypeState(newNotation);
@@ -387,6 +407,9 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 				{showIntermediateColumns &&
 					!expertMode &&
 					" • Intermediate columns are optional"}
+				{isAnswered
+					? " • Press Enter for next question"
+					: " • Press Enter to check answer"}
 			</div>
 		</div>
 	);

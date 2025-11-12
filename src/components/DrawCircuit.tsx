@@ -150,6 +150,25 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 		generateQuestion();
 	};
 
+	// Global keyboard handler for Enter key (defined after handlers)
+	useEffect(() => {
+		const handleGlobalKeyPress = (event: KeyboardEvent) => {
+			if (event.key === "Enter") {
+				event.preventDefault();
+				if (isAnswered) {
+					// Move to next question when answered
+					handleNextQuestion();
+				} else {
+					// Mark answer when not answered
+					handleCheckAnswer();
+				}
+			}
+		};
+
+		window.addEventListener("keydown", handleGlobalKeyPress);
+		return () => window.removeEventListener("keydown", handleGlobalKeyPress);
+	}, [isAnswered, handleCheckAnswer, handleNextQuestion]);
+
 	// Determine target expression for display
 	const targetExpressionDisplay = currentExpression
 		? convertToNotation(currentExpression, notationType)
@@ -355,6 +374,13 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 						</Button>
 					</div>
 				)}
+			</div>
+
+			{/* Keyboard Shortcuts Help */}
+			<div className="py-2 text-sm text-center text-stats-label font-medium">
+				{isAnswered
+					? "💡 Press Enter for next question"
+					: "💡 Press Enter to check answer"}
 			</div>
 		</div>
 	);
