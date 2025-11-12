@@ -315,7 +315,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 						id={INTERPRETED_EXPR_ID}
 						className="text-lg font-mono text-center text-stats-label"
 					>
-						{currentInterpretedExpression}
+						{convertToNotation(currentInterpretedExpression, notationType)}
 					</div>
 				</div>
 			)}
