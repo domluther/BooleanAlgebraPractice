@@ -6,7 +6,7 @@ import {
 	getInputVariables,
 	normalizeExpression,
 	shuffleExpression,
-} from "../expressionUtils";
+} from "../../src/lib/expressionUtils";
 
 /**
  * Comprehensive tests for expression utility functions

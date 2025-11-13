@@ -41,6 +41,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 	const {
 		currentLevel,
 		currentExpression,
+		questionId,
 		isAnswered,
 		isCorrect,
 		feedbackMessage,
@@ -60,6 +61,12 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 	const circuitDrawerRef = useRef<CircuitDrawer | null>(null);
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const interpretedExprRef = useRef<HTMLDivElement>(null);
+	const isAnsweredRef = useRef(isAnswered);
+
+	// Keep isAnsweredRef in sync with isAnswered
+	useEffect(() => {
+		isAnsweredRef.current = isAnswered;
+	}, [isAnswered]);
 
 	// Initialize notation from localStorage
 	useEffect(() => {
@@ -67,6 +74,8 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 	}, []);
 
 	// Initialize CircuitDrawer and generate first question
+	// questionId is included to force re-initialization even when expression is the same
+	// biome-ignore lint/correctness/useExhaustiveDependencies: questionId is intentionally included to trigger reset when same expression appears
 	useEffect(() => {
 		if (canvasRef.current && currentExpression) {
 			// Clean up existing drawer
@@ -74,10 +83,10 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				circuitDrawerRef.current.destroy();
 			}
 
-			// Create new drawer
+			// Create new drawer - use ref to access current isAnswered value
 			circuitDrawerRef.current = new CircuitDrawer(
 				CANVAS_ID,
-				() => isAnswered,
+				() => isAnsweredRef.current,
 				notationType,
 				(expr) => setCurrentInterpretedExpression(expr),
 				(enabled) => setRemoveButtonEnabled(enabled),
@@ -97,10 +106,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				circuitDrawerRef.current.destroy();
 			}
 		};
-		// Note: isAnswered is intentionally NOT in dependencies
-		// It's accessed via callback (() => isAnswered) which always gets latest value
-		// Adding it here would cause drawer to reinitialize when answer is marked
-	}, [currentExpression, currentLevel, notationType]);
+	}, [currentExpression, currentLevel, notationType, questionId]);
 
 	// Update notation when it changes
 	useEffect(() => {

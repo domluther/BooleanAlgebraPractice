@@ -49,6 +49,7 @@ interface UseDrawCircuitReturn {
 	// State
 	currentLevel: DrawCircuitDifficulty;
 	currentExpression: string;
+	questionId: number; // Unique ID that increments with each new question
 	isAnswered: boolean;
 	isCorrect: boolean | null;
 	feedbackMessage: string;
@@ -85,6 +86,7 @@ export function useDrawCircuit(
 		const initialLevel = getInitialDifficulty();
 		return generateInitialQuestion(initialLevel);
 	});
+	const [questionId, setQuestionId] = useState(0); // Unique ID for each question
 	const [isAnswered, setIsAnswered] = useState(false);
 	const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 	const [feedbackMessage, setFeedbackMessage] = useState("");
@@ -132,6 +134,7 @@ export function useDrawCircuit(
 		}
 
 		setCurrentExpression(newExpression);
+		setQuestionId((prev) => prev + 1); // Increment to force re-render even if expression is the same
 		setIsAnswered(false);
 		setIsCorrect(null);
 		setFeedbackMessage("");
@@ -182,6 +185,7 @@ export function useDrawCircuit(
 			}
 
 			setCurrentExpression(newExpression);
+			setQuestionId((prev) => prev + 1); // Increment to force re-render even if expression is the same
 			setIsAnswered(false);
 			setIsCorrect(null);
 			setFeedbackMessage("");
@@ -280,6 +284,7 @@ export function useDrawCircuit(
 	return {
 		currentLevel,
 		currentExpression,
+		questionId,
 		isAnswered,
 		isCorrect,
 		feedbackMessage,

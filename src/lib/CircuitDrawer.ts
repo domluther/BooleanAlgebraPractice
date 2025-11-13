@@ -589,7 +589,7 @@ export class CircuitDrawer {
 
 		// Draw gates
 		this.gates.forEach((gate) => {
-			if (gate.image && gate.image.complete) {
+			if (gate.image?.complete) {
 				this.ctx.drawImage(gate.image, gate.x, gate.y, gate.width, gate.height);
 				if (this.selectedGate === gate) {
 					this.ctx.strokeStyle = "#3498db";

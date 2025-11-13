@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { CircuitGenerator } from "../CircuitGenerator";
+import { CircuitGenerator } from "../../src/lib/CircuitGenerator";
 
 /**
  * Tests for CircuitGenerator - SVG circuit generation from Boolean expressions

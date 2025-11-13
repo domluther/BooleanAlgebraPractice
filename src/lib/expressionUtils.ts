@@ -183,7 +183,10 @@ function _generateExpressionVariations(expression: string): string[] {
 		}
 
 		if (ast.type === "NOT") {
-			const operandVariations = _generateASTVariations(ast.operand!);
+			if (!ast.operand) {
+				return [ast];
+			}
+			const operandVariations = _generateASTVariations(ast.operand);
 			return operandVariations.map((operand) => ({
 				type: "NOT",
 				operand: operand,
@@ -192,8 +195,11 @@ function _generateExpressionVariations(expression: string): string[] {
 		}
 
 		if (ast.type === "AND" || ast.type === "OR" || ast.type === "XOR") {
-			const leftVariations = _generateASTVariations(ast.left!);
-			const rightVariations = _generateASTVariations(ast.right!);
+			if (!ast.left || !ast.right) {
+				return [ast];
+			}
+			const leftVariations = _generateASTVariations(ast.left);
+			const rightVariations = _generateASTVariations(ast.right);
 
 			const variations: ASTNode[] = [];
 
@@ -225,18 +231,21 @@ function _generateExpressionVariations(expression: string): string[] {
 	// Convert AST back to string, preserving original parentheses structure
 	function _astToString(ast: ASTNode): string {
 		if (ast.type === "VAR") {
-			return ast.name!;
+			return ast.name || "";
 		}
 
 		if (ast.type === "NOT") {
-			const operandStr = _astToString(ast.operand!);
+			if (!ast.operand) {
+				return "NOT";
+			}
+			const operandStr = _astToString(ast.operand);
 
 			// Use parentheses if originally had them or if operand is complex
 			const needsParens =
 				ast.hasParens ||
-				ast.operand!.type === "AND" ||
-				ast.operand!.type === "OR" ||
-				ast.operand!.type === "XOR";
+				ast.operand?.type === "AND" ||
+				ast.operand?.type === "OR" ||
+				ast.operand?.type === "XOR";
 
 			if (needsParens) {
 				return `NOT (${operandStr})`;
@@ -245,8 +254,11 @@ function _generateExpressionVariations(expression: string): string[] {
 		}
 
 		if (ast.type === "AND" || ast.type === "OR" || ast.type === "XOR") {
-			const leftStr = _astToString(ast.left!);
-			const rightStr = _astToString(ast.right!);
+			if (!ast.left || !ast.right) {
+				return "";
+			}
+			const leftStr = _astToString(ast.left);
+			const rightStr = _astToString(ast.right);
 
 			// Preserve parentheses structure - add parentheses around complex sub-expressions
 			let leftFinal = leftStr;
@@ -254,16 +266,16 @@ function _generateExpressionVariations(expression: string): string[] {
 
 			// Add parentheses if sub-expression is complex (contains operators)
 			if (
-				ast.left!.type === "AND" ||
-				ast.left!.type === "OR" ||
-				ast.left!.type === "XOR"
+				ast.left?.type === "AND" ||
+				ast.left?.type === "OR" ||
+				ast.left?.type === "XOR"
 			) {
 				leftFinal = `(${leftStr})`;
 			}
 			if (
-				ast.right!.type === "AND" ||
-				ast.right!.type === "OR" ||
-				ast.right!.type === "XOR"
+				ast.right?.type === "AND" ||
+				ast.right?.type === "OR" ||
+				ast.right?.type === "XOR"
 			) {
 				rightFinal = `(${rightStr})`;
 			}
@@ -277,18 +289,21 @@ function _generateExpressionVariations(expression: string): string[] {
 	// Alternative AST to string that adds extra parentheses around NOT expressions
 	function _astToStringWithNOTParens(ast: ASTNode): string {
 		if (ast.type === "VAR") {
-			return ast.name!;
+			return ast.name || "";
 		}
 
 		if (ast.type === "NOT") {
-			const operandStr = _astToStringWithNOTParens(ast.operand!);
+			if (!ast.operand) {
+				return "NOT";
+			}
+			const operandStr = _astToStringWithNOTParens(ast.operand);
 
 			// Always use parentheses around the entire NOT expression when it has complex operands
 			const needsParens =
 				ast.hasParens ||
-				ast.operand!.type === "AND" ||
-				ast.operand!.type === "OR" ||
-				ast.operand!.type === "XOR";
+				ast.operand?.type === "AND" ||
+				ast.operand?.type === "OR" ||
+				ast.operand?.type === "XOR";
 
 			if (needsParens) {
 				return `(NOT (${operandStr}))`;
@@ -297,8 +312,11 @@ function _generateExpressionVariations(expression: string): string[] {
 		}
 
 		if (ast.type === "AND" || ast.type === "OR" || ast.type === "XOR") {
-			const leftStr = _astToStringWithNOTParens(ast.left!);
-			const rightStr = _astToStringWithNOTParens(ast.right!);
+			if (!ast.left || !ast.right) {
+				return "";
+			}
+			const leftStr = _astToStringWithNOTParens(ast.left);
+			const rightStr = _astToStringWithNOTParens(ast.right);
 
 			// Preserve parentheses structure - add parentheses around complex sub-expressions
 			let leftFinal = leftStr;
@@ -306,16 +324,16 @@ function _generateExpressionVariations(expression: string): string[] {
 
 			// Add parentheses if sub-expression is complex (contains operators)
 			if (
-				ast.left!.type === "AND" ||
-				ast.left!.type === "OR" ||
-				ast.left!.type === "XOR"
+				ast.left?.type === "AND" ||
+				ast.left?.type === "OR" ||
+				ast.left?.type === "XOR"
 			) {
 				leftFinal = `(${leftStr})`;
 			}
 			if (
-				ast.right!.type === "AND" ||
-				ast.right!.type === "OR" ||
-				ast.right!.type === "XOR"
+				ast.right?.type === "AND" ||
+				ast.right?.type === "OR" ||
+				ast.right?.type === "XOR"
 			) {
 				rightFinal = `(${rightStr})`;
 			}
@@ -329,17 +347,20 @@ function _generateExpressionVariations(expression: string): string[] {
 	// Alternative AST to string that minimizes parentheses around variables in NOT expressions
 	function _astToStringMinimalParens(ast: ASTNode): string {
 		if (ast.type === "VAR") {
-			return ast.name!;
+			return ast.name || "";
 		}
 
 		if (ast.type === "NOT") {
-			const operandStr = _astToStringMinimalParens(ast.operand!);
+			if (!ast.operand) {
+				return "NOT";
+			}
+			const operandStr = _astToStringMinimalParens(ast.operand);
 
 			// Only use parentheses around complex operands, not single variables
 			if (
-				ast.operand!.type === "AND" ||
-				ast.operand!.type === "OR" ||
-				ast.operand!.type === "XOR"
+				ast.operand?.type === "AND" ||
+				ast.operand?.type === "OR" ||
+				ast.operand?.type === "XOR"
 			) {
 				return `NOT (${operandStr})`;
 			}
@@ -347,8 +368,11 @@ function _generateExpressionVariations(expression: string): string[] {
 		}
 
 		if (ast.type === "AND" || ast.type === "OR" || ast.type === "XOR") {
-			const leftStr = _astToStringMinimalParens(ast.left!);
-			const rightStr = _astToStringMinimalParens(ast.right!);
+			if (!ast.left || !ast.right) {
+				return "";
+			}
+			const leftStr = _astToStringMinimalParens(ast.left);
+			const rightStr = _astToStringMinimalParens(ast.right);
 
 			// Preserve parentheses structure - add parentheses around complex sub-expressions
 			let leftFinal = leftStr;
@@ -356,16 +380,16 @@ function _generateExpressionVariations(expression: string): string[] {
 
 			// Add parentheses if sub-expression is complex (contains operators)
 			if (
-				ast.left!.type === "AND" ||
-				ast.left!.type === "OR" ||
-				ast.left!.type === "XOR"
+				ast.left?.type === "AND" ||
+				ast.left?.type === "OR" ||
+				ast.left?.type === "XOR"
 			) {
 				leftFinal = `(${leftStr})`;
 			}
 			if (
-				ast.right!.type === "AND" ||
-				ast.right!.type === "OR" ||
-				ast.right!.type === "XOR"
+				ast.right?.type === "AND" ||
+				ast.right?.type === "OR" ||
+				ast.right?.type === "XOR"
 			) {
 				rightFinal = `(${rightStr})`;
 			}
@@ -379,11 +403,14 @@ function _generateExpressionVariations(expression: string): string[] {
 	// Circuit drawer style: matches how the circuit drawer builds expressions
 	function _astToStringCircuitStyle(ast: ASTNode): string {
 		if (ast.type === "VAR") {
-			return ast.name!;
+			return ast.name || "";
 		}
 
 		if (ast.type === "NOT") {
-			const operandStr = _astToStringCircuitStyle(ast.operand!);
+			if (!ast.operand) {
+				return "NOT";
+			}
+			const operandStr = _astToStringCircuitStyle(ast.operand);
 			// Circuit drawer adds parentheses around operands that contain operators or start with NOT
 			let operandFinal = operandStr;
 			if (
@@ -398,8 +425,11 @@ function _generateExpressionVariations(expression: string): string[] {
 		}
 
 		if (ast.type === "AND" || ast.type === "OR" || ast.type === "XOR") {
-			const leftStr = _astToStringCircuitStyle(ast.left!);
-			const rightStr = _astToStringCircuitStyle(ast.right!);
+			if (!ast.left || !ast.right) {
+				return "";
+			}
+			const leftStr = _astToStringCircuitStyle(ast.left);
+			const rightStr = _astToStringCircuitStyle(ast.right);
 
 			// Don't add extra parentheses here - let the parent handle it
 			return `${leftStr} ${ast.type} ${rightStr}`;
@@ -411,23 +441,28 @@ function _generateExpressionVariations(expression: string): string[] {
 	// Hybrid circuit style: NOT variables with parentheses, complex operands get wrapped
 	function _astToStringHybridCircuit(ast: ASTNode): string {
 		if (ast.type === "VAR") {
-			return ast.name!;
+			return ast.name || "";
 		}
 
 		if (ast.type === "NOT") {
-			const operandStr = _astToStringHybridCircuit(ast.operand!);
-			// Always wrap NOT around single variables and preserve complex expressions
-			if (ast.operand!.type === "VAR") {
-				return `(NOT ${operandStr})`; // (NOT G)
-			} else {
-				// For complex operands, add outer parentheses
-				return `NOT (${operandStr})`; // NOT (complex)
+			if (!ast.operand) {
+				return "NOT";
 			}
+			const operandStr = _astToStringHybridCircuit(ast.operand);
+			// Always wrap NOT around single variables and preserve complex expressions
+			if (ast.operand.type === "VAR") {
+				return `(NOT ${operandStr})`; // (NOT G)
+			}
+			// For complex operands, add outer parentheses
+			return `NOT (${operandStr})`; // NOT (complex)
 		}
 
 		if (ast.type === "AND" || ast.type === "OR" || ast.type === "XOR") {
-			const leftStr = _astToStringHybridCircuit(ast.left!);
-			const rightStr = _astToStringHybridCircuit(ast.right!);
+			if (!ast.left || !ast.right) {
+				return "";
+			}
+			const leftStr = _astToStringHybridCircuit(ast.left);
+			const rightStr = _astToStringHybridCircuit(ast.right);
 
 			return `${leftStr} ${ast.type} ${rightStr}`;
 		}
@@ -438,11 +473,14 @@ function _generateExpressionVariations(expression: string): string[] {
 	// Aggressive parentheses: wraps sub-expressions that would get parentheses in circuit drawer
 	function _astToStringAggressiveParens(ast: ASTNode): string {
 		if (ast.type === "VAR") {
-			return ast.name!;
+			return ast.name || "";
 		}
 
 		if (ast.type === "NOT") {
-			const operandStr = _astToStringAggressiveParens(ast.operand!);
+			if (!ast.operand) {
+				return "NOT";
+			}
+			const operandStr = _astToStringAggressiveParens(ast.operand);
 			// Circuit drawer adds parentheses around operands that contain operators or start with NOT
 			let operandFinal = operandStr;
 			if (
@@ -457,8 +495,11 @@ function _generateExpressionVariations(expression: string): string[] {
 		}
 
 		if (ast.type === "AND" || ast.type === "OR" || ast.type === "XOR") {
-			const leftStr = _astToStringAggressiveParens(ast.left!);
-			const rightStr = _astToStringAggressiveParens(ast.right!);
+			if (!ast.left || !ast.right) {
+				return "";
+			}
+			const leftStr = _astToStringAggressiveParens(ast.left);
+			const rightStr = _astToStringAggressiveParens(ast.right);
 
 			// Add parentheses around sub-expressions that contain operators or start with NOT
 			let leftFinal = leftStr;
@@ -576,8 +617,12 @@ function replaceVariables(inputVars: string[], expression: string): string {
 	// 2. Assign a unique replacement to each input variable
 	for (const originalVar of inputVars) {
 		if (replacements.length > 0) {
-			const newVar = replacements.pop()!;
-			inputMap[originalVar] = newVar;
+			const newVar = replacements.pop();
+			if (newVar) {
+				inputMap[originalVar] = newVar;
+			} else {
+				inputMap[originalVar] = originalVar;
+			}
 		} else {
 			// Fallback: If we run out of replacements, map the variable to itself
 			inputMap[originalVar] = originalVar;
@@ -640,7 +685,8 @@ export function evaluateExpression(
 			.replace(/\bXOR\b/g, "^");
 
 		// Use Function constructor to evaluate (safe in this controlled context)
-		const func = new Function(`return ${evalExpression}`);
+		// Wrap in Boolean() to ensure XOR (which returns 0 or 1) becomes proper boolean
+		const func = new Function(`return Boolean(${evalExpression})`);
 		return func();
 	} catch (error) {
 		console.error("Error evaluating expression:", expression, error);

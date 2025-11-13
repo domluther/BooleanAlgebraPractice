@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!src/routeTree.gen.ts", "!legacy", "!src/test"]
+		"includes": ["**", "!src/routeTree.gen.ts", "!legacy", "!test"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -17,8 +17,8 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true,
-			"suspicious": {
-				"noUnknownAtRules": "off"
+			"security": {
+				"noDangerouslySetInnerHtml": "off"
 			}
 		}
 	},

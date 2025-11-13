@@ -7,9 +7,9 @@ export default defineConfig({
 	test: {
 		globals: true,
 		environment: "jsdom",
-		setupFiles: ["./src/test/setup.ts"],
+		setupFiles: ["./test/setup.ts"],
 		css: true,
-		include: ["src/**/*.{test,spec}.{ts,tsx}"], // Only test files in src/
+		include: ["test/**/*.{test,spec}.{ts,tsx}"], // Test files in test/ directory
 		exclude: [
 			"node_modules/",
 			"legacy/**", // Exclude legacy tests (they use a different format)
@@ -23,7 +23,7 @@ export default defineConfig({
 			reporter: ["text", "json", "html"],
 			exclude: [
 				"node_modules/",
-				"src/test/",
+				"test/",
 				"**/*.d.ts",
 				"**/*.config.*",
 				"**/mockData/**",

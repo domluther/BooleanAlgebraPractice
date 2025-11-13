@@ -137,11 +137,14 @@ export class CircuitGenerator {
 
 		while (result.pos < tokens.length && tokens[result.pos] === "OR") {
 			const right = this.parseXor(tokens, result.pos + 1);
+			if (!result.node || !right.node) {
+				return { node: null, pos: right.pos };
+			}
 			result = {
 				node: {
 					type: "OR",
-					left: result.node!,
-					right: right.node!,
+					left: result.node,
+					right: right.node,
 				},
 				pos: right.pos,
 			};
@@ -157,11 +160,14 @@ export class CircuitGenerator {
 
 		while (result.pos < tokens.length && tokens[result.pos] === "XOR") {
 			const right = this.parseAnd(tokens, result.pos + 1);
+			if (!result.node || !right.node) {
+				return { node: null, pos: right.pos };
+			}
 			result = {
 				node: {
 					type: "XOR",
-					left: result.node!,
-					right: right.node!,
+					left: result.node,
+					right: right.node,
 				},
 				pos: right.pos,
 			};
@@ -177,11 +183,14 @@ export class CircuitGenerator {
 
 		while (result.pos < tokens.length && tokens[result.pos] === "AND") {
 			const right = this.parseNot(tokens, result.pos + 1);
+			if (!result.node || !right.node) {
+				return { node: null, pos: right.pos };
+			}
 			result = {
 				node: {
 					type: "AND",
-					left: result.node!,
-					right: right.node!,
+					left: result.node,
+					right: right.node,
 				},
 				pos: right.pos,
 			};
@@ -195,10 +204,13 @@ export class CircuitGenerator {
 	parseNot(tokens: string[], pos: number): ParseResult {
 		if (pos < tokens.length && tokens[pos] === "NOT") {
 			const operand = this.parsePrimary(tokens, pos + 1);
+			if (!operand.node) {
+				return { node: null, pos: operand.pos };
+			}
 			return {
 				node: {
 					type: "NOT",
-					operand: operand.node!,
+					operand: operand.node,
 				},
 				pos: operand.pos,
 			};
@@ -342,12 +354,22 @@ export class CircuitGenerator {
 			} as VarLayoutNode;
 		} else if (node.type === "NOT") {
 			const notNode = node as NotNode;
+			const operandLayout = this.layoutNodes(
+				notNode.operand,
+				x - 90,
+				y,
+				level + 1,
+				y,
+			);
+			if (!operandLayout) {
+				return null;
+			}
 			return {
 				...baseLayout,
 				type: "NOT",
 				width: 60,
 				height: 40,
-				operand: this.layoutNodes(notNode.operand, x - 90, y, level + 1, y)!,
+				operand: operandLayout,
 			} as NotLayoutNode;
 		} else {
 			// AND, OR, or XOR
@@ -358,25 +380,32 @@ export class CircuitGenerator {
 			const leftY = Math.max(minY, Math.min(maxY, y - spacing));
 			const rightY = Math.max(minY, Math.min(maxY, y + spacing));
 
+			const leftLayout = this.layoutNodes(
+				binaryNode.left,
+				x - 100,
+				leftY,
+				level + 1,
+				y - 15,
+			);
+			const rightLayout = this.layoutNodes(
+				binaryNode.right,
+				x - 100,
+				rightY,
+				level + 1,
+				y + 15,
+			);
+
+			if (!leftLayout || !rightLayout) {
+				return null;
+			}
+
 			return {
 				...baseLayout,
 				type: node.type,
 				width: 80,
 				height: 60,
-				left: this.layoutNodes(
-					binaryNode.left,
-					x - 100,
-					leftY,
-					level + 1,
-					y - 15,
-				)!,
-				right: this.layoutNodes(
-					binaryNode.right,
-					x - 100,
-					rightY,
-					level + 1,
-					y + 15,
-				)!,
+				left: leftLayout,
+				right: rightLayout,
 			} as BinaryOpLayoutNode;
 		}
 	}
@@ -389,7 +418,10 @@ export class CircuitGenerator {
 
 		// Check if this variable already has a position assigned
 		if (this.variablePositions.has(varName)) {
-			return this.variablePositions.get(varName)!;
+			const existingPosition = this.variablePositions.get(varName);
+			if (existingPosition !== undefined) {
+				return existingPosition;
+			}
 		}
 
 		let adjustedY = proposedY;

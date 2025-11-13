@@ -234,7 +234,7 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 					onKeyDown={handleKeyPress}
 					placeholder={getPlaceholder()}
 					disabled={isAnswered}
-					className="!text-xl py-6 border-2 border-checkbox-label-border hover:border-checkbox-label-border-hover focus-visible:ring-ring focus-visible:border-checkbox-label-border-hover text-center"
+					className="text-xl! py-6 border-2 border-checkbox-label-border hover:border-checkbox-label-border-hover focus-visible:ring-ring focus-visible:border-checkbox-label-border-hover text-center"
 				/>
 			</div>
 

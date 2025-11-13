@@ -8,7 +8,7 @@ import {
 	modeSettings,
 	notationMaps,
 	setNotationType,
-} from "../config";
+} from "../../src/lib/config";
 
 /**
  * Tests for configuration and notation conversion functions

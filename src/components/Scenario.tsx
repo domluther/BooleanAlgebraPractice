@@ -435,7 +435,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 							onKeyDown={handleKeyPress}
 							placeholder={`Enter expression (e.g., Q = A ${notationType === "symbol" ? "∧" : "AND"} B)`}
 							disabled={isAnswered}
-							className="!text-xl py-6 border-2 border-checkbox-label-border hover:border-checkbox-label-border-hover focus-visible:ring-ring focus-visible:border-checkbox-label-border-hover text-center"
+							className="text-xl! py-6 border-2 border-checkbox-label-border hover:border-checkbox-label-border-hover focus-visible:ring-ring focus-visible:border-checkbox-label-border-hover text-center"
 						/>
 					</div>
 
@@ -490,9 +490,9 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 									))}
 									{/* Intermediate Headers */}
 									{showIntermediateColumns &&
-										intermediateExpressions.map((expr, index) => (
+										intermediateExpressions.map((expr) => (
 											<th
-												key={`inter-${index}`}
+												key={`inter-${expr}`}
 												className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-yellow-200 text-yellow-900"
 											>
 												{convertToNotation(expr, notationType)}

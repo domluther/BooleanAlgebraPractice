@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { expressionDatabase } from "../data";
+import { expressionDatabase } from "../../src/lib/data";
 
 /**
  * Data integrity tests - ensures all expressions were migrated correctly
