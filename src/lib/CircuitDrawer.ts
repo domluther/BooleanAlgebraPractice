@@ -838,7 +838,9 @@ export class CircuitDrawer {
 
 	private _getAllNodes(): Node[] {
 		const allNodes: Node[] = [];
-		this.gates.forEach((g) => allNodes.push(...g.inputNodes, g.outputNode));
+		this.gates.forEach((g) => {
+			allNodes.push(...g.inputNodes, g.outputNode);
+		});
 		this.inputs.forEach((i) => {
 			if (i.outputNode) allNodes.push(i.outputNode);
 		});
@@ -934,7 +936,9 @@ export class CircuitDrawer {
 	}
 
 	private _drawNodesForGate(gate: Gate): void {
-		gate.inputNodes.forEach((node) => this._drawNode(node));
+		gate.inputNodes.forEach((node) => {
+			this._drawNode(node);
+		});
 		this._drawNode(gate.outputNode);
 	}
 

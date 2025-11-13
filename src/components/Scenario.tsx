@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,7 +164,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 		}
 	}, [notationType, questionType]);
 
-	const handleCheckAnswer = () => {
+	const handleCheckAnswer = useCallback(() => {
 		if (questionType === "draw-circuit") {
 			// Get expression from circuit drawer
 			if (circuitDrawerRef.current) {
@@ -174,7 +174,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 		} else {
 			checkAnswer();
 		}
-	};
+	}, [questionType, checkCircuitAnswer, checkAnswer]);
 
 	const handleResetCircuit = () => {
 		if (circuitDrawerRef.current) {
@@ -705,7 +705,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 								<Button
 									variant="outline"
 									size="sm"
-									className="w-full border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+									className="w-full border-2 border-destructive text-destructive hover:bg-destructive hover:text-white"
 									onClick={handleResetCircuit}
 									disabled={isAnswered}
 								>

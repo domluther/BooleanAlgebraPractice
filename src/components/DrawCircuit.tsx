@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { CircuitDrawer } from "@/lib/CircuitDrawer";
@@ -97,6 +97,9 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				circuitDrawerRef.current.destroy();
 			}
 		};
+		// Note: isAnswered is intentionally NOT in dependencies
+		// It's accessed via callback (() => isAnswered) which always gets latest value
+		// Adding it here would cause drawer to reinitialize when answer is marked
 	}, [currentExpression, currentLevel, notationType]);
 
 	// Update notation when it changes
@@ -123,12 +126,12 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 		setNotationType(newNotation);
 	};
 
-	const handleCheckAnswer = () => {
+	const handleCheckAnswer = useCallback(() => {
 		if (circuitDrawerRef.current) {
 			const userExpression = circuitDrawerRef.current.getCurrentExpression();
 			checkAnswer(userExpression);
 		}
-	};
+	}, [checkAnswer]);
 
 	const handleResetCircuit = () => {
 		if (circuitDrawerRef.current) {
@@ -142,9 +145,9 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 		}
 	};
 
-	const handleNextQuestion = () => {
+	const handleNextQuestion = useCallback(() => {
 		nextQuestion();
-	};
+	}, [nextQuestion]);
 
 	const handleRandomQuestion = () => {
 		generateQuestion();
@@ -304,7 +307,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 						<Button
 							variant="outline"
 							size="sm"
-							className="w-full border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+							className="w-full border-2 border-destructive text-destructive hover:bg-destructive hover:text-white"
 							onClick={handleResetCircuit}
 							disabled={isAnswered}
 						>

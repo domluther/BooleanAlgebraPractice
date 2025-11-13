@@ -494,7 +494,7 @@
 }
 
 canvas.placement-mode {
-	cursor: copy !important;
-	border: 3px dashed var(--primary) !important;
-	background-color: var(--accent) !important;
+	cursor: copy;
+	border: 3px dashed var(--primary);
+	background-color: var(--accent);
 }
