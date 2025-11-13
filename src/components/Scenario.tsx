@@ -625,8 +625,8 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 					{/* Circuit Drawing Area */}
 					<div className="flex gap-6 flex-wrap lg:flex-nowrap">
 						{/* Toolbox */}
-						<div className="flex-shrink-0 w-full sm:w-48 bg-stats-card-bg rounded-lg p-4 border-2">
-							<h3 className="text-center text-stats-label font-semibold mb-4 text-lg">
+						<div className="shrink-0 w-full sm:w-40 md:w-48 bg-stats-card-bg rounded-lg p-3 sm:p-4 border-2">
+							<h3 className="text-center text-stats-label font-semibold mb-3 sm:mb-4 text-base sm:text-lg">
 								Logic Gates
 							</h3>
 

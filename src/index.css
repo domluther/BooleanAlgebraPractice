@@ -422,7 +422,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding: 0.75rem 0.25rem;
+	padding: 0.5rem 0.25rem;
 	margin-bottom: 0.5rem;
 	cursor: grab;
 	border: none;
@@ -434,6 +434,8 @@
 		transform 0.15s ease,
 		color 0.15s ease;
 	box-shadow: none;
+	touch-action: manipulation;
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
 
 .gate:hover {
@@ -456,16 +458,31 @@
 
 .gate-icon {
 	width: 100%;
-	height: 50px;
+	height: 32px;
 	aspect-ratio: 1.5;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	pointer-events: none;
+}
+
+/* Responsive gate sizing */
+@media (min-width: 640px) {
+	.gate {
+		padding: 0.75rem 0.25rem;
+	}
+
+	.gate-icon {
+		height: 50px;
+	}
 }
 
 .gate-svg {
 	width: 90%;
-	height: auto;
+	height: 90%;
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
 	pointer-events: none;
 	display: block;
 }

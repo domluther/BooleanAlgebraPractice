@@ -277,13 +277,6 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 					</Button>
 				</div>
 			)}
-
-			{/* Keyboard Shortcuts Help */}
-			<div className="py-2 text-sm text-center text-stats-label">
-				{isAnswered
-					? "💡 Press Enter for next question"
-					: "💡 Type your answer and press Enter to check"}
-			</div>
 		</div>
 	);
 }

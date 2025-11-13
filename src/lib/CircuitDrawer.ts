@@ -814,7 +814,12 @@ export class CircuitDrawer {
 
 	private _getMousePos(evt: MouseEvent): { x: number; y: number } {
 		const rect = this.canvas.getBoundingClientRect();
-		return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+		const scaleX = this.canvas.width / rect.width;
+		const scaleY = this.canvas.height / rect.height;
+		return {
+			x: (evt.clientX - rect.left) * scaleX,
+			y: (evt.clientY - rect.top) * scaleY,
+		};
 	}
 
 	private _getClickedGate(pos: { x: number; y: number }): Gate | undefined {
@@ -843,13 +848,13 @@ export class CircuitDrawer {
 
 	private _getClickedNode(pos: { x: number; y: number }): Node | undefined {
 		return this._getAllNodes().find(
-			(node) => Math.sqrt((pos.x - node.x) ** 2 + (pos.y - node.y) ** 2) < 6,
+			(node) => Math.sqrt((pos.x - node.x) ** 2 + (pos.y - node.y) ** 2) < 15,
 		);
 	}
 
 	private _getNearbyNode(pos: { x: number; y: number }): Node | null {
 		let closestNode: Node | null = null;
-		let closestDistance = 20; // Snap distance
+		let closestDistance = 40; // Snap distance - larger for touch-friendly interaction
 
 		for (const node of this._getAllNodes()) {
 			const dist = Math.sqrt((pos.x - node.x) ** 2 + (pos.y - node.y) ** 2);
@@ -862,7 +867,7 @@ export class CircuitDrawer {
 	}
 
 	private _getClickedWire(pos: { x: number; y: number }): Wire | undefined {
-		const tolerance = 5;
+		const tolerance = 10; // Increased for touch-friendly interaction
 		return this.wires.find(
 			(wire) => this._distanceToLine(pos, wire.from, wire.to) <= tolerance,
 		);
