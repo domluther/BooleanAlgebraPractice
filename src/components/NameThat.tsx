@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
-import { CircuitGenerator } from "@/lib/CircuitGenerator";
 import { useTheme } from "@/contexts/theme-provider";
+import { CircuitGenerator } from "@/lib/CircuitGenerator";
 import {
 	convertToNotation,
 	getNotationType,

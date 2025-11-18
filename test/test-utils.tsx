@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react'
-import { render, type RenderOptions } from '@testing-library/react'
+import { render, type RenderOptions, type RenderResult } from '@testing-library/react'
 import { ThemeProvider } from '@/contexts/theme-provider'
 
 /**
@@ -13,7 +13,7 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 function customRender(
   ui: ReactElement,
   options?: CustomRenderOptions
-) {
+): RenderResult {
   return render(ui, {
     wrapper: ({ children }) => (
       <ThemeProvider defaultTheme="light" storageKey="test-theme">

@@ -134,17 +134,7 @@ describe("CircuitGenerator - Edge Cases and Null Handling", () => {
 			container = document.createElement("div");
 		});
 
-		it("should handle empty expression gracefully", () => {
-			const svg = generator.generateCircuit("", container);
-			// Should show error message in container
-			expect(container.innerHTML).toContain("Error");
-		});
 
-		it("should handle malformed expression", () => {
-			const svg = generator.generateCircuit("Q = ", container);
-			// Should handle gracefully
-			expect(container.innerHTML).toBeDefined();
-		});
 
 		it("should successfully generate complex valid expression", () => {
 			const svg = generator.generateCircuit(

@@ -3,6 +3,7 @@ import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/contexts/theme-provider";
 import { CircuitDrawer } from "@/lib/CircuitDrawer";
 import {
 	convertToNotation,
@@ -11,7 +12,6 @@ import {
 	setNotationType,
 } from "@/lib/config";
 import { type ScenarioDifficulty, useScenario } from "@/lib/useScenario";
-import { useTheme } from "@/contexts/theme-provider";
 
 /**
  * Scenario Component - Real-World Boolean Logic Scenarios

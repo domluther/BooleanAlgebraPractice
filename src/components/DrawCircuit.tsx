@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/contexts/theme-provider";
 import { CircuitDrawer } from "@/lib/CircuitDrawer";
 import {
 	convertToNotation,
@@ -12,7 +13,6 @@ import {
 	type DrawCircuitDifficulty,
 	useDrawCircuit,
 } from "@/lib/useDrawCircuit";
-import { useTheme } from "@/contexts/theme-provider";
 
 /**
  * DrawCircuit Component - Interactive Circuit Drawing Game

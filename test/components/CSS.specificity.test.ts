@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { render } from '../test-utils'
 
 /**
  * CSS Specificity Tests
