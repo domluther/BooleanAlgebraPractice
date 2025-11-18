@@ -68,7 +68,7 @@ interface UseScenarioReturn {
 	// Methods
 	setDifficulty: (level: ScenarioDifficulty) => void;
 	generateQuestion: () => void;
-	checkAnswer: () => void;
+	checkAnswer: (notationType?: "symbol" | "word") => void;
 	checkCircuitAnswer: (userExpression: string) => void;
 	nextQuestion: () => void;
 }
@@ -276,13 +276,13 @@ export function useScenario({
 		setHelpEnabled((prev) => !prev);
 	}, []);
 
-	const checkExpressionAnswer = useCallback(() => {
+	const checkExpressionAnswer = useCallback((notationType: "symbol" | "word" = "word") => {
 		if (!currentScenario) return;
 
 		const result = checkExpression(
 			userAnswer,
 			currentScenario.expression,
-			"word", // Scenario mode uses word notation
+			notationType,
 		);
 
 		setIsCorrect(result.isCorrect);
@@ -431,10 +431,10 @@ export function useScenario({
 		[currentScenario, currentLevel, onScoreUpdate, isAnswered],
 	);
 
-	const checkAnswer = useCallback(() => {
+	const checkAnswer = useCallback((notationType: "symbol" | "word" = "word") => {
 		switch (questionType) {
 			case "expression":
-				checkExpressionAnswer();
+				checkExpressionAnswer(notationType);
 				break;
 			case "truth-table":
 				checkTruthTableAnswer();

@@ -196,9 +196,9 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 				checkCircuitAnswer(userExpression);
 			}
 		} else {
-			checkAnswer();
+			checkAnswer(notationType);
 		}
-	}, [questionType, checkCircuitAnswer, checkAnswer]);
+	}, [questionType, checkCircuitAnswer, checkAnswer, notationType]);
 
 	const handleResetCircuit = () => {
 		if (circuitDrawerRef.current) {
