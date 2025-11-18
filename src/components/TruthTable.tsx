@@ -236,16 +236,14 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 					<thead>
 						<tr>
 							{/* Input Headers */}
-							{inputs.map((input) => (
-								<th
-									key={input}
-									className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-gray-300 text-gray-800"
-								>
-									{input}
-								</th>
-							))}
-
-							{/* Intermediate Headers */}
+					{inputs.map((input) => (
+						<th
+							key={input}
+							className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text"
+						>
+							{input}
+						</th>
+					))}							{/* Intermediate Headers */}
 							{showIntermediateColumns &&
 								intermediateExpressions.map((expr) => {
 									const displayExpr = convertToNotation(expr, notationType);
@@ -256,16 +254,16 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 									return (
 										<th
 											key={expr}
-											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-yellow-200 text-yellow-900"
+											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-intermediate-header-bg text-truth-table-intermediate-header-text"
 											title={displayExpr}
 										>
 											{truncated}
 										</th>
 									);
 								})}
-							{/* Output Header */}
-							<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-teal-300 text-teal-900">
-								{outputVariable}
+						{/* Output Header */}
+						<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-output-header-bg text-truth-table-output-header-text">
+							{outputVariable}
 							</th>
 						</tr>
 					</thead>
@@ -279,7 +277,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 								{inputs.map((input) => (
 									<td
 										key={input}
-										className="px-4 py-2 text-center border border-checkbox-label-border bg-gray-100 group-hover:bg-gray-200 transition-colors"
+										className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-input-cell-bg group-hover:bg-truth-table-input-cell-hover transition-colors"
 									>
 										{expertMode ? (
 											<select
@@ -313,7 +311,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 										return (
 											<td
 												key={columnName}
-												className="px-4 py-2 text-center border border-checkbox-label-border bg-yellow-50 group-hover:bg-yellow-100 transition-colors"
+												className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-intermediate-cell-bg group-hover:bg-truth-table-intermediate-cell-hover transition-colors"
 											>
 												<select
 													value={getCellValue(rowIndex, columnName)}
@@ -339,9 +337,9 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 										);
 									})}
 
-								{/* Output Cell */}
-								<td className="px-4 py-2 text-center border border-checkbox-label-border bg-teal-100 group-hover:bg-teal-200 transition-colors">
-									<select
+							{/* Output Cell */}
+							<td className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-output-cell-bg group-hover:bg-truth-table-output-cell-hover transition-colors">
+								<select
 										value={getCellValue(rowIndex, outputVariable)}
 										onChange={(e) =>
 											handleCellChange(rowIndex, outputVariable, e.target.value)

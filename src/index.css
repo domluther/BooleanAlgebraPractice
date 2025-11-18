@@ -100,6 +100,18 @@
 	--color-hint-summary-border: var(--hint-summary-border);
 	--color-hint-summary-text: var(--hint-summary-text);
 	--color-hint-content-bg: var(--hint-content-bg);
+	--color-truth-table-input-header-bg: var(--truth-table-input-header-bg);
+	--color-truth-table-input-header-text: var(--truth-table-input-header-text);
+	--color-truth-table-input-cell-bg: var(--truth-table-input-cell-bg);
+	--color-truth-table-input-cell-hover: var(--truth-table-input-cell-hover);
+	--color-truth-table-intermediate-header-bg: var(--truth-table-intermediate-header-bg);
+	--color-truth-table-intermediate-header-text: var(--truth-table-intermediate-header-text);
+	--color-truth-table-intermediate-cell-bg: var(--truth-table-intermediate-cell-bg);
+	--color-truth-table-intermediate-cell-hover: var(--truth-table-intermediate-cell-hover);
+	--color-truth-table-output-header-bg: var(--truth-table-output-header-bg);
+	--color-truth-table-output-header-text: var(--truth-table-output-header-text);
+	--color-truth-table-output-cell-bg: var(--truth-table-output-cell-bg);
+	--color-truth-table-output-cell-hover: var(--truth-table-output-cell-hover);
 }
 
 :root {
@@ -212,6 +224,18 @@
 	--hint-summary-border: var(--link); /* deep blue-300 */
 	--hint-summary-text: oklch(0.38 0.14 235); /* deep blue-800 */
 	--hint-content-bg: var(--stats-card-bg); /* deep blue-50 */
+	--truth-table-input-header-bg: oklch(0.878 0.002 235); /* gray-300 with blue tint */
+	--truth-table-input-header-text: oklch(0.36 0.02 235); /* gray-800 with blue tint */
+	--truth-table-input-cell-bg: oklch(0.971 0.002 235); /* gray-100 with blue tint */
+	--truth-table-input-cell-hover: oklch(0.922 0.002 235); /* gray-200 with blue tint */
+	--truth-table-intermediate-header-bg: oklch(0.949 0.095 84.429); /* yellow-200 */
+	--truth-table-intermediate-header-text: oklch(0.318 0.078 84.429); /* yellow-900 */
+	--truth-table-intermediate-cell-bg: oklch(0.989 0.032 84.429); /* yellow-50 */
+	--truth-table-intermediate-cell-hover: oklch(0.969 0.063 84.429); /* yellow-100 */
+	--truth-table-output-header-bg: oklch(0.819 0.095 184.704); /* teal-300 */
+	--truth-table-output-header-text: oklch(0.25 0.059 184.704); /* teal-900 */
+	--truth-table-output-cell-bg: oklch(0.969 0.032 184.704); /* teal-50 */
+	--truth-table-output-cell-hover: oklch(0.929 0.063 184.704); /* teal-100 */
 }
 
 .dark {
@@ -336,6 +360,18 @@
 	--hint-summary-border: var(--hint-tip-border); /* darker deep blue */
 	--hint-summary-text: var(--hint-tip-text); /* lighter deep blue text */
 	--hint-content-bg: var(--stats-card-bg); /* dark deep blue */
+	--truth-table-input-header-bg: oklch(0.369 0.002 235); /* dark gray-700 with blue tint */
+	--truth-table-input-header-text: oklch(0.853 0.015 235); /* light gray-300 with blue tint */
+	--truth-table-input-cell-bg: oklch(0.269 0.002 235); /* dark gray-800 with blue tint */
+	--truth-table-input-cell-hover: oklch(0.339 0.002 235); /* lighter gray-700 with blue tint */
+	--truth-table-intermediate-header-bg: oklch(0.448 0.078 84.429); /* darker yellow-700 */
+	--truth-table-intermediate-header-text: oklch(0.949 0.063 84.429); /* light yellow-200 */
+	--truth-table-intermediate-cell-bg: oklch(0.318 0.047 84.429); /* dark yellow-900 */
+	--truth-table-intermediate-cell-hover: oklch(0.378 0.063 84.429); /* lighter yellow-800 */
+	--truth-table-output-header-bg: oklch(0.45 0.074 184.704); /* darker teal-700 */
+	--truth-table-output-header-text: oklch(0.929 0.063 184.704); /* light teal-100 */
+	--truth-table-output-cell-bg: oklch(0.25 0.047 184.704); /* dark teal-900 */
+	--truth-table-output-cell-hover: oklch(0.318 0.059 184.704); /* lighter teal-800 */
 }
 
 @layer base {

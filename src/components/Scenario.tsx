@@ -483,7 +483,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 									{inputs.map((input) => (
 										<th
 											key={input}
-											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-gray-300 text-gray-800"
+											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text"
 										>
 											{input}
 										</th>
@@ -493,13 +493,13 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 										intermediateExpressions.map((expr) => (
 											<th
 												key={`inter-${expr}`}
-												className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-yellow-200 text-yellow-900"
+												className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-intermediate-header-bg text-truth-table-intermediate-header-text"
 											>
 												{convertToNotation(expr, notationType)}
 											</th>
 										))}
 									{/* Output Header */}
-									<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-teal-300 text-teal-900">
+									<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-output-header-bg text-truth-table-output-header-text">
 										{outputVariable}
 									</th>
 								</tr>
@@ -514,7 +514,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 										{inputs.map((input) => (
 											<td
 												key={input}
-												className="px-4 py-2 text-center border border-checkbox-label-border bg-gray-100 group-hover:bg-gray-200 transition-colors"
+												className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-input-cell-bg group-hover:bg-truth-table-input-cell-hover transition-colors"
 											>
 												{expertMode ? (
 													<select
@@ -552,7 +552,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 												return (
 													<td
 														key={columnName}
-														className="px-4 py-2 text-center border border-checkbox-label-border bg-yellow-50 group-hover:bg-yellow-100 transition-colors"
+														className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-intermediate-cell-bg group-hover:bg-truth-table-intermediate-cell-hover transition-colors"
 													>
 														<select
 															value={getCellValue(rowIndex, columnName)}
@@ -579,7 +579,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 											})}
 
 										{/* Output Cell */}
-										<td className="px-4 py-2 text-center border border-checkbox-label-border bg-teal-100 group-hover:bg-teal-200 transition-colors">
+										<td className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-output-cell-bg group-hover:bg-truth-table-output-cell-hover transition-colors">
 											<select
 												value={getCellValue(rowIndex, outputVariable)}
 												onChange={(e) =>
