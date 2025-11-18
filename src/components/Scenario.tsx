@@ -11,6 +11,7 @@ import {
 	setNotationType,
 } from "@/lib/config";
 import { type ScenarioDifficulty, useScenario } from "@/lib/useScenario";
+import { useTheme } from "@/contexts/theme-provider";
 
 /**
  * Scenario Component - Real-World Boolean Logic Scenarios
@@ -53,6 +54,7 @@ const CANVAS_ID = "scenario-circuit-canvas";
 const INTERPRETED_EXPR_ID = "scenario-interpreted-expression";
 
 export function Scenario({ onScoreUpdate }: ScenarioProps) {
+	const { theme } = useTheme();
 	const {
 		currentLevel,
 		currentScenario,
@@ -94,6 +96,20 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 	const [notationType, setNotationTypeState] = useState<NotationType>(
 		getNotationType(),
 	);
+
+	// Determine actual theme (resolve "system" to "light" or "dark")
+	const actualTheme = 
+		theme === "system"
+			? window.matchMedia("(prefers-color-scheme: dark)").matches
+				? "dark"
+				: "light"
+			: theme;
+
+	// Helper function to get the correct PNG path based on theme
+	const getGateImagePath = (gateName: string) => {
+		const suffix = actualTheme === "dark" ? "-dark" : "";
+		return `/img/png/${gateName}${suffix}.png`;
+	};
 
 	// Circuit drawing refs
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -630,68 +646,66 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 								Logic Gates
 							</h3>
 
-							{/* Gate buttons */}
-							<div className="space-y-2">
-								<div
-									className="gate"
-									draggable="true"
-									id="drag-AND"
-									data-gate-type="AND"
-								>
-									<div className="gate-icon">
-										<img
-											src="/img/svg/and.svg"
-											alt="AND Gate"
-											className="gate-svg"
-										/>
-									</div>
-								</div>
-								<div
-									className="gate"
-									draggable="true"
-									id="drag-OR"
-									data-gate-type="OR"
-								>
-									<div className="gate-icon">
-										<img
-											src="/img/svg/or.svg"
-											alt="OR Gate"
-											className="gate-svg"
-										/>
-									</div>
-								</div>
-								<div
-									className="gate"
-									draggable="true"
-									id="drag-NOT"
-									data-gate-type="NOT"
-								>
-									<div className="gate-icon">
-										<img
-											src="/img/svg/not.svg"
-											alt="NOT Gate"
-											className="gate-svg"
-										/>
-									</div>
-								</div>
-								<div
-									className="gate"
-									draggable="true"
-									id="drag-XOR"
-									data-gate-type="XOR"
-									style={{ display: currentLevel === 4 ? "flex" : "none" }}
-								>
-									<div className="gate-icon">
-										<img
-											src="/img/svg/xor.svg"
-											alt="XOR Gate"
-											className="gate-svg"
-										/>
-									</div>
+						{/* Gate buttons */}
+						<div className="space-y-2">
+							<div
+								className="gate"
+								draggable="true"
+								id="drag-AND"
+								data-gate-type="AND"
+							>
+								<div className="gate-icon">
+									<img
+										src={getGateImagePath("and")}
+										alt="AND Gate"
+										className="gate-svg"
+									/>
 								</div>
 							</div>
-
-							{/* Toolbox Buttons */}
+							<div
+								className="gate"
+								draggable="true"
+								id="drag-OR"
+								data-gate-type="OR"
+							>
+								<div className="gate-icon">
+									<img
+										src={getGateImagePath("or")}
+										alt="OR Gate"
+										className="gate-svg"
+									/>
+								</div>
+							</div>
+							<div
+								className="gate"
+								draggable="true"
+								id="drag-NOT"
+								data-gate-type="NOT"
+							>
+								<div className="gate-icon">
+									<img
+										src={getGateImagePath("not")}
+										alt="NOT Gate"
+										className="gate-svg"
+									/>
+								</div>
+							</div>
+							<div
+								className="gate"
+								draggable="true"
+								id="drag-XOR"
+								data-gate-type="XOR"
+								style={{ display: currentLevel === 4 ? "flex" : "none" }}
+							>
+								<div className="gate-icon">
+									<img
+										src={getGateImagePath("xor")}
+										alt="XOR Gate"
+										className="gate-svg"
+									/>
+								</div>
+							</div>
+						</div>							{/* Toolbox Buttons */}
 							<div className="mt-6 space-y-2">
 								<Button
 									variant="destructive"

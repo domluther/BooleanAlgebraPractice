@@ -12,6 +12,7 @@ import {
 	type DrawCircuitDifficulty,
 	useDrawCircuit,
 } from "@/lib/useDrawCircuit";
+import { useTheme } from "@/contexts/theme-provider";
 
 /**
  * DrawCircuit Component - Interactive Circuit Drawing Game
@@ -38,6 +39,7 @@ const CANVAS_ID = "draw-circuit-canvas";
 const INTERPRETED_EXPR_ID = "interpreted-expression";
 
 export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
+	const { theme } = useTheme();
 	const {
 		currentLevel,
 		currentExpression,
@@ -62,6 +64,20 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const interpretedExprRef = useRef<HTMLDivElement>(null);
 	const isAnsweredRef = useRef(isAnswered);
+
+	// Determine actual theme (resolve "system" to "light" or "dark")
+	const actualTheme = 
+		theme === "system"
+			? window.matchMedia("(prefers-color-scheme: dark)").matches
+				? "dark"
+				: "light"
+			: theme;
+
+	// Helper function to get the correct PNG path based on theme
+	const getGateImagePath = (gateName: string) => {
+		const suffix = actualTheme === "dark" ? "-dark" : "";
+		return `/img/png/${gateName}${suffix}.png`;
+	};
 
 	// Keep isAnsweredRef in sync with isAnswered
 	useEffect(() => {
@@ -252,7 +268,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 						>
 							<div className="gate-icon">
 								<img
-									src="/img/svg/and.svg"
+									src={getGateImagePath("and")}
 									alt="AND Gate"
 									className="gate-svg"
 								/>
@@ -265,7 +281,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 							data-gate-type="OR"
 						>
 							<div className="gate-icon">
-								<img src="/img/svg/or.svg" alt="OR Gate" className="gate-svg" />
+								<img src={getGateImagePath("or")} alt="OR Gate" className="gate-svg" />
 							</div>
 						</div>
 						<div
@@ -276,7 +292,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 						>
 							<div className="gate-icon">
 								<img
-									src="/img/svg/not.svg"
+									src={getGateImagePath("not")}
 									alt="NOT Gate"
 									className="gate-svg"
 								/>
@@ -291,7 +307,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 						>
 							<div className="gate-icon">
 								<img
-									src="/img/svg/xor.svg"
+									src={getGateImagePath("xor")}
 									alt="XOR Gate"
 									className="gate-svg"
 								/>
