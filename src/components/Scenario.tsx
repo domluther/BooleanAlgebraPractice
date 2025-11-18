@@ -98,7 +98,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 	);
 
 	// Determine actual theme (resolve "system" to "light" or "dark")
-	const actualTheme = 
+	const actualTheme =
 		theme === "system"
 			? window.matchMedia("(prefers-color-scheme: dark)").matches
 				? "dark"
@@ -153,6 +153,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 				notationType,
 				(expr) => setCurrentInterpretedExpression(expr),
 				(enabled) => setRemoveButtonEnabled(enabled),
+				actualTheme === "dark",
 			);
 
 			// Start with the target expression
@@ -179,6 +180,13 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 			circuitDrawerRef.current.updateNotationType(notationType);
 		}
 	}, [notationType, questionType]);
+
+	// Update theme when it changes (for circuit drawer)
+	useEffect(() => {
+		if (circuitDrawerRef.current && questionType === "draw-circuit") {
+			circuitDrawerRef.current.updateTheme(actualTheme === "dark");
+		}
+	}, [actualTheme, questionType]);
 
 	const handleCheckAnswer = useCallback(() => {
 		if (questionType === "draw-circuit") {
@@ -645,67 +653,67 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 							<h3 className="text-center text-stats-label font-semibold mb-3 sm:mb-4 text-base sm:text-lg">
 								Logic Gates
 							</h3>
-
-						{/* Gate buttons */}
-						<div className="space-y-2">
-							<div
-								className="gate"
-								draggable="true"
-								id="drag-AND"
-								data-gate-type="AND"
-							>
-								<div className="gate-icon">
-									<img
-										src={getGateImagePath("and")}
-										alt="AND Gate"
-										className="gate-svg"
-									/>
+							{/* Gate buttons */}
+							<div className="space-y-2">
+								<div
+									className="gate"
+									draggable="true"
+									id="drag-AND"
+									data-gate-type="AND"
+								>
+									<div className="gate-icon">
+										<img
+											src={getGateImagePath("and")}
+											alt="AND Gate"
+											className="gate-svg"
+										/>
+									</div>
 								</div>
-							</div>
-							<div
-								className="gate"
-								draggable="true"
-								id="drag-OR"
-								data-gate-type="OR"
-							>
-								<div className="gate-icon">
-									<img
-										src={getGateImagePath("or")}
-										alt="OR Gate"
-										className="gate-svg"
-									/>
+								<div
+									className="gate"
+									draggable="true"
+									id="drag-OR"
+									data-gate-type="OR"
+								>
+									<div className="gate-icon">
+										<img
+											src={getGateImagePath("or")}
+											alt="OR Gate"
+											className="gate-svg"
+										/>
+									</div>
 								</div>
-							</div>
-							<div
-								className="gate"
-								draggable="true"
-								id="drag-NOT"
-								data-gate-type="NOT"
-							>
-								<div className="gate-icon">
-									<img
-										src={getGateImagePath("not")}
-										alt="NOT Gate"
-										className="gate-svg"
-									/>
+								<div
+									className="gate"
+									draggable="true"
+									id="drag-NOT"
+									data-gate-type="NOT"
+								>
+									<div className="gate-icon">
+										<img
+											src={getGateImagePath("not")}
+											alt="NOT Gate"
+											className="gate-svg"
+										/>
+									</div>
 								</div>
-							</div>
-							<div
-								className="gate"
-								draggable="true"
-								id="drag-XOR"
-								data-gate-type="XOR"
-								style={{ display: currentLevel === 4 ? "flex" : "none" }}
-							>
-								<div className="gate-icon">
-									<img
-										src={getGateImagePath("xor")}
-										alt="XOR Gate"
-										className="gate-svg"
-									/>
+								<div
+									className="gate"
+									draggable="true"
+									id="drag-XOR"
+									data-gate-type="XOR"
+									style={{ display: currentLevel === 4 ? "flex" : "none" }}
+								>
+									<div className="gate-icon">
+										<img
+											src={getGateImagePath("xor")}
+											alt="XOR Gate"
+											className="gate-svg"
+										/>
+									</div>
 								</div>
-							</div>
-						</div>							{/* Toolbox Buttons */}
+							</div>{" "}
+							{/* Toolbox Buttons */}
 							<div className="mt-6 space-y-2">
 								<Button
 									variant="destructive"

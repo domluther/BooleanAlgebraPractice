@@ -195,7 +195,7 @@ export class CircuitDrawer {
 		this.isDarkMode = isDarkMode;
 		this._preloadGateImages();
 		// Update existing gates with new images
-		this.gates.forEach(gate => {
+		this.gates.forEach((gate) => {
 			const cleanType = gate.type.replace(/-.*$/, "") as GateType;
 			gate.image = this.gateImages[cleanType];
 		});
@@ -596,11 +596,12 @@ export class CircuitDrawer {
 		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
 		// Draw wires
+		const wireColor = this.isDarkMode ? "#e5e5e5" : "#333";
 		this.wires.forEach((wire) => {
 			this.ctx.beginPath();
 			this.ctx.moveTo(wire.from.x, wire.from.y);
 			this.ctx.lineTo(wire.to.x, wire.to.y);
-			this.ctx.strokeStyle = this.selectedWire === wire ? "#e74c3c" : "#333";
+			this.ctx.strokeStyle = this.selectedWire === wire ? "#e74c3c" : wireColor;
 			this.ctx.lineWidth = this.selectedWire === wire ? 4 : 2;
 			this.ctx.stroke();
 		});
@@ -638,7 +639,7 @@ export class CircuitDrawer {
 	private _preloadGateImages(): void {
 		const color = this.isDarkMode ? "#e5e5e5" : "#333";
 		const gateTypes: GateType[] = ["AND", "OR", "NOT", "XOR"];
-		
+
 		const gateSVGs: Record<GateType, string> = {
 			AND: `<svg viewBox="30 34 120 52" xmlns="http://www.w3.org/2000/svg">
 				<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="${color}" stroke-width="2"></path>
@@ -666,10 +667,10 @@ export class CircuitDrawer {
 				<line x1="115" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"></line>
 			</svg>`,
 		};
-		
+
 		gateTypes.forEach((type) => {
 			const img = new Image();
-			const svgBlob = new Blob([gateSVGs[type]], { type: 'image/svg+xml' });
+			const svgBlob = new Blob([gateSVGs[type]], { type: "image/svg+xml" });
 			const url = URL.createObjectURL(svgBlob);
 			img.src = url;
 			this.gateImages[type] = img;

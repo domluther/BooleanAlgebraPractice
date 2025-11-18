@@ -66,7 +66,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 	const isAnsweredRef = useRef(isAnswered);
 
 	// Determine actual theme (resolve "system" to "light" or "dark")
-	const actualTheme = 
+	const actualTheme =
 		theme === "system"
 			? window.matchMedia("(prefers-color-scheme: dark)").matches
 				? "dark"
@@ -106,6 +106,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				notationType,
 				(expr) => setCurrentInterpretedExpression(expr),
 				(enabled) => setRemoveButtonEnabled(enabled),
+				actualTheme === "dark",
 			);
 
 			// Start the drawer with current expression
@@ -130,6 +131,13 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 			circuitDrawerRef.current.updateNotationType(notationType);
 		}
 	}, [notationType]);
+
+	// Update theme when it changes
+	useEffect(() => {
+		if (circuitDrawerRef.current) {
+			circuitDrawerRef.current.updateTheme(actualTheme === "dark");
+		}
+	}, [actualTheme]);
 
 	const handleDifficultyChange = (
 		event: React.ChangeEvent<HTMLSelectElement>,
@@ -281,7 +289,11 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 							data-gate-type="OR"
 						>
 							<div className="gate-icon">
-								<img src={getGateImagePath("or")} alt="OR Gate" className="gate-svg" />
+								<img
+									src={getGateImagePath("or")}
+									alt="OR Gate"
+									className="gate-svg"
+								/>
 							</div>
 						</div>
 						<div

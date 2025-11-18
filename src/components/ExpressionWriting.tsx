@@ -69,7 +69,10 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 
 			// Generate new circuit
 			try {
-				const isDarkMode = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+				const isDarkMode =
+					theme === "dark" ||
+					(theme === "system" &&
+						window.matchMedia("(prefers-color-scheme: dark)").matches);
 				circuitGeneratorRef.current.generateCircuit(
 					currentQuestion.expression,
 					circuitRef.current,

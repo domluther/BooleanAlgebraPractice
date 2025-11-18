@@ -72,7 +72,10 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 
 			// Generate new circuit
 			try {
-				const isDarkMode = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+				const isDarkMode =
+					theme === "dark" ||
+					(theme === "system" &&
+						window.matchMedia("(prefers-color-scheme: dark)").matches);
 				circuitGeneratorRef.current.generateCircuit(
 					currentExpression,
 					circuitRef.current,
@@ -236,14 +239,15 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 					<thead>
 						<tr>
 							{/* Input Headers */}
-					{inputs.map((input) => (
-						<th
-							key={input}
-							className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text"
-						>
-							{input}
-						</th>
-					))}							{/* Intermediate Headers */}
+							{inputs.map((input) => (
+								<th
+									key={input}
+									className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text"
+								>
+									{input}
+								</th>
+							))}{" "}
+							{/* Intermediate Headers */}
 							{showIntermediateColumns &&
 								intermediateExpressions.map((expr) => {
 									const displayExpr = convertToNotation(expr, notationType);
@@ -261,9 +265,9 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 										</th>
 									);
 								})}
-						{/* Output Header */}
-						<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-output-header-bg text-truth-table-output-header-text">
-							{outputVariable}
+							{/* Output Header */}
+							<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-output-header-bg text-truth-table-output-header-text">
+								{outputVariable}
 							</th>
 						</tr>
 					</thead>
@@ -337,9 +341,9 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 										);
 									})}
 
-							{/* Output Cell */}
-							<td className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-output-cell-bg group-hover:bg-truth-table-output-cell-hover transition-colors">
-								<select
+								{/* Output Cell */}
+								<td className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-output-cell-bg group-hover:bg-truth-table-output-cell-hover transition-colors">
+									<select
 										value={getCellValue(rowIndex, outputVariable)}
 										onChange={(e) =>
 											handleCellChange(rowIndex, outputVariable, e.target.value)

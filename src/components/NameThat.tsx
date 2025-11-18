@@ -64,7 +64,10 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 			// Level 1 & 2: Display circuit
 			// Generate new circuit
 			try {
-				const isDarkMode = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+				const isDarkMode =
+					theme === "dark" ||
+					(theme === "system" &&
+						window.matchMedia("(prefers-color-scheme: dark)").matches);
 				circuitGeneratorRef.current.generateCircuit(
 					currentQuestion.expression,
 					circuitRef.current,
@@ -77,7 +80,10 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 			}
 		} else if (currentQuestion.invalidGate) {
 			// Level 1 NONE option: Render invalid gate SVG
-			const isDarkMode = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+			const isDarkMode =
+				theme === "dark" ||
+				(theme === "system" &&
+					window.matchMedia("(prefers-color-scheme: dark)").matches);
 			const color = isDarkMode ? "#e5e5e5" : "#333";
 			const svg = currentQuestion.invalidGate.getSvg(color);
 			circuitRef.current.innerHTML = `<svg width="200" height="120" viewBox="0 0 200 120">${svg}</svg>`;

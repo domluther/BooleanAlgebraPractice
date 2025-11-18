@@ -86,7 +86,9 @@ interface UseNameThatOptions {
  */
 const INVALID_GATES: InvalidGate[] = [
 	{
-		getSvg: (color: string) => `<circle cx="65" cy="60" r="5" fill="none" stroke="${color}" stroke-width="2"/>
+		getSvg: (
+			color: string,
+		) => `<circle cx="65" cy="60" r="5" fill="none" stroke="${color}" stroke-width="2"/>
 		<path d="M 71 30 L 71 90 L 120 60 Z" fill="none" stroke="${color}" stroke-width="2"/>
 		<line x1="30" y1="60" x2="60" y2="60" stroke="${color}" stroke-width="2"/>
 		<line x1="120" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
@@ -96,7 +98,9 @@ const INVALID_GATES: InvalidGate[] = [
 			"The bubble is on the wrong side of this NOT gate. It should be at the output.",
 	},
 	{
-		getSvg: (color: string) => `<path d="M 86 35 A 25 25 0 0 0 86 85 L 113 85 L 113 35 Z" fill="none" stroke="${color}" stroke-width="2"/>
+		getSvg: (
+			color: string,
+		) => `<path d="M 86 35 A 25 25 0 0 0 86 85 L 113 85 L 113 35 Z" fill="none" stroke="${color}" stroke-width="2"/>
 		<line x1="30" y1="50" x2="63" y2="50" stroke="${color}" stroke-width="2"/>
 		<line x1="30" y1="70" x2="63" y2="70" stroke="${color}" stroke-width="2"/>
 		<line x1="113" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
@@ -107,7 +111,9 @@ const INVALID_GATES: InvalidGate[] = [
 			"It is a backwards AND gate. The curved side should be on the right.",
 	},
 	{
-		getSvg: (color: string) => `<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="${color}" stroke-width="2"/>
+		getSvg: (
+			color: string,
+		) => `<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="${color}" stroke-width="2"/>
 		<circle cx="120" cy="60" r="5" fill="none" stroke="${color}" stroke-width="2"/>
 		<line x1="30" y1="50" x2="60" y2="50" stroke="${color}" stroke-width="2"/>
 		<line x1="30" y1="70" x2="60" y2="70" stroke="${color}" stroke-width="2"/>
@@ -118,7 +124,9 @@ const INVALID_GATES: InvalidGate[] = [
 		reason: "The bubble makes it a NAND gate - an AND followed by a NOT.",
 	},
 	{
-		getSvg: (color: string) => `<path d="M 55 35 Q 70 60 55 85" fill="none" stroke="${color}" stroke-width="2"/>
+		getSvg: (
+			color: string,
+		) => `<path d="M 55 35 Q 70 60 55 85" fill="none" stroke="${color}" stroke-width="2"/>
 		<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="${color}" stroke-width="2"/>
 		<line x1="30" y1="50" x2="65" y2="50" stroke="${color}" stroke-width="2"/>
 		<line x1="30" y1="70" x2="65" y2="70" stroke="${color}" stroke-width="2"/>

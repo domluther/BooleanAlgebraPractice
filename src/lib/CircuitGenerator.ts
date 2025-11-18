@@ -264,7 +264,11 @@ export class CircuitGenerator {
 	 * @param isDarkMode - Whether to use dark mode colors
 	 * @returns SVG string
 	 */
-	generateCircuit(expression: string, container: HTMLElement, isDarkMode = false): string {
+	generateCircuit(
+		expression: string,
+		container: HTMLElement,
+		isDarkMode = false,
+	): string {
 		this.isDarkMode = isDarkMode;
 		this.gateId = 0;
 		// this.wireId = 0 // Reserved for future use
