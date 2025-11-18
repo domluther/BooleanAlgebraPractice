@@ -3,6 +3,7 @@ import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
+import { useTheme } from "@/contexts/theme-provider";
 import {
 	getNotationType,
 	type NotationType,
@@ -51,6 +52,7 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 		setLevel,
 	} = useExpressionWriting({ onScoreUpdate });
 
+	const { theme } = useTheme();
 	const circuitRef = useRef<HTMLDivElement>(null);
 	const circuitGeneratorRef = useRef<CircuitGenerator>(new CircuitGenerator());
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -67,9 +69,11 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 
 			// Generate new circuit
 			try {
+				const isDarkMode = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 				circuitGeneratorRef.current.generateCircuit(
 					currentQuestion.expression,
 					circuitRef.current,
+					isDarkMode,
 				);
 			} catch (error) {
 				console.error("Error generating circuit:", error);
@@ -82,7 +86,7 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 		if (inputRef.current && !isAnswered) {
 			inputRef.current.focus();
 		}
-	}, [currentQuestion, isAnswered]);
+	}, [currentQuestion, isAnswered, theme]);
 
 	// Global keyboard handler for Enter key
 	useEffect(() => {

@@ -38,6 +38,8 @@ const buttonVariants = {
     hover:bg-button-primary hover:text-white hover:border-button-primary
     hover:transform hover:-translate-y-1 hover:shadow-md
     transition-all duration-200 shadow-sm
+    dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600
+    dark:hover:bg-button-primary dark:hover:text-white dark:hover:border-button-primary
   `,
 	"answer-selected": `
     relative py-3 sm:py-4 px-6 sm:px-12 text-base sm:text-lg font-semibold rounded-lg border-2 
@@ -67,6 +69,8 @@ const buttonVariants = {
     px-6 py-2 font-medium rounded-md transition-all duration-200
     bg-gray-100 text-gray-700 border border-gray-300
     hover:bg-gray-200 hover:text-gray-900
+    dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600
+    dark:hover:bg-gray-700 dark:hover:text-gray-100
   `,
 	"mode-active": `
     px-6 py-2 font-medium rounded-md transition-all duration-200
@@ -100,6 +104,8 @@ const buttonVariants = {
     px-3 sm:px-6 py-3 sm:py-6 text-sm sm:text-base font-semibold rounded-lg transition-all duration-200
     bg-gray-100 hover:bg-gray-200
     text-gray-800 shadow-md hover:shadow-lg
+    dark:bg-gray-800 dark:hover:bg-gray-700
+    dark:text-gray-200
   `,
 };
 

@@ -3,6 +3,7 @@ import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
+import { useTheme } from "@/contexts/theme-provider";
 import {
 	convertToNotation,
 	getNotationType,
@@ -56,6 +57,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 		generateNewQuestion,
 	} = useTruthTable({ onScoreUpdate });
 
+	const { theme } = useTheme();
 	const circuitRef = useRef<HTMLDivElement>(null);
 	const circuitGeneratorRef = useRef<CircuitGenerator>(new CircuitGenerator());
 	const [notationType, setNotationTypeState] = useState<NotationType>(
@@ -70,9 +72,11 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 
 			// Generate new circuit
 			try {
+				const isDarkMode = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 				circuitGeneratorRef.current.generateCircuit(
 					currentExpression,
 					circuitRef.current,
+					isDarkMode,
 				);
 			} catch (error) {
 				console.error("Error generating circuit:", error);
@@ -80,7 +84,7 @@ export function TruthTable({ onScoreUpdate }: TruthTableProps) {
 					'<p class="text-destructive">Error rendering circuit</p>';
 			}
 		}
-	}, [currentExpression]);
+	}, [currentExpression, theme]);
 
 	// Regenerate table when level changes
 	useEffect(() => {

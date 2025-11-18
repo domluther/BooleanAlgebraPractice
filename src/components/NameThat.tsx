@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { CircuitGenerator } from "@/lib/CircuitGenerator";
+import { useTheme } from "@/contexts/theme-provider";
 import {
 	convertToNotation,
 	getNotationType,
@@ -36,6 +37,7 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 		setLevel,
 	} = useNameThat({ onScoreUpdate });
 
+	const { theme } = useTheme();
 	const circuitRef = useRef<HTMLDivElement>(null);
 	const circuitGeneratorRef = useRef<CircuitGenerator>(new CircuitGenerator());
 	const [notationType, setNotationTypeState] = useState<NotationType>(
@@ -62,18 +64,23 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 			// Level 1 & 2: Display circuit
 			// Generate new circuit
 			try {
+				const isDarkMode = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 				circuitGeneratorRef.current.generateCircuit(
 					currentQuestion.expression,
 					circuitRef.current,
+					isDarkMode,
 				);
 			} catch (error) {
 				console.error("Error generating circuit:", error);
 				circuitRef.current.innerHTML =
 					'<p class="text-destructive">Error rendering circuit</p>';
 			}
-		} else if (currentQuestion.invalidGateSVG) {
+		} else if (currentQuestion.invalidGate) {
 			// Level 1 NONE option: Render invalid gate SVG
-			circuitRef.current.innerHTML = currentQuestion.invalidGateSVG;
+			const isDarkMode = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+			const color = isDarkMode ? "#e5e5e5" : "#333";
+			const svg = currentQuestion.invalidGate.getSvg(color);
+			circuitRef.current.innerHTML = `<svg width="200" height="120" viewBox="0 0 200 120">${svg}</svg>`;
 		}
 
 		// Cleanup function to clear content when component unmounts or before next render
@@ -82,7 +89,7 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 				circuitRef.current.innerHTML = "";
 			}
 		};
-	}, [currentQuestion, currentLevel]);
+	}, [currentQuestion, currentLevel, theme]);
 
 	const handleAnswerClick = useCallback(
 		(answer: string) => {

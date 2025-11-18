@@ -90,7 +90,7 @@ export function SharedLayout({ children }: SharedLayoutProps) {
 				isOpen={showStatsModal}
 				onClose={() => setShowStatsModal(false)}
 				scoreManager={scoreManager}
-				title="Your Network Mastery"
+				title="Your Boolean Algebra Mastery"
 				onStatsUpdate={() => setScoreUpdateTrigger((prev) => prev + 1)}
 			/>
 		</SiteLayout>

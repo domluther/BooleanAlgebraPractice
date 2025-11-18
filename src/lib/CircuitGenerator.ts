@@ -65,6 +65,14 @@ export class CircuitGenerator {
 	// private wireId = 0 // Reserved for future use
 	private variablePositions = new Map<string, number>();
 	private input = "";
+	private isDarkMode = false;
+
+	/**
+	 * Get stroke/fill color based on theme
+	 */
+	private getColor(): string {
+		return this.isDarkMode ? "#e5e5e5" : "#333";
+	}
 
 	/**
 	 * Parse expression into AST
@@ -253,9 +261,11 @@ export class CircuitGenerator {
 	 * Generate complete SVG circuit from expression
 	 * @param expression - Boolean expression (e.g., "Q = A AND B")
 	 * @param container - HTML element to render into
+	 * @param isDarkMode - Whether to use dark mode colors
 	 * @returns SVG string
 	 */
-	generateCircuit(expression: string, container: HTMLElement): string {
+	generateCircuit(expression: string, container: HTMLElement, isDarkMode = false): string {
+		this.isDarkMode = isDarkMode;
 		this.gateId = 0;
 		// this.wireId = 0 // Reserved for future use
 		this.variablePositions = new Map(); // Reset for each circuit generation
@@ -511,11 +521,11 @@ export class CircuitGenerator {
 		svg += this.renderGates(layout);
 
 		// Output label
-		svg += `<text x="${width - 30}" y="${height / 2 + 5}" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
+		svg += `<text x="${width - 30}" y="${height / 2 + 5}" font-family="Arial" font-size="16" font-weight="bold" fill="${this.getColor()}">${this.input}</text>`;
 
 		// Output line to eg Q
 		const rootOutput = this.getOutputPoint(layout);
-		svg += `<line x1="${rootOutput.x}" y1="${rootOutput.y}" x2="${width - 50}" y2="${height / 2}" stroke="#333" stroke-width="2"/>`;
+		svg += `<line x1="${rootOutput.x}" y1="${rootOutput.y}" x2="${width - 50}" y2="${height / 2}" stroke="${this.getColor()}" stroke-width="2"/>`;
 
 		svg += "</svg>";
 		container.innerHTML = svg;
@@ -540,13 +550,14 @@ export class CircuitGenerator {
 			// Hardcoded AND gate
 			const varA = ((layout as BinaryOpLayoutNode).left as VarLayoutNode).name;
 			const varB = ((layout as BinaryOpLayoutNode).right as VarLayoutNode).name;
-			return `<path d="M 62 35 L 62 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="50" x2="62" y2="50" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="70" x2="62" y2="70" stroke="#333" stroke-width="2"/>
-        <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
-        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
+			const color = this.getColor();
+			return `<path d="M 62 35 L 62 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="${color}" stroke-width="2"/>
+        <line x1="30" y1="50" x2="62" y2="50" stroke="${color}" stroke-width="2"/>
+        <line x1="30" y1="70" x2="62" y2="70" stroke="${color}" stroke-width="2"/>
+        <line x1="115" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
+        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${varA}</text>
+        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${varB}</text>
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${this.input}</text>`;
 		}
 
 		if (
@@ -559,13 +570,14 @@ export class CircuitGenerator {
 			// Hardcoded OR gate
 			const varA = ((layout as BinaryOpLayoutNode).left as VarLayoutNode).name;
 			const varB = ((layout as BinaryOpLayoutNode).right as VarLayoutNode).name;
-			return `<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="50" x2="65" y2="50" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="70" x2="65" y2="70" stroke="#333" stroke-width="2"/>
-        <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
-        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
+			const color = this.getColor();
+			return `<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="${color}" stroke-width="2"/>
+        <line x1="30" y1="50" x2="65" y2="50" stroke="${color}" stroke-width="2"/>
+        <line x1="30" y1="70" x2="65" y2="70" stroke="${color}" stroke-width="2"/>
+        <line x1="115" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
+        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${varA}</text>
+        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${varB}</text>
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${this.input}</text>`;
 		}
 
 		if (
@@ -578,14 +590,15 @@ export class CircuitGenerator {
 			// Hardcoded XOR gate - OR shape with extra input curve, lines connect to main gate body
 			const varA = ((layout as BinaryOpLayoutNode).left as VarLayoutNode).name;
 			const varB = ((layout as BinaryOpLayoutNode).right as VarLayoutNode).name;
-			return `<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="#333" stroke-width="2"/>
-        <path d="M 55 35 Q 70 60 55 85" fill="none" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="50" x2="65" y2="50" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="70" x2="65" y2="70" stroke="#333" stroke-width="2"/>
-        <line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
-        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varB}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
+			const color = this.getColor();
+			return `<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="${color}" stroke-width="2"/>
+        <path d="M 55 35 Q 70 60 55 85" fill="none" stroke="${color}" stroke-width="2"/>
+        <line x1="30" y1="50" x2="65" y2="50" stroke="${color}" stroke-width="2"/>
+        <line x1="30" y1="70" x2="65" y2="70" stroke="${color}" stroke-width="2"/>
+        <line x1="115" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
+        <text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${varA}</text>
+        <text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${varB}</text>
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${this.input}</text>`;
 		}
 
 		if (
@@ -595,12 +608,13 @@ export class CircuitGenerator {
 		) {
 			// Hardcoded NOT gate
 			const varA = ((layout as NotLayoutNode).operand as VarLayoutNode).name;
-			return `<path d="M 60 30 L 60 90 L 108 60 Z" fill="none" stroke="#333" stroke-width="2"/>
-        <circle cx="114" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
-        <line x1="30" y1="60" x2="60" y2="60" stroke="#333" stroke-width="2"/>
-        <line x1="120" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-        <text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${varA}</text>
-        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${this.input}</text>`;
+			const color = this.getColor();
+			return `<path d="M 60 30 L 60 90 L 108 60 Z" fill="none" stroke="${color}" stroke-width="2"/>
+        <circle cx="114" cy="60" r="5" fill="none" stroke="${color}" stroke-width="2"/>
+        <line x1="30" y1="60" x2="60" y2="60" stroke="${color}" stroke-width="2"/>
+        <line x1="120" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
+        <text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${varA}</text>
+        <text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">${this.input}</text>`;
 		}
 
 		return null;
@@ -632,30 +646,30 @@ export class CircuitGenerator {
 
 		if (node.type === "AND") {
 			const andNode = node as BinaryOpLayoutNode;
-			svg += `<path d="M ${node.x - 40} ${node.y - 30} L ${node.x - 40} ${node.y + 30} L ${node.x - 15} ${node.y + 30} A 30 30 0 0 0 ${node.x - 15} ${node.y - 30} Z" fill="none" stroke="#333" stroke-width="2"/>`;
+			svg += `<path d="M ${node.x - 40} ${node.y - 30} L ${node.x - 40} ${node.y + 30} L ${node.x - 15} ${node.y + 30} A 30 30 0 0 0 ${node.x - 15} ${node.y - 30} Z" fill="none" stroke="${this.getColor()}" stroke-width="2"/>`;
 			svg += this.renderGates(andNode.left);
 			svg += this.renderGates(andNode.right);
 		} else if (node.type === "OR") {
 			const orNode = node as BinaryOpLayoutNode;
-			svg += `<path d="M ${node.x - 40} ${node.y - 30} Q ${node.x - 15} ${node.y - 30} ${node.x + 10} ${node.y} Q ${node.x - 15} ${node.y + 30} ${node.x - 40} ${node.y + 30} Q ${node.x - 25} ${node.y} ${node.x - 40} ${node.y - 30}" fill="none" stroke="#333" stroke-width="2"/>`;
+			svg += `<path d="M ${node.x - 40} ${node.y - 30} Q ${node.x - 15} ${node.y - 30} ${node.x + 10} ${node.y} Q ${node.x - 15} ${node.y + 30} ${node.x - 40} ${node.y + 30} Q ${node.x - 25} ${node.y} ${node.x - 40} ${node.y - 30}" fill="none" stroke="${this.getColor()}" stroke-width="2"/>`;
 			svg += this.renderGates(orNode.left);
 			svg += this.renderGates(orNode.right);
 		} else if (node.type === "XOR") {
 			const xorNode = node as BinaryOpLayoutNode;
 			// XOR gate - OR shape with additional input curve
-			svg += `<path d="M ${node.x - 40} ${node.y - 30} Q ${node.x - 15} ${node.y - 30} ${node.x + 10} ${node.y} Q ${node.x - 15} ${node.y + 30} ${node.x - 40} ${node.y + 30} Q ${node.x - 25} ${node.y} ${node.x - 40} ${node.y - 30}" fill="none" stroke="#333" stroke-width="2"/>`;
+			svg += `<path d="M ${node.x - 40} ${node.y - 30} Q ${node.x - 15} ${node.y - 30} ${node.x + 10} ${node.y} Q ${node.x - 15} ${node.y + 30} ${node.x - 40} ${node.y + 30} Q ${node.x - 25} ${node.y} ${node.x - 40} ${node.y - 30}" fill="none" stroke="${this.getColor()}" stroke-width="2"/>`;
 			// Additional curved line at the input
-			svg += `<path d="M ${node.x - 45} ${node.y - 30} Q ${node.x - 30} ${node.y} ${node.x - 45} ${node.y + 30}" fill="none" stroke="#333" stroke-width="2"/>`;
+			svg += `<path d="M ${node.x - 45} ${node.y - 30} Q ${node.x - 30} ${node.y} ${node.x - 45} ${node.y + 30}" fill="none" stroke="${this.getColor()}" stroke-width="2"/>`;
 			svg += this.renderGates(xorNode.left);
 			svg += this.renderGates(xorNode.right);
 		} else if (node.type === "NOT") {
 			const notNode = node as NotLayoutNode;
-			svg += `<path d="M ${node.x - 30} ${node.y - 20} L ${node.x - 30} ${node.y + 20} L ${node.x + 19} ${node.y} Z" fill="none" stroke="#333" stroke-width="2"/>`;
-			svg += `<circle cx="${node.x + 25}" cy="${node.y}" r="5" fill="none" stroke="#333" stroke-width="2"/>`;
+			svg += `<path d="M ${node.x - 30} ${node.y - 20} L ${node.x - 30} ${node.y + 20} L ${node.x + 19} ${node.y} Z" fill="none" stroke="${this.getColor()}" stroke-width="2"/>`;
+			svg += `<circle cx="${node.x + 25}" cy="${node.y}" r="5" fill="none" stroke="${this.getColor()}" stroke-width="2"/>`;
 			svg += this.renderGates(notNode.operand);
 		} else if (node.type === "VAR") {
 			// Render variable labels at their positions
-			svg += `<text x="${node.x - 10}" y="${node.y + 5}" font-family="Arial" font-size="16" font-weight="bold" fill="#333">${(node as VarLayoutNode).name}</text>`;
+			svg += `<text x="${node.x - 10}" y="${node.y + 5}" font-family="Arial" font-size="16" font-weight="bold" fill="${this.getColor()}">${(node as VarLayoutNode).name}</text>`;
 		}
 
 		return svg;
@@ -674,13 +688,13 @@ export class CircuitGenerator {
 			// Connection from left child to gate
 			if (andNode.left) {
 				const leftOutput = this.getOutputPoint(andNode.left);
-				svg += `<line x1="${leftOutput.x}" y1="${leftOutput.y}" x2="${node.x - 40}" y2="${node.y - 15}" stroke="#333" stroke-width="2"/>`;
+				svg += `<line x1="${leftOutput.x}" y1="${leftOutput.y}" x2="${node.x - 40}" y2="${node.y - 15}" stroke="${this.getColor()}" stroke-width="2"/>`;
 			}
 
 			// Connection from right child to gate
 			if (andNode.right) {
 				const rightOutput = this.getOutputPoint(andNode.right);
-				svg += `<line x1="${rightOutput.x}" y1="${rightOutput.y}" x2="${node.x - 40}" y2="${node.y + 15}" stroke="#333" stroke-width="2"/>`;
+				svg += `<line x1="${rightOutput.x}" y1="${rightOutput.y}" x2="${node.x - 40}" y2="${node.y + 15}" stroke="${this.getColor()}" stroke-width="2"/>`;
 			}
 
 			svg += this.renderConnections(andNode.left);
@@ -690,13 +704,13 @@ export class CircuitGenerator {
 			// Connection from left child to gate
 			if (orNode.left) {
 				const leftOutput = this.getOutputPoint(orNode.left);
-				svg += `<line x1="${leftOutput.x}" y1="${leftOutput.y}" x2="${node.x - 35}" y2="${node.y - 15}" stroke="#333" stroke-width="2"/>`;
+				svg += `<line x1="${leftOutput.x}" y1="${leftOutput.y}" x2="${node.x - 35}" y2="${node.y - 15}" stroke="${this.getColor()}" stroke-width="2"/>`;
 			}
 
 			// Connection from right child to gate
 			if (orNode.right) {
 				const rightOutput = this.getOutputPoint(orNode.right);
-				svg += `<line x1="${rightOutput.x}" y1="${rightOutput.y}" x2="${node.x - 35}" y2="${node.y + 15}" stroke="#333" stroke-width="2"/>`;
+				svg += `<line x1="${rightOutput.x}" y1="${rightOutput.y}" x2="${node.x - 35}" y2="${node.y + 15}" stroke="${this.getColor()}" stroke-width="2"/>`;
 			}
 
 			svg += this.renderConnections(orNode.left);
@@ -706,13 +720,13 @@ export class CircuitGenerator {
 			// Connection from left child to gate - connect to main gate body, passing through the extra curve
 			if (xorNode.left) {
 				const leftOutput = this.getOutputPoint(xorNode.left);
-				svg += `<line x1="${leftOutput.x}" y1="${leftOutput.y}" x2="${node.x - 35}" y2="${node.y - 15}" stroke="#333" stroke-width="2"/>`;
+				svg += `<line x1="${leftOutput.x}" y1="${leftOutput.y}" x2="${node.x - 35}" y2="${node.y - 15}" stroke="${this.getColor()}" stroke-width="2"/>`;
 			}
 
 			// Connection from right child to gate - connect to main gate body, passing through the extra curve
 			if (xorNode.right) {
 				const rightOutput = this.getOutputPoint(xorNode.right);
-				svg += `<line x1="${rightOutput.x}" y1="${rightOutput.y}" x2="${node.x - 35}" y2="${node.y + 15}" stroke="#333" stroke-width="2"/>`;
+				svg += `<line x1="${rightOutput.x}" y1="${rightOutput.y}" x2="${node.x - 35}" y2="${node.y + 15}" stroke="${this.getColor()}" stroke-width="2"/>`;
 			}
 
 			svg += this.renderConnections(xorNode.left);
@@ -722,7 +736,7 @@ export class CircuitGenerator {
 			// Connection from operand to NOT gate
 			if (notNode.operand) {
 				const operandOutput = this.getOutputPoint(notNode.operand);
-				svg += `<line x1="${operandOutput.x}" y1="${operandOutput.y}" x2="${node.x - 30}" y2="${node.y}" stroke="#333" stroke-width="2"/>`;
+				svg += `<line x1="${operandOutput.x}" y1="${operandOutput.y}" x2="${node.x - 30}" y2="${node.y}" stroke="${this.getColor()}" stroke-width="2"/>`;
 			}
 
 			svg += this.renderConnections(notNode.operand);

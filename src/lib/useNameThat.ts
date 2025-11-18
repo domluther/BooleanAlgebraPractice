@@ -40,7 +40,7 @@ const getInitialDifficulty = (): number => {
 type GateType = "AND" | "OR" | "NOT" | "NONE";
 
 interface InvalidGate {
-	svg: string;
+	getSvg: (color: string) => string;
 	reason: string;
 }
 
@@ -48,7 +48,7 @@ interface Question {
 	expression: string;
 	correctAnswer: string;
 	options: string[];
-	invalidGateSVG?: string;
+	invalidGate?: InvalidGate;
 	reason?: string;
 	truthTableHTML?: string;
 }
@@ -86,46 +86,46 @@ interface UseNameThatOptions {
  */
 const INVALID_GATES: InvalidGate[] = [
 	{
-		svg: `<circle cx="65" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
-		<path d="M 71 30 L 71 90 L 120 60 Z" fill="none" stroke="#333" stroke-width="2"/>
-		<line x1="30" y1="60" x2="60" y2="60" stroke="#333" stroke-width="2"/>
-		<line x1="120" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-		<text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
-		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`,
+		getSvg: (color: string) => `<circle cx="65" cy="60" r="5" fill="none" stroke="${color}" stroke-width="2"/>
+		<path d="M 71 30 L 71 90 L 120 60 Z" fill="none" stroke="${color}" stroke-width="2"/>
+		<line x1="30" y1="60" x2="60" y2="60" stroke="${color}" stroke-width="2"/>
+		<line x1="120" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
+		<text x="5" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">A</text>
+		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">Q</text>`,
 		reason:
 			"The bubble is on the wrong side of this NOT gate. It should be at the output.",
 	},
 	{
-		svg: `<path d="M 86 35 A 25 25 0 0 0 86 85 L 113 85 L 113 35 Z" fill="none" stroke="#333" stroke-width="2"/>
-		<line x1="30" y1="50" x2="63" y2="50" stroke="#333" stroke-width="2"/>
-		<line x1="30" y1="70" x2="63" y2="70" stroke="#333" stroke-width="2"/>
-		<line x1="113" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-		<text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
-		<text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
-		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`,
+		getSvg: (color: string) => `<path d="M 86 35 A 25 25 0 0 0 86 85 L 113 85 L 113 35 Z" fill="none" stroke="${color}" stroke-width="2"/>
+		<line x1="30" y1="50" x2="63" y2="50" stroke="${color}" stroke-width="2"/>
+		<line x1="30" y1="70" x2="63" y2="70" stroke="${color}" stroke-width="2"/>
+		<line x1="113" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
+		<text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">A</text>
+		<text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">B</text>
+		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">Q</text>`,
 		reason:
 			"It is a backwards AND gate. The curved side should be on the right.",
 	},
 	{
-		svg: `<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="#333" stroke-width="2"/>
-		<circle cx="120" cy="60" r="5" fill="none" stroke="#333" stroke-width="2"/>
-		<line x1="30" y1="50" x2="60" y2="50" stroke="#333" stroke-width="2"/>
-		<line x1="30" y1="70" x2="60" y2="70" stroke="#333" stroke-width="2"/>
-		<line x1="125" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-		<text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
-		<text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
-		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`,
+		getSvg: (color: string) => `<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="${color}" stroke-width="2"/>
+		<circle cx="120" cy="60" r="5" fill="none" stroke="${color}" stroke-width="2"/>
+		<line x1="30" y1="50" x2="60" y2="50" stroke="${color}" stroke-width="2"/>
+		<line x1="30" y1="70" x2="60" y2="70" stroke="${color}" stroke-width="2"/>
+		<line x1="125" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
+		<text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">A</text>
+		<text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">B</text>
+		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">Q</text>`,
 		reason: "The bubble makes it a NAND gate - an AND followed by a NOT.",
 	},
 	{
-		svg: `<path d="M 55 35 Q 70 60 55 85" fill="none" stroke="#333" stroke-width="2"/>
-		<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="#333" stroke-width="2"/>
-		<line x1="30" y1="50" x2="65" y2="50" stroke="#333" stroke-width="2"/>
-		<line x1="30" y1="70" x2="65" y2="70" stroke="#333" stroke-width="2"/>
-		<line x1="115" y1="60" x2="150" y2="60" stroke="#333" stroke-width="2"/>
-		<text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="#333">A</text>
-		<text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="#333">B</text>
-		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="#333">Q</text>`,
+		getSvg: (color: string) => `<path d="M 55 35 Q 70 60 55 85" fill="none" stroke="${color}" stroke-width="2"/>
+		<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="${color}" stroke-width="2"/>
+		<line x1="30" y1="50" x2="65" y2="50" stroke="${color}" stroke-width="2"/>
+		<line x1="30" y1="70" x2="65" y2="70" stroke="${color}" stroke-width="2"/>
+		<line x1="115" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"/>
+		<text x="5" y="55" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">A</text>
+		<text x="5" y="75" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">B</text>
+		<text x="165" y="65" font-family="Arial" font-size="16" font-weight="bold" fill="${color}">Q</text>`,
 		reason: "The extra curved line makes it an XOR gate, used at A-Level.",
 	},
 ];
@@ -175,7 +175,7 @@ function generateLevel1Question(): Question {
 			expression: getGateExpression(gateType),
 			correctAnswer: gateType,
 			options,
-			invalidGateSVG: `<svg width="200" height="120" viewBox="0 0 200 120">${invalidGate.svg}</svg>`,
+			invalidGate,
 			reason: invalidGate.reason,
 		};
 	}

@@ -59,7 +59,7 @@ export const ModeMenu = () => {
 								whitespace-nowrap
 								${
 									location.pathname === mode.path
-										? "text-action-button-text bg-action-button-bg hover:bg-action-button-bg-hover hover:shadow-lg ring-2 ring-action-button-bg ring-offset-2"
+										? "text-action-button-text bg-action-button-bg hover:bg-action-button-bg-hover hover:shadow-lg ring-2 ring-action-button-bg ring-offset-2 dark:ring-offset-gray-900 dark:ring-2 dark:ring-offset-2 dark:ring-action-button-bg dark:bg-action-button-bg"
 										: ""
 								}
 							`}

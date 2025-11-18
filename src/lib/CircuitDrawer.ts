@@ -102,6 +102,7 @@ export class CircuitDrawer {
 	private onRemoveButtonStateChange?: (enabled: boolean) => void;
 	private isAnswered: () => boolean;
 	private notationType: NotationType;
+	private isDarkMode = false;
 
 	constructor(
 		canvasId: string,
@@ -109,6 +110,7 @@ export class CircuitDrawer {
 		notationType: NotationType,
 		onExpressionChange?: (expression: string) => void,
 		onRemoveButtonStateChange?: (enabled: boolean) => void,
+		isDarkMode = false,
 	) {
 		const canvas = document.getElementById(
 			canvasId,
@@ -124,6 +126,7 @@ export class CircuitDrawer {
 		this.ctx = ctx;
 		this.isAnswered = isAnswered;
 		this.notationType = notationType;
+		this.isDarkMode = isDarkMode;
 		this.onExpressionChange = onExpressionChange;
 		this.onRemoveButtonStateChange = onRemoveButtonStateChange;
 
@@ -182,6 +185,21 @@ export class CircuitDrawer {
 	updateNotationType(notationType: NotationType): void {
 		this.notationType = notationType;
 		this._updateInterpretedExpression();
+	}
+
+	/**
+	 * Updates the theme and reloads gate images, then redraws
+	 */
+	updateTheme(isDarkMode: boolean): void {
+		if (this.isDarkMode === isDarkMode) return;
+		this.isDarkMode = isDarkMode;
+		this._preloadGateImages();
+		// Update existing gates with new images
+		this.gates.forEach(gate => {
+			const cleanType = gate.type.replace(/-.*$/, "") as GateType;
+			gate.image = this.gateImages[cleanType];
+		});
+		this._draw();
 	}
 
 	/**
@@ -618,10 +636,42 @@ export class CircuitDrawer {
 	}
 
 	private _preloadGateImages(): void {
+		const color = this.isDarkMode ? "#e5e5e5" : "#333";
 		const gateTypes: GateType[] = ["AND", "OR", "NOT", "XOR"];
+		
+		const gateSVGs: Record<GateType, string> = {
+			AND: `<svg viewBox="30 34 120 52" xmlns="http://www.w3.org/2000/svg">
+				<path d="M 60 35 L 60 85 L 90 85 A 25 25 0 0 0 90 35 Z" fill="none" stroke="${color}" stroke-width="2"></path>
+				<line x1="30" y1="50" x2="60" y2="50" stroke="${color}" stroke-width="2"></line>
+				<line x1="30" y1="70" x2="60" y2="70" stroke="${color}" stroke-width="2"></line>
+				<line x1="115" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"></line>
+			</svg>`,
+			OR: `<svg viewBox="30 34 120 52" xmlns="http://www.w3.org/2000/svg">
+				<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="${color}" stroke-width="2"></path>
+				<line x1="30" y1="50" x2="65" y2="50" stroke="${color}" stroke-width="2"></line>
+				<line x1="30" y1="70" x2="65" y2="70" stroke="${color}" stroke-width="2"></line>
+				<line x1="115" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"></line>
+			</svg>`,
+			NOT: `<svg viewBox="30 29 120 62" xmlns="http://www.w3.org/2000/svg">
+				<path d="M 60 30 L 60 90 L 108 60 Z" fill="none" stroke="${color}" stroke-width="2"></path>
+				<circle cx="114" cy="60" r="5" fill="none" stroke="${color}" stroke-width="2"></circle>
+				<line x1="30" y1="60" x2="60" y2="60" stroke="${color}" stroke-width="2"></line>
+				<line x1="120" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"></line>
+			</svg>`,
+			XOR: `<svg viewBox="30 34 120 52" xmlns="http://www.w3.org/2000/svg">
+				<path d="M 55 35 Q 70 60 55 85" fill="none" stroke="${color}" stroke-width="2"></path>
+				<path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 35" fill="none" stroke="${color}" stroke-width="2"></path>
+				<line x1="30" y1="50" x2="65" y2="50" stroke="${color}" stroke-width="2"></line>
+				<line x1="30" y1="70" x2="65" y2="70" stroke="${color}" stroke-width="2"></line>
+				<line x1="115" y1="60" x2="150" y2="60" stroke="${color}" stroke-width="2"></line>
+			</svg>`,
+		};
+		
 		gateTypes.forEach((type) => {
 			const img = new Image();
-			img.src = `/img/png/${type.toLowerCase()}.png`;
+			const svgBlob = new Blob([gateSVGs[type]], { type: 'image/svg+xml' });
+			const url = URL.createObjectURL(svgBlob);
+			img.src = url;
 			this.gateImages[type] = img;
 		});
 	}
