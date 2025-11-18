@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
 	areExpressionsLogicallyEquivalent,
+	checkExpressionAnswer as checkExpression,
 	generateAllAcceptedAnswers,
 } from "./expressionUtils";
 import { getRandomScenario, type ScenarioQuestion } from "./scenarioData";
@@ -278,37 +279,19 @@ export function useScenario({
 	const checkExpressionAnswer = useCallback(() => {
 		if (!currentScenario) return;
 
-		const trimmedAnswer = userAnswer.trim();
-		if (!trimmedAnswer) {
-			setFeedbackMessage("Please enter an expression");
-			return;
-		}
-
-		const acceptedAnswers = generateAllAcceptedAnswers(
+		const result = checkExpression(
+			userAnswer,
 			currentScenario.expression,
-		);
-		const logicallyEquivalent = areExpressionsLogicallyEquivalent(
-			trimmedAnswer,
-			currentScenario.expression,
+			"word", // Scenario mode uses word notation
 		);
 
-		const correct =
-			acceptedAnswers.includes(trimmedAnswer) || logicallyEquivalent;
-
-		setIsCorrect(correct);
+		setIsCorrect(result.isCorrect);
 		setIsAnswered(true);
-
-		if (correct) {
-			setFeedbackMessage("✅ Correct! Well done!");
-		} else {
-			setFeedbackMessage(
-				`❌ Incorrect. The correct answer was: ${currentScenario.expression}`,
-			);
-		}
+		setFeedbackMessage(result.message);
 
 		// Record score
 		if (onScoreUpdate) {
-			onScoreUpdate(correct, "Scenario", "scenario", currentLevel, false);
+			onScoreUpdate(result.isCorrect, "Scenario", "scenario", currentLevel, false);
 		}
 	}, [currentScenario, userAnswer, currentLevel, onScoreUpdate]);
 

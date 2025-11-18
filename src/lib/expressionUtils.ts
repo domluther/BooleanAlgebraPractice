@@ -6,6 +6,8 @@
  * IMPORTANT: Logic is kept identical to original - do not modify algorithms
  */
 
+import { convertToWordNotation } from "./config";
+
 /**
  * AST Node types for expression parsing
  */
@@ -739,4 +741,112 @@ export function areExpressionsLogicallyEquivalent(
 		console.error("Error comparing expressions:", error);
 		return false;
 	}
+}
+
+/**
+ * Result of checking an expression answer
+ */
+export interface ExpressionCheckResult {
+	isCorrect: boolean;
+	message: string;
+}
+
+/**
+ * Validates that user input follows the expected notation consistently
+ * @param userInput - The user's input string
+ * @param notationType - Expected notation type ('symbol' or 'word')
+ * @returns Error message if invalid, null if valid
+ */
+function validateNotationConsistency(
+	userInput: string,
+	notationType: "symbol" | "word",
+): string | null {
+	const hasWords = /\b(AND|OR|NOT|XOR)\b/.test(userInput);
+	const hasSymbols = /[∧∨¬⊻^vV!]/.test(userInput);
+
+	if (notationType === "symbol") {
+		if (hasWords) {
+			return "Please use symbol notation (∧, ∨, ¬, ⊻) or keyboard shortcuts (^, v, !) instead of words. Current mode: Symbols";
+		}
+	} else {
+		if (hasSymbols) {
+			return "Please use word notation (AND, OR, NOT, XOR) instead of symbols. Current mode: Words";
+		}
+	}
+
+	// Check for mixed notation within the same expression
+	if (hasWords && hasSymbols) {
+		return "Please use consistent notation throughout your expression. Don't mix words and symbols.";
+	}
+
+	return null; // Valid
+}
+
+/**
+ * Checks if a user's expression answer is correct
+ * This is a robust validation that:
+ * - Validates notation consistency
+ * - Converts symbols to words if needed
+ * - Normalizes expressions before comparison
+ * - Checks exact matches first, then logical equivalence
+ *
+ * @param userAnswer - The user's answer string
+ * @param correctExpression - The correct expression to compare against
+ * @param notationType - The notation type being used ('symbol' or 'word')
+ * @returns Result object with isCorrect boolean and feedback message
+ */
+export function checkExpressionAnswer(
+	userAnswer: string,
+	correctExpression: string,
+	notationType: "symbol" | "word" = "word",
+): ExpressionCheckResult {
+	const trimmedAnswer = userAnswer.trim();
+
+	// Check for empty input
+	if (!trimmedAnswer) {
+		return {
+			isCorrect: false,
+			message: "Please enter an expression",
+		};
+	}
+
+	// Check for notation consistency
+	const upperAnswer = trimmedAnswer.toUpperCase();
+	const notationError = validateNotationConsistency(upperAnswer, notationType);
+	if (notationError) {
+		return {
+			isCorrect: false,
+			message: notationError,
+		};
+	}
+
+	// Convert user input from symbols to words if they used symbol notation
+	const userAnswerInWords = convertToWordNotation(upperAnswer);
+	const normalizedUser = normalizeExpression(userAnswerInWords);
+
+	// Generate all accepted answers for exact matching
+	const acceptedAnswers = generateAllAcceptedAnswers(correctExpression);
+
+	// First try exact match with accepted answers
+	let isCorrect = acceptedAnswers.some((acceptedAnswer) => {
+		const normalizedAccepted = normalizeExpression(
+			acceptedAnswer.toUpperCase(),
+		);
+		return normalizedUser === normalizedAccepted;
+	});
+
+	// If no exact match, try logical equivalence using truth tables
+	if (!isCorrect) {
+		isCorrect = areExpressionsLogicallyEquivalent(
+			userAnswerInWords,
+			correctExpression,
+		);
+	}
+
+	return {
+		isCorrect,
+		message: isCorrect
+			? "✅ Correct! Well done!"
+			: `❌ Incorrect. The correct answer was: ${correctExpression}`,
+	};
 }

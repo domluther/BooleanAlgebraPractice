@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { convertToWordNotation, type NotationType } from "./config";
+import { type NotationType } from "./config";
 import { expressionDatabase } from "./data";
 import {
-	areExpressionsLogicallyEquivalent,
-	generateAllAcceptedAnswers,
-	normalizeExpression,
+	checkExpressionAnswer,
 	shuffleExpression,
 } from "./expressionUtils";
 
@@ -42,7 +40,6 @@ const getInitialDifficulty = (): number => {
 
 interface Question {
 	expression: string;
-	acceptedAnswers: string[];
 }
 
 interface UseExpressionWritingReturn {
@@ -74,34 +71,6 @@ interface UseExpressionWritingOptions {
 }
 
 /**
- * Validates that user input follows the expected notation consistently
- */
-function validateNotationConsistency(
-	userInput: string,
-	notationType: NotationType,
-): string | null {
-	const hasWords = /\b(AND|OR|NOT|XOR)\b/.test(userInput);
-	const hasSymbols = /[∧∨¬⊻^vV!]/.test(userInput);
-
-	if (notationType === "symbol") {
-		if (hasWords) {
-			return "Please use symbol notation (∧, ∨, ¬, ⊻) or keyboard shortcuts (^, v, !) instead of words. Current mode: Symbols";
-		}
-	} else {
-		if (hasSymbols) {
-			return "Please use word notation (AND, OR, NOT, XOR) instead of symbols. Current mode: Words";
-		}
-	}
-
-	// Check for mixed notation within the same expression
-	if (hasWords && hasSymbols) {
-		return "Please use consistent notation throughout your expression. Don't mix words and symbols.";
-	}
-
-	return null; // Valid
-}
-
-/**
  * Generate a question for the given difficulty level
  */
 function generateQuestion(level: number): Question {
@@ -119,12 +88,7 @@ function generateQuestion(level: number): Question {
 		expression = shuffleExpression(expression);
 	}
 
-	const acceptedAnswers = generateAllAcceptedAnswers(expression);
-
-	return {
-		expression,
-		acceptedAnswers,
-	};
+	return { expression };
 }
 
 /**
@@ -168,71 +132,24 @@ export function useExpressionWriting(
 			// Prevent answering twice
 			if (isAnswered) return;
 
-			const trimmedAnswer = userAnswer.trim().toUpperCase();
-
-			// Check for notation consistency
-			const notationError = validateNotationConsistency(
-				trimmedAnswer,
+			const result = checkExpressionAnswer(
+				userAnswer,
+				currentQuestion.expression,
 				notationType,
 			);
-			if (notationError) {
-				setIsAnswered(true);
-				setIsCorrect(false);
-				setFeedbackMessage(notationError);
-
-				// Still record as incorrect attempt
-				if (options?.onScoreUpdate) {
-					options.onScoreUpdate(
-						false,
-						getQuestionType(),
-						"writeExpression",
-						currentLevel,
-						false, // Expression Writing doesn't have expert mode yet
-					);
-				}
-				return;
-			}
-
-			// Convert user input from symbols to words if they used symbol notation
-			const userAnswerInWords = convertToWordNotation(trimmedAnswer);
-			const normalizedUser = normalizeExpression(userAnswerInWords);
-
-			// First try exact match with accepted answers
-			let correct = currentQuestion.acceptedAnswers.some((acceptedAnswer) => {
-				const normalizedAccepted = normalizeExpression(
-					acceptedAnswer.toUpperCase(),
-				);
-				return normalizedUser === normalizedAccepted;
-			});
-
-			// If no exact match, try logical equivalence using truth tables
-			if (!correct) {
-				correct = areExpressionsLogicallyEquivalent(
-					userAnswerInWords,
-					currentQuestion.expression,
-				);
-			}
 
 			setIsAnswered(true);
-			setIsCorrect(correct);
+			setIsCorrect(result.isCorrect);
+			setFeedbackMessage(result.message);
 
 			// Call external score recording callback if provided
 			if (options?.onScoreUpdate) {
 				options.onScoreUpdate(
-					correct,
+					result.isCorrect,
 					getQuestionType(),
 					"writeExpression",
 					currentLevel,
 					false, // Expression Writing doesn't have expert mode yet
-				);
-			}
-
-			// Generate feedback message
-			if (correct) {
-				setFeedbackMessage("Correct! Excellent work!");
-			} else {
-				setFeedbackMessage(
-					`Incorrect. The correct answer is: ${currentQuestion.expression}`,
 				);
 			}
 		},
