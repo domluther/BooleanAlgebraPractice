@@ -15,8 +15,8 @@ import { useNameThat } from "@/lib/useNameThat";
  * NameThat Component - Logic Gate Identification Game
  *
  * Level 1: Identify single GCSE logic gates (AND, OR, NOT) or invalid gates (NONE)
- * Level 2: Identify two-gate combinations (future)
- * Level 3: Identify circuits from truth tables (future)
+ * Level 2: Identify two-gate combinations
+ * Level 3: Identify circuits from truth tables
  */
 
 interface NameThatProps {

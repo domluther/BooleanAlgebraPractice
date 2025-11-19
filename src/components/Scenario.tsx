@@ -171,7 +171,13 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 				circuitDrawerRef.current = null;
 			}
 		};
-	}, [currentExpression, currentLevel, questionType, notationType]);
+	}, [
+		currentExpression,
+		currentLevel,
+		questionType,
+		notationType,
+		actualTheme,
+	]);
 	// Removed isAnswered from dependencies - we don't want to recreate the drawer when checking answers
 
 	// Update notation when it changes (for circuit drawer)

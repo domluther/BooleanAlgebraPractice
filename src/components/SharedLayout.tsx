@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { ScoreButton, SiteLayout, StatsModal } from "@/components";
 import { ScoreManager } from "@/lib/scoreManager";
 import { SITE_CONFIG } from "@/lib/siteConfig";
 import { ModeMenu } from "./ModeMenu";
+import { ScoreButton } from "./ScoreButton";
+import { SiteLayout } from "./SiteLayout";
+import { StatsModal } from "./StatsModal";
 
 interface SharedLayoutProps {
 	children: (

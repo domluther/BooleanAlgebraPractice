@@ -276,24 +276,33 @@ export function useScenario({
 		setHelpEnabled((prev) => !prev);
 	}, []);
 
-	const checkExpressionAnswer = useCallback((notationType: "symbol" | "word" = "word") => {
-		if (!currentScenario) return;
+	const checkExpressionAnswer = useCallback(
+		(notationType: "symbol" | "word" = "word") => {
+			if (!currentScenario) return;
 
-		const result = checkExpression(
-			userAnswer,
-			currentScenario.expression,
-			notationType,
-		);
+			const result = checkExpression(
+				userAnswer,
+				currentScenario.expression,
+				notationType,
+			);
 
-		setIsCorrect(result.isCorrect);
-		setIsAnswered(true);
-		setFeedbackMessage(result.message);
+			setIsCorrect(result.isCorrect);
+			setIsAnswered(true);
+			setFeedbackMessage(result.message);
 
-		// Record score
-		if (onScoreUpdate) {
-			onScoreUpdate(result.isCorrect, "Scenario", "scenario", currentLevel, false);
-		}
-	}, [currentScenario, userAnswer, currentLevel, onScoreUpdate]);
+			// Record score
+			if (onScoreUpdate) {
+				onScoreUpdate(
+					result.isCorrect,
+					"Scenario",
+					"scenario",
+					currentLevel,
+					false,
+				);
+			}
+		},
+		[currentScenario, userAnswer, currentLevel, onScoreUpdate],
+	);
 
 	const checkTruthTableAnswer = useCallback(() => {
 		if (!currentScenario) return;
@@ -431,20 +440,23 @@ export function useScenario({
 		[currentScenario, currentLevel, onScoreUpdate, isAnswered],
 	);
 
-	const checkAnswer = useCallback((notationType: "symbol" | "word" = "word") => {
-		switch (questionType) {
-			case "expression":
-				checkExpressionAnswer(notationType);
-				break;
-			case "truth-table":
-				checkTruthTableAnswer();
-				break;
-			case "draw-circuit":
-				// For draw-circuit, we need the expression from CircuitDrawer
-				// This will be called from the component with the expression
-				break;
-		}
-	}, [questionType, checkExpressionAnswer, checkTruthTableAnswer]);
+	const checkAnswer = useCallback(
+		(notationType: "symbol" | "word" = "word") => {
+			switch (questionType) {
+				case "expression":
+					checkExpressionAnswer(notationType);
+					break;
+				case "truth-table":
+					checkTruthTableAnswer();
+					break;
+				case "draw-circuit":
+					// For draw-circuit, we need the expression from CircuitDrawer
+					// This will be called from the component with the expression
+					break;
+			}
+		},
+		[questionType, checkExpressionAnswer, checkTruthTableAnswer],
+	);
 
 	const nextQuestion = useCallback(() => {
 		generateQuestion();

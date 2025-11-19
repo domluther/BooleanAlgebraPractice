@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { type NotationType } from "./config";
+import type { NotationType } from "./config";
 import { expressionDatabase } from "./data";
-import {
-	checkExpressionAnswer,
-	shuffleExpression,
-} from "./expressionUtils";
+import { checkExpressionAnswer, shuffleExpression } from "./expressionUtils";
 
 const STORAGE_KEY = "expressionWritingDifficulty";
 
