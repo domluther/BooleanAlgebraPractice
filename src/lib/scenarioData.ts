@@ -245,13 +245,25 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 			},
 			expression: "Q = E AND (NOT S OR U)",
 		},
+				{
+			title: "Smart doorbell",
+			scenario: `Smart doorbells allow people to answer their door remotely. This means the user can talk to their visitors while they are not at home, or if they are unable to answer the door in person for any other reason, such as a disability.
+
+Smart doorbells include a camera in addition to a doorbell. If the camera detects movement, or if the doorbell is pressed, then a notification is sent to the user's smartphone (X). An app can then be used to view the camera and to listen to or speak with the visitor.`,
+			inputs: {
+				D: "Doorbell is pressed",
+				M: "Movement is detected by the camera",
+			},
+			expression: "X = M OR D",
+		},
+
 	],
 	3: [
 		// Level 3 - More wordy scenarios
 		{
 			title: "Gym Access",
 			scenario:
-				"A gym grants access to discounted memberships (Q) only if one of the following applies: The person is under 21 and has a university ID, or they are aged 65 or older and show proof of residency.",
+				"A gym grants access to discounted memberships (Q) only if at least one of the following applies: The person is under 21 and has a university ID, or they are aged 65 or older and show proof of residency.",
 			inputs: {
 				A: "Under 21",
 				B: "Has university ID",
@@ -271,17 +283,6 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 				D: "It's during business hours",
 			},
 			expression: "Q = A AND (B OR (C AND D))",
-		},
-		{
-			title: "Smart doorbell",
-			scenario: `Smart doorbells allow people to answer their door remotely. This means the user can talk to their visitors while they are not at home, or if they are unable to answer the door in person for any other reason, such as a disability.
-
-Smart doorbells include a camera in addition to a doorbell. If the camera detects movement, or if the doorbell is pressed, then a notification is sent to the user's smartphone (X). An app can then be used to view the camera and to listen to or speak with the visitor.`,
-			inputs: {
-				D: "Doorbell is pressed",
-				M: "Movement is detected by the camera",
-			},
-			expression: "X = M OR D",
 		},
 		{
 			title: "Private Collector's Trap",
