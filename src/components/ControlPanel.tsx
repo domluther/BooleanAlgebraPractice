@@ -84,13 +84,13 @@ export function ControlPanel({
 	const difficultySelectId = useId();
 
 	return (
-		<div className="p-4 rounded-lg border-2 bg-stats-card-bg">
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+		<div className="p-4 border-2 rounded-lg bg-stats-card-bg">
+			<div className="flex flex-col items-center justify-between sm:flex-row gap-4">
 				{/* Difficulty Selector */}
 				<div className="flex items-center gap-3">
 					<label
 						htmlFor={difficultySelectId}
-						className="font-medium text-sm whitespace-nowrap text-stats-label"
+						className="text-sm font-medium whitespace-nowrap text-stats-label"
 					>
 						Difficulty:
 					</label>
@@ -136,7 +136,7 @@ export function ControlPanel({
 						size="sm"
 						onClick={onShuffle}
 						title="Generate a new question"
-						className="text-xl px-3 border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover"
+						className="px-3 text-xl border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover"
 					>
 						🎲
 					</Button>

@@ -192,7 +192,7 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 
 			{/* Circuit Display */}
 			<div className="border-2 rounded-lg bg-card">
-				<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-[150px]">
+				<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-37.5">
 					<div
 						ref={circuitRef}
 						className="circuit-display"
@@ -204,7 +204,7 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 			{/* Symbol Helper Buttons - Only in Symbol Mode */}
 			{notationType === "symbol" && (
 				<>
-					<div className="flex flex-wrap gap-2 justify-center">
+					<div className="flex flex-wrap justify-center gap-2">
 						{SYMBOL_BUTTONS.filter(
 							(btn) => btn.word !== "XOR" || currentLevel === 5,
 						).map((btn) => (
@@ -214,25 +214,25 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 								size="sm"
 								onClick={() => insertSymbol(btn.symbol)}
 								disabled={isAnswered}
-								className="border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover px-4"
+								className="px-4 border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover"
 								title={
 									btn.shortcut
 										? `${btn.word} (${btn.symbol}) - Press ${btn.shortcut}`
 										: `${btn.word} (${btn.symbol})`
 								}
 							>
-								<span className="font-bold text-lg">{btn.symbol}</span>
+								<span className="text-lg font-bold">{btn.symbol}</span>
 							</Button>
 						))}
 					</div>
-					<div className="text-center text-sm text-stats-label">
+					<div className="text-sm text-center text-stats-label">
 						Keyboard: ^ (AND), v (OR), ! (NOT)
 					</div>
 				</>
 			)}
 
 			{/* Input Field */}
-			<div className="max-w-2xl mx-auto w-full space-y-3">
+			<div className="w-full max-w-2xl mx-auto space-y-3">
 				<Input
 					ref={inputRef}
 					type="text"
@@ -247,12 +247,12 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 
 			{/* Submit Button */}
 			{!isAnswered && (
-				<div className="max-w-md mx-auto w-full">
+				<div className="w-full max-w-md mx-auto">
 					<Button
 						onClick={handleSubmit}
 						disabled={!userAnswer.trim()}
 						size="lg"
-						className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+						className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 					>
 						Mark My Answer
 					</Button>
@@ -274,11 +274,11 @@ export function ExpressionWriting({ onScoreUpdate }: ExpressionWritingProps) {
 
 			{/* Next Button */}
 			{isAnswered && (
-				<div className="max-w-md mx-auto w-full">
+				<div className="w-full max-w-md mx-auto">
 					<Button
 						onClick={generateNewQuestion}
 						size="lg"
-						className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+						className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 					>
 						Next Question →
 					</Button>

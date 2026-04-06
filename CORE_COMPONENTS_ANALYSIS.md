@@ -288,8 +288,8 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
       />
       
       {/* Scenario Context Card */}
-      <div className="bg-stats-card-bg border-2 border-stats-card-border rounded-lg p-6">
-        <h3 className="text-xl font-bold mb-3">{currentScenario.title}</h3>
+      <div className="p-6 border-2 rounded-lg bg-stats-card-bg border-stats-card-border">
+        <h3 className="mb-3 text-xl font-bold">{currentScenario.title}</h3>
         <p className="mb-4">{currentScenario.scenario}</p>
         
         <div className="space-y-1">

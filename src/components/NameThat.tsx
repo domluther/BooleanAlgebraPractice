@@ -185,7 +185,7 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 			</div>
 			{/* Circuit/Truth Table Display */}
 			<div className="border-2 rounded-lg bg-card">
-				<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-[150px]">
+				<div className="flex items-center justify-center rounded-lg bg-stats-card-bg min-h-37.5">
 					<div
 						ref={circuitRef}
 						className={
@@ -204,7 +204,7 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 						isAnswered && !isCorrect && option === selectedAnswer;
 
 					let className =
-						"h-auto py-4 text-base sm:text-lg relative transition-all";
+						"relative h-auto py-4 text-base sm:text-lg transition-all";
 
 					if (isAnswered) {
 						if (isCorrectAnswer) {
@@ -258,7 +258,7 @@ export function NameThat({ onScoreUpdate }: NameThatProps) {
 				</Button>
 			)}
 			{/* Keyboard Shortcuts Help */}
-			<div className="py-2 text-sm text-center text-stats-label font-medium">
+			<div className="py-2 text-sm font-medium text-center text-stats-label">
 				💡 Use keys 1-4 for quick answers
 				{isAnswered && " • Press Enter for next question"}
 			</div>

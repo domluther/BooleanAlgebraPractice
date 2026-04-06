@@ -229,12 +229,12 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				onShuffle={handleRandomQuestion}
 				additionalControls={
 					<div className="flex items-center gap-2">
-						<label className="flex items-center gap-2 text-sm text-stats-label whitespace-nowrap cursor-pointer">
+						<label className="flex items-center text-sm cursor-pointer gap-2 text-stats-label whitespace-nowrap">
 							<input
 								type="checkbox"
 								checked={helpEnabled}
 								onChange={() => toggleHelp()}
-								className="h-4 w-4 rounded border-checkbox-label-border text-stats-points focus:ring-2 focus:ring-ring cursor-pointer"
+								className="w-4 h-4 rounded cursor-pointer border-checkbox-label-border text-stats-points focus:ring-2 focus:ring-ring"
 							/>
 							Show expression so far
 						</label>
@@ -251,18 +251,18 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 
 			{/* Target Expression Display */}
 			<div className="border-2 rounded-lg bg-card">
-				<div className="bg-stats-card-bg rounded-lg p-3 text-center">
-					<div className="text-xl font-semibold font-mono">
+				<div className="p-3 text-center rounded-lg bg-stats-card-bg">
+					<div className="font-mono text-xl font-semibold">
 						{targetExpressionDisplay}
 					</div>
 				</div>
 			</div>
 
 			{/* Circuit Drawing Area */}
-			<div className="flex gap-6 flex-wrap lg:flex-nowrap">
+			<div className="flex flex-wrap gap-6 lg:flex-nowrap">
 				{/* Toolbox */}
-				<div className="shrink-0 w-full sm:w-40 md:w-48 bg-stats-card-bg rounded-lg p-3 sm:p-4 border-2">
-					<h3 className="text-center text-stats-label font-semibold mb-3 sm:mb-4 text-base sm:text-lg">
+				<div className="w-full p-3 border-2 rounded-lg shrink-0 sm:w-40 md:w-48 bg-stats-card-bg sm:p-4">
+					<h3 className="mb-3 text-base font-semibold text-center text-stats-label sm:mb-4 sm:text-lg">
 						Logic Gates
 					</h3>
 
@@ -351,13 +351,13 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 				</div>
 
 				{/* Canvas Container */}
-				<div className="flex-1 min-w-0 bg-stats-card-bg border-2 rounded-lg flex items-center justify-center overflow-hidden">
+				<div className="flex items-center justify-center flex-1 min-w-0 overflow-hidden border-2 rounded-lg bg-stats-card-bg">
 					<canvas
 						ref={canvasRef}
 						id={CANVAS_ID}
 						width="750"
 						height="500"
-						className="max-w-full h-auto cursor-crosshair"
+						className="h-auto max-w-full cursor-crosshair"
 						style={{ touchAction: "none" }}
 					/>
 				</div>
@@ -365,11 +365,11 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 
 			{/* Help Display (Show current circuit interpretation) */}
 			{helpEnabled && (
-				<div className="bg-stats-card-bg border-2 rounded-lg p-4">
+				<div className="p-4 border-2 rounded-lg bg-stats-card-bg">
 					<div
 						ref={interpretedExprRef}
 						id={INTERPRETED_EXPR_ID}
-						className="text-lg font-mono text-center text-stats-label"
+						className="font-mono text-lg text-center text-stats-label"
 					>
 						{convertToNotation(currentInterpretedExpression, notationType)}
 					</div>
@@ -390,22 +390,22 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 
 			<div className="flex justify-center gap-4">
 				{!isAnswered && (
-					<div className="max-w-md mx-auto w-full">
+					<div className="w-full max-w-md mx-auto">
 						<Button
 							onClick={handleCheckAnswer}
 							size="lg"
-							className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+							className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 						>
 							Mark My Answer
 						</Button>
 					</div>
 				)}
 				{(isAnswered || feedbackMessage) && (
-					<div className="max-w-md mx-auto w-full">
+					<div className="w-full max-w-md mx-auto">
 						<Button
 							onClick={handleNextQuestion}
 							size="lg"
-							className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+							className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 						>
 							Next Question →
 						</Button>
@@ -414,7 +414,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 			</div>
 
 			{/* Keyboard Shortcuts Help */}
-			<div className="py-2 text-sm text-center text-stats-label font-medium">
+			<div className="py-2 text-sm font-medium text-center text-stats-label">
 				{isAnswered
 					? "💡 Press Enter for next question"
 					: "💡 Press Enter to check answer"}

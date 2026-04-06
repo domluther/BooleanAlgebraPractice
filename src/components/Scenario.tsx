@@ -385,12 +385,12 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 						</>
 					) : questionType === "draw-circuit" ? (
 						<div className="flex items-center gap-2">
-							<label className="flex items-center gap-2 text-sm text-stats-label whitespace-nowrap cursor-pointer">
+							<label className="flex items-center text-sm cursor-pointer gap-2 text-stats-label whitespace-nowrap">
 								<input
 									type="checkbox"
 									checked={helpEnabled}
 									onChange={() => toggleHelp()}
-									className="h-4 w-4 rounded border-checkbox-label-border text-stats-points focus:ring-2 focus:ring-ring cursor-pointer"
+									className="w-4 h-4 rounded cursor-pointer border-checkbox-label-border text-stats-points focus:ring-2 focus:ring-ring"
 								/>
 								Show expression so far
 							</label>
@@ -406,8 +406,8 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 			</div>
 
 			{/* Scenario Card */}
-			<div className="p-6 rounded-lg border-2 bg-stats-card-bg">
-				<h3 className="text-2xl font-bold mb-4 text-stats-points">
+			<div className="p-6 border-2 rounded-lg bg-stats-card-bg">
+				<h3 className="mb-4 text-2xl font-bold text-stats-points">
 					{currentScenario.title}
 				</h3>
 
@@ -415,14 +415,14 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 					{currentScenario.scenario}
 				</p>
 
-				<div className="border-checkbox-label-border overflow-x-auto">
-					<table className="w-full border-collapse border-2 border-checkbox-label-border rounded-lg overflow-hidden">
+				<div className="overflow-x-auto border-checkbox-label-border">
+					<table className="w-full overflow-hidden border-2 border-collapse rounded-lg border-checkbox-label-border">
 						<thead>
 							<tr className="bg-muted">
-								<th className="text-left py-3 px-4 font-semibold text-stats-label border-b-2 border-r border-checkbox-label-border">
+								<th className="px-4 py-3 font-semibold text-left border-b-2 border-r text-stats-label border-checkbox-label-border">
 									Input
 								</th>
-								<th className="text-left py-3 px-4 font-semibold text-stats-label border-b-2 border-checkbox-label-border">
+								<th className="px-4 py-3 font-semibold text-left border-b-2 text-stats-label border-checkbox-label-border">
 									Criteria (True / False)
 								</th>
 							</tr>
@@ -438,12 +438,12 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 												: ""
 										}`}
 									>
-										<td className="py-3 px-4 align-top">
+										<td className="px-4 py-3 align-top">
 											<strong className="font-mono text-lg text-stats-points">
 												{variable}
 											</strong>
 										</td>
-										<td className="py-3 px-4">{meaning}</td>
+										<td className="px-4 py-3">{meaning}</td>
 									</tr>
 								),
 							)}
@@ -456,7 +456,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 			{questionType === "expression" && (
 				<>
 					{/* Input Field */}
-					<div className="max-w-2xl mx-auto w-full space-y-3">
+					<div className="w-full max-w-2xl mx-auto space-y-3">
 						<Input
 							ref={inputRef}
 							type="text"
@@ -472,7 +472,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 					{/* Symbol Helper Buttons - Only in Symbol Mode */}
 					{notationType === "symbol" && (
 						<>
-							<div className="flex flex-wrap gap-2 justify-center">
+							<div className="flex flex-wrap justify-center gap-2">
 								{SYMBOL_BUTTONS.filter(
 									(btn) => btn.word !== "XOR" || currentLevel === 4,
 								).map((btn) => (
@@ -482,18 +482,18 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 										size="sm"
 										onClick={() => insertSymbol(btn.symbol)}
 										disabled={isAnswered}
-										className="border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover px-4"
+										className="px-4 border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover"
 										title={
 											btn.shortcut
 												? `${btn.word} (${btn.symbol}) - Press ${btn.shortcut}`
 												: `${btn.word} (${btn.symbol})`
 										}
 									>
-										<span className="font-bold text-lg">{btn.symbol}</span>
+										<span className="text-lg font-bold">{btn.symbol}</span>
 									</Button>
 								))}
 							</div>
-							<div className="text-center text-sm text-stats-label">
+							<div className="text-sm text-center text-stats-label">
 								Keyboard: ^ (AND), v (OR), ! (NOT)
 							</div>
 						</>
@@ -506,14 +506,14 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 				<>
 					{/* Truth Table */}
 					<div className="overflow-x-auto">
-						<table className="w-full border-collapse border-2 border-checkbox-label-border">
+						<table className="w-full border-2 border-collapse border-checkbox-label-border">
 							<thead>
 								<tr>
 									{/* Input Headers */}
 									{inputs.map((input) => (
 										<th
 											key={input}
-											className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text"
+											className="px-4 py-2 font-semibold text-center border-2 border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text"
 										>
 											{input}
 										</th>
@@ -523,13 +523,13 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 										intermediateExpressions.map((expr) => (
 											<th
 												key={`inter-${expr}`}
-												className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-intermediate-header-bg text-truth-table-intermediate-header-text"
+												className="px-4 py-2 font-semibold text-center border-2 border-checkbox-label-border bg-truth-table-intermediate-header-bg text-truth-table-intermediate-header-text"
 											>
 												{convertToNotation(expr, notationType)}
 											</th>
 										))}
 									{/* Output Header */}
-									<th className="px-4 py-2 text-center font-semibold border-2 border-checkbox-label-border bg-truth-table-output-header-bg text-truth-table-output-header-text">
+									<th className="px-4 py-2 font-semibold text-center border-2 border-checkbox-label-border bg-truth-table-output-header-bg text-truth-table-output-header-text">
 										{outputVariable}
 									</th>
 								</tr>
@@ -653,10 +653,10 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 			{questionType === "draw-circuit" && (
 				<>
 					{/* Circuit Drawing Area */}
-					<div className="flex gap-6 flex-wrap lg:flex-nowrap">
+					<div className="flex flex-wrap gap-6 lg:flex-nowrap">
 						{/* Toolbox */}
-						<div className="shrink-0 w-full sm:w-40 md:w-48 bg-stats-card-bg rounded-lg p-3 sm:p-4 border-2">
-							<h3 className="text-center text-stats-label font-semibold mb-3 sm:mb-4 text-base sm:text-lg">
+						<div className="w-full p-3 border-2 rounded-lg shrink-0 sm:w-40 md:w-48 bg-stats-card-bg sm:p-4">
+							<h3 className="mb-3 text-base font-semibold text-center text-stats-label sm:mb-4 sm:text-lg">
 								Logic Gates
 							</h3>
 							{/* Gate buttons */}
@@ -743,13 +743,13 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 						</div>
 
 						{/* Canvas Container */}
-						<div className="flex-1 min-w-0 bg-stats-card-bg border-2 rounded-lg flex items-center justify-center overflow-hidden">
+						<div className="flex items-center justify-center flex-1 min-w-0 overflow-hidden border-2 rounded-lg bg-stats-card-bg">
 							<canvas
 								ref={canvasRef}
 								id={CANVAS_ID}
 								width="750"
 								height="500"
-								className="max-w-full h-auto cursor-crosshair"
+								className="h-auto max-w-full cursor-crosshair"
 								style={{ touchAction: "none" }}
 							/>
 						</div>
@@ -757,11 +757,11 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 
 					{/* Help Display */}
 					{helpEnabled && (
-						<div className="bg-stats-card-bg border-2 rounded-lg p-4">
+						<div className="p-4 border-2 rounded-lg bg-stats-card-bg">
 							<div
 								ref={interpretedExprRef}
 								id={INTERPRETED_EXPR_ID}
-								className="text-lg font-mono text-center text-stats-label"
+								className="font-mono text-lg text-center text-stats-label"
 							>
 								{convertToNotation(currentInterpretedExpression, notationType)}
 							</div>
@@ -786,22 +786,22 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 			{questionType === "draw-circuit" ? (
 				<div className="flex justify-center gap-4">
 					{!isAnswered && (
-						<div className="max-w-md mx-auto w-full">
+						<div className="w-full max-w-md mx-auto">
 							<Button
 								onClick={handleCheckAnswer}
 								size="lg"
-								className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+								className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 							>
 								Mark My Answer
 							</Button>
 						</div>
 					)}
 					{(isAnswered || feedbackMessage) && (
-						<div className="max-w-md mx-auto w-full">
+						<div className="w-full max-w-md mx-auto">
 							<Button
 								onClick={nextQuestion}
 								size="lg"
-								className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+								className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 							>
 								Next Question →
 							</Button>
@@ -812,11 +812,11 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 				<>
 					{/* Check Answer Button for other question types */}
 					{!isAnswered && (
-						<div className="max-w-md mx-auto w-full">
+						<div className="w-full max-w-md mx-auto">
 							<Button
 								onClick={handleCheckAnswer}
 								size="lg"
-								className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+								className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 							>
 								Check Answer
 							</Button>
@@ -825,11 +825,11 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 
 					{/* Next Button for other question types */}
 					{isAnswered && (
-						<div className="max-w-md mx-auto w-full">
+						<div className="w-full max-w-md mx-auto">
 							<Button
 								onClick={nextQuestion}
 								size="lg"
-								className="w-full text-lg py-6 bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+								className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 							>
 								Next Question →
 							</Button>
@@ -837,7 +837,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 					)}
 
 					{/* Keyboard Shortcuts Help */}
-					<div className="py-2 text-sm text-center text-stats-label font-medium">
+					<div className="py-2 text-sm font-medium text-center text-stats-label">
 						{isAnswered
 							? "💡 Press Enter for next question"
 							: questionType === "expression"

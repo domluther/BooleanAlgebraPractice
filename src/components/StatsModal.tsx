@@ -84,7 +84,7 @@ export function StatsModal({
 				<div className="flex items-center justify-between px-6 py-4 text-modal-header-text bg-header/80">
 					<h2
 						id={titleId}
-						className="flex items-center gap-2 text-2xl font-bold"
+						className="flex items-center text-2xl font-bold gap-2"
 					>
 						{headerIcon} {title}
 					</h2>
@@ -105,7 +105,7 @@ export function StatsModal({
 							<LevelInfoCard overallStats={overallStats} />
 
 							{/* Overall Statistics */}
-							<Card className="gap-4 p-4">
+							<Card className="p-4 gap-4">
 								<CardHeader className="px-2 mb-0">
 									<CardTitle className="flex items-center">
 										📈 Overall Statistics
@@ -142,7 +142,7 @@ export function StatsModal({
 							</Card>
 
 							{/* Breakdown by Category */}
-							<Card className="gap-4 p-4">
+							<Card className="p-4 gap-4">
 								<CardHeader className="px-2 mb-0">
 									<CardTitle className="flex items-center">
 										📋 Breakdown by Category
@@ -245,7 +245,7 @@ function LevelInfoCard({ overallStats }: { overallStats: OverallStats }) {
 						className="h-2 mb-3 [&>div]:bg-progress-bar"
 					/>
 					{/* Detailed requirements */}
-					<div className="space-y-1 text-sm">
+					<div className="text-sm space-y-1">
 						{overallStats.accuracy < overallStats.nextLevel.minAccuracy && (
 							<div>
 								🎯 {Math.round(overallStats.nextLevel.minAccuracy)}% accuracy

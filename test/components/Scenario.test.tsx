@@ -154,7 +154,7 @@ describe('Scenario Component', () => {
       const truthTable = tables[1]
       const headers = within(truthTable).getAllByRole('columnheader')
       const intermediateHeaders = headers.filter(header => 
-        header.classList.contains('bg-yellow-200')
+        header.classList.contains('bg-truth-table-intermediate-header-bg')
       )
       
       // Should have 2 intermediate column headers
@@ -178,7 +178,7 @@ describe('Scenario Component', () => {
       
       // Intermediate expression headers should not be present (no yellow background)
       const intermediateHeaders = headers.filter(header => 
-        header.classList.contains('bg-yellow-200')
+        header.classList.contains('bg-truth-table-intermediate-header-bg')
       )
       
       expect(intermediateHeaders.length).toBe(0)
@@ -287,11 +287,11 @@ describe('Scenario Component', () => {
       const tables = screen.getAllByRole('table')
       expect(tables.length).toBe(2)
       
-      // Truth table should not have intermediate column headers (bg-yellow-200)
+      // Truth table should not have intermediate column headers (bg-truth-table-intermediate-header-bg)
       const truthTable = tables[1]
       const headers = within(truthTable).getAllByRole('columnheader')
       const intermediateHeaders = headers.filter(header => 
-        header.classList.contains('bg-yellow-200')
+        header.classList.contains('bg-truth-table-intermediate-header-bg')
       )
       expect(intermediateHeaders.length).toBe(0)
     })
@@ -326,7 +326,7 @@ describe('Scenario Component', () => {
       const truthTable = tables[1]
       const headers = within(truthTable).getAllByRole('columnheader')
       const intermediateHeaders = headers.filter(header => 
-        header.classList.contains('bg-yellow-200')
+        header.classList.contains('bg-truth-table-intermediate-header-bg')
       )
       
       // Should have 3 intermediate column headers (one for each expression)

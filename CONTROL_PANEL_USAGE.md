@@ -12,8 +12,8 @@ The `ControlPanel` component provides a consistent, reusable control panel for a
 **Before:**
 ```tsx
 {/* Control Panel */}
-<div className="p-4 rounded-lg border-2 bg-stats-card-bg border-stats-card-border">
-  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+<div className="p-4 border-2 rounded-lg bg-stats-card-bg border-stats-card-border">
+  <div className="flex flex-col items-center justify-between sm:flex-row gap-4">
     {/* Difficulty Selector */}
     <div className="flex items-center gap-3">
       <label htmlFor={difficultySelectId}>Difficulty:</label>
@@ -66,8 +66,8 @@ import { ControlPanel } from "@/components/ControlPanel";
 **Before:**
 ```tsx
 {/* Control Panel */}
-<div className="p-4 rounded-lg border-2 bg-stats-card-bg border-stats-card-border">
-  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+<div className="p-4 border-2 rounded-lg bg-stats-card-bg border-stats-card-border">
+  <div className="flex flex-col items-center justify-between sm:flex-row gap-4">
     {/* Difficulty Selector */}
     <div className="flex items-center gap-3">...</div>
     
@@ -105,12 +105,12 @@ import { ControlPanel } from "@/components/ControlPanel";
   onShuffle={handleRandomQuestion}
   additionalControls={
     <div className="flex items-center gap-2">
-      <label className="flex items-center gap-2 text-sm text-stats-label whitespace-nowrap cursor-pointer">
+      <label className="flex items-center text-sm cursor-pointer gap-2 text-stats-label whitespace-nowrap">
         <input
           type="checkbox"
           checked={helpEnabled}
           onChange={() => toggleHelp()}
-          className="h-4 w-4 rounded border-checkbox-label-border text-stats-points focus:ring-2 focus:ring-ring cursor-pointer"
+          className="w-4 h-4 rounded cursor-pointer border-checkbox-label-border text-stats-points focus:ring-2 focus:ring-ring"
         />
         Show expression so far
       </label>
@@ -151,12 +151,12 @@ import { ControlPanel } from "@/components/ControlPanel";
     <>
       {/* Show Intermediate Columns Toggle */}
       <div className="flex items-center gap-2">
-        <label className="flex items-center gap-2 text-sm text-stats-label whitespace-nowrap cursor-pointer">
+        <label className="flex items-center text-sm cursor-pointer gap-2 text-stats-label whitespace-nowrap">
           <input
             type="checkbox"
             checked={showIntermediateColumns}
             onChange={(e) => setShowIntermediateColumns(e.target.checked)}
-            className="h-4 w-4 rounded border-checkbox-label-border text-stats-points"
+            className="w-4 h-4 rounded border-checkbox-label-border text-stats-points"
           />
           Show intermediate columns
         </label>
@@ -164,12 +164,12 @@ import { ControlPanel } from "@/components/ControlPanel";
       
       {/* Expert Mode Toggle */}
       <div className="flex items-center gap-2">
-        <label className="flex items-center gap-2 text-sm text-stats-label whitespace-nowrap cursor-pointer">
+        <label className="flex items-center text-sm cursor-pointer gap-2 text-stats-label whitespace-nowrap">
           <input
             type="checkbox"
             checked={expertMode}
             onChange={(e) => setExpertMode(e.target.checked)}
-            className="h-4 w-4 rounded border-checkbox-label-border text-stats-points"
+            className="w-4 h-4 rounded border-checkbox-label-border text-stats-points"
           />
           Expert mode (3× points)
         </label>
@@ -233,7 +233,7 @@ import { ControlPanel } from "@/components/ControlPanel";
   }}
   onShuffle={generateQuestion}
   additionalControls={
-    <div className="text-sm text-stats-label font-medium">
+    <div className="text-sm font-medium text-stats-label">
       Question Type: {questionType === 'expression' ? '✏️ Expression' : 
                       questionType === 'truth-table' ? '📊 Truth Table' : 
                       '⚡ Circuit'}

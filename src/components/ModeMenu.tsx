@@ -65,7 +65,7 @@ export const ModeMenu = () => {
 							`}
 						>
 							{/* Mobile: emoji only */}
-							<span className="inline md:hidden text-xl">{mode.emoji}</span>
+							<span className="inline text-xl md:hidden">{mode.emoji}</span>
 							{/* Tablet: emoji + short label */}
 							<span className="hidden md:inline lg:hidden">
 								{mode.emoji} {mode.shortLabel}

@@ -355,7 +355,7 @@ export class Scenario {
         const scenarioHTML = `
             <div class="scenario-content">
                 <h3>${randomScenario.title}</h3>
-                <div class="panel bg-white panel-accent-info">${randomScenario.scenario.replace(/\n/g, '<br>')}</div>
+                <div class="bg-white panel panel-accent-info">${randomScenario.scenario.replace(/\n/g, '<br>')}</div>
                 <div class="input-table-container">
                     <table class="input-table">
                         <thead><tr><th>Input</th><th>Criteria (True / False)</th></tr></thead>

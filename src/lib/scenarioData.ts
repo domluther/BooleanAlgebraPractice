@@ -245,7 +245,7 @@ export const scenarioDatabase: Record<number, ScenarioQuestion[]> = {
 			},
 			expression: "Q = E AND (NOT S OR U)",
 		},
-				{
+		{
 			title: "Smart doorbell",
 			scenario: `Smart doorbells allow people to answer their door remotely. This means the user can talk to their visitors while they are not at home, or if they are unable to answer the door in person for any other reason, such as a disability.
 
@@ -256,7 +256,6 @@ Smart doorbells include a camera in addition to a doorbell. If the camera detect
 			},
 			expression: "X = M OR D",
 		},
-
 	],
 	3: [
 		// Level 3 - More wordy scenarios
