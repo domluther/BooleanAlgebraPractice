@@ -316,7 +316,7 @@ When this is the case, the paddles are placed on the patient's chest and their h
 				B: "Button on paddle 2 is not pressed",
 				T: "Timing function is ready",
 			},
-			expression: "S = NOT (A AND B) AND T",
+			expression: "S = NOT A AND NOT B AND T",
 		},
 		{
 			title: "Flood Predictor",
