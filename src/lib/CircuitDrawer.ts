@@ -342,6 +342,7 @@ export class CircuitDrawer {
 				},
 				{ signal },
 			);
+
 		});
 
 		// Keep original drag-and-drop for desktop compatibility
@@ -545,16 +546,8 @@ export class CircuitDrawer {
 			"touchstart",
 			(e) => {
 				e.preventDefault(); // Prevent default touch behaviors
-				const touch = e.touches[0];
-				console.log("[CircuitDrawer] touchstart", {
-					x: touch.clientX,
-					y: touch.clientY,
-					touchCount: e.touches.length,
-					isAnswered: this.isAnswered(),
-					placementMode: this.placementMode,
-					selectedGateType: this.selectedGateType,
-				});
 				if (this.isAnswered()) return;
+				const touch = e.touches[0];
 
 				const mouseEvent = new MouseEvent("mousedown", {
 					clientX: touch.clientX,
@@ -572,23 +565,11 @@ export class CircuitDrawer {
 				if (e.touches.length === 1) {
 					// Only handle single touch
 					const touch = e.touches[0];
-					console.log("[CircuitDrawer] touchmove", {
-						x: touch.clientX,
-						y: touch.clientY,
-						draggingGate: this.draggingGate?.id ?? null,
-						wiringFrom: this.wireStartNode
-							? { gateId: this.wireStartNode.gateId, type: this.wireStartNode.type }
-							: null,
-					});
 					const mouseEvent = new MouseEvent("mousemove", {
 						clientX: touch.clientX,
 						clientY: touch.clientY,
 					});
 					this.canvas.dispatchEvent(mouseEvent);
-				} else {
-					console.log("[CircuitDrawer] touchmove ignored (multi-touch)", {
-						touchCount: e.touches.length,
-					});
 				}
 			},
 			{ signal, passive: false } as AddEventListenerOptions,
@@ -599,14 +580,6 @@ export class CircuitDrawer {
 			(e) => {
 				e.preventDefault();
 				const touch = e.changedTouches[0];
-				console.log("[CircuitDrawer] touchend", {
-					x: touch.clientX,
-					y: touch.clientY,
-					draggingGate: this.draggingGate?.id ?? null,
-					wiringFrom: this.wireStartNode
-						? { gateId: this.wireStartNode.gateId, type: this.wireStartNode.type }
-						: null,
-				});
 				const mouseEvent = new MouseEvent("mouseup", {
 					clientX: touch.clientX,
 					clientY: touch.clientY,
@@ -621,12 +594,6 @@ export class CircuitDrawer {
 		this.canvas.addEventListener(
 			"touchcancel",
 			() => {
-				console.log("[CircuitDrawer] touchcancel — resetting drag/wire state", {
-					draggingGate: this.draggingGate?.id ?? null,
-					wiringFrom: this.wireStartNode
-						? { gateId: this.wireStartNode.gateId, type: this.wireStartNode.type }
-						: null,
-				});
 				this.wireStartNode = null;
 				this.draggingGate = null;
 				this.dragStartPosition = null;
