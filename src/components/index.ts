@@ -27,3 +27,4 @@ export { SiteNavigation } from "./SiteNavigation";
 // Modal Components
 export { StatsModal } from "./StatsModal";
 export { TruthTable } from "./TruthTable";
+export { KMap } from "./KMap";

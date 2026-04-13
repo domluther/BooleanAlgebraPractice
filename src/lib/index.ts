@@ -17,6 +17,7 @@ export * from "./scoreManager";
 // Site configuration
 export * from "./siteConfig";
 // Game hooks
+export { useKMap } from "./useKMap";
 export { useNameThat } from "./useNameThat";
 export { useScenario } from "./useScenario";
 export * from "./utils";

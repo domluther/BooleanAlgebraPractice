@@ -13,6 +13,7 @@ import { Route as WriteexpressionRouteImport } from './routes/writeexpression'
 import { Route as TruthtableRouteImport } from './routes/truthtable'
 import { Route as ScenarioRouteImport } from './routes/scenario'
 import { Route as NamethatRouteImport } from './routes/namethat'
+import { Route as KmapRouteImport } from './routes/kmap'
 import { Route as DrawcircuitRouteImport } from './routes/drawcircuit'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -36,6 +37,11 @@ const NamethatRoute = NamethatRouteImport.update({
   path: '/namethat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KmapRoute = KmapRouteImport.update({
+  id: '/kmap',
+  path: '/kmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DrawcircuitRoute = DrawcircuitRouteImport.update({
   id: '/drawcircuit',
   path: '/drawcircuit',
@@ -50,6 +56,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/drawcircuit': typeof DrawcircuitRoute
+  '/kmap': typeof KmapRoute
   '/namethat': typeof NamethatRoute
   '/scenario': typeof ScenarioRoute
   '/truthtable': typeof TruthtableRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/drawcircuit': typeof DrawcircuitRoute
+  '/kmap': typeof KmapRoute
   '/namethat': typeof NamethatRoute
   '/scenario': typeof ScenarioRoute
   '/truthtable': typeof TruthtableRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/drawcircuit': typeof DrawcircuitRoute
+  '/kmap': typeof KmapRoute
   '/namethat': typeof NamethatRoute
   '/scenario': typeof ScenarioRoute
   '/truthtable': typeof TruthtableRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/drawcircuit'
+    | '/kmap'
     | '/namethat'
     | '/scenario'
     | '/truthtable'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/drawcircuit'
+    | '/kmap'
     | '/namethat'
     | '/scenario'
     | '/truthtable'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/drawcircuit'
+    | '/kmap'
     | '/namethat'
     | '/scenario'
     | '/truthtable'
@@ -102,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DrawcircuitRoute: typeof DrawcircuitRoute
+  KmapRoute: typeof KmapRoute
   NamethatRoute: typeof NamethatRoute
   ScenarioRoute: typeof ScenarioRoute
   TruthtableRoute: typeof TruthtableRoute
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NamethatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kmap': {
+      id: '/kmap'
+      path: '/kmap'
+      fullPath: '/kmap'
+      preLoaderRoute: typeof KmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/drawcircuit': {
       id: '/drawcircuit'
       path: '/drawcircuit'
@@ -158,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DrawcircuitRoute: DrawcircuitRoute,
+  KmapRoute: KmapRoute,
   NamethatRoute: NamethatRoute,
   ScenarioRoute: ScenarioRoute,
   TruthtableRoute: TruthtableRoute,
