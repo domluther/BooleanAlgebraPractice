@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useState } from "react";
-import { getInputVariables } from "./expressionUtils";
+import { getInputVariables, shuffleExpression } from "./expressionUtils";
 import { kmapDatabase } from "./kmapData";
 import { buildKMapSolution, getKMapLayout, type KMapLayout } from "./kmapUtils";
 
@@ -31,8 +31,13 @@ const getInitialDifficulty = (): KMapDifficulty => {
 const buildQuestion = (level: KMapDifficulty) => {
 	const key = `level${level}` as keyof typeof kmapDatabase;
 	const expressions = kmapDatabase[key];
-	const expression =
-		expressions[Math.floor(Math.random() * expressions.length)];
+	let expression = expressions[Math.floor(Math.random() * expressions.length)];
+
+	// Harder modes: shuffle variables to randomize letters
+	if (level >= 3) {
+		expression = shuffleExpression(expression);
+	}
+
 	const variables = getInputVariables(expression);
 	const layout = getKMapLayout(variables);
 	const solution = buildKMapSolution(expression, layout);
@@ -90,6 +95,10 @@ export function useKMap({ onScoreUpdate }: UseKMapProps = {}): UseKMapReturn {
 			// ignore storage errors
 		}
 		setCurrentLevel(level);
+		setQuestion(buildQuestion(level));
+		setSelectedCells(new Set());
+		setIsAnswered(false);
+		setIsCorrect(false);
 	}, []);
 
 	const generateNewQuestion = useCallback(() => {

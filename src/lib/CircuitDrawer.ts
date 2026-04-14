@@ -342,7 +342,6 @@ export class CircuitDrawer {
 				},
 				{ signal },
 			);
-
 		});
 
 		// Keep original drag-and-drop for desktop compatibility
@@ -822,7 +821,7 @@ export class CircuitDrawer {
 	}
 
 	private _buildExpression(node: Node): string {
-		if (!node || !node.connectedTo) return "?";
+		if (!node?.connectedTo) return "?";
 
 		const sourceGateId = node.connectedTo.gateId;
 		if (String(sourceGateId).startsWith("input-")) {

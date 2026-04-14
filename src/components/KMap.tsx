@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
 	convertToNotation,
 	convertToSymbolNotation,
@@ -8,7 +9,38 @@ import {
 	type NotationType,
 	setNotationType,
 } from "@/lib/config";
+import {
+	GROUP_BORDER_COLORS,
+	GROUP_COLORS,
+	getSimplifiedTermForGroup,
+	isCellInGroup,
+} from "@/lib/kmapUtils";
 import { type KMapDifficulty, useKMap } from "@/lib/useKMap";
+import { useKMapGrouping } from "@/lib/useKMapGrouping";
+
+type HeadingMode = "graycode" | "variables";
+
+/**
+ * Converts a Gray-code label like "01" into variable form like "ĀB"
+ * using overbar notation for complemented variables.
+ */
+function grayCodeToVarLabel(code: string, vars: string[]): React.ReactNode {
+	return (
+		<>
+			{code.split("").map((bit, i) => {
+				const varName = vars[i];
+				if (bit === "0") {
+					return (
+						<span key={varName} style={{ textDecoration: "overline" }}>
+							{varName}
+						</span>
+					);
+				}
+				return <span key={varName}>{varName}</span>;
+			})}
+		</>
+	);
+}
 
 interface KMapProps {
 	onScoreUpdate?: (isCorrect: boolean, questionType: string) => void;
@@ -79,6 +111,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 		currentLevel,
 		currentExpression,
 		layout,
+		solution,
 		isAnswered,
 		isCorrect,
 		setLevel,
@@ -88,9 +121,14 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 		getCellStatus,
 	} = useKMap({ onScoreUpdate });
 
+	const [phase, setPhase] = useState<"fill" | "group">("fill");
+	const [headingMode, setHeadingMode] = useState<HeadingMode>("graycode");
+
 	const [notationType, setNotationTypeState] = useState<NotationType>(
 		getNotationType(),
 	);
+
+	const grouping = useKMapGrouping({ solution, layout });
 
 	const handleNotationToggle = (checked: boolean) => {
 		const newNotation: NotationType = checked ? "symbol" : "word";
@@ -98,21 +136,57 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 		setNotationType(newNotation);
 	};
 
-	// Keyboard shortcut: Enter to check / advance
+	const handleNewQuestion = useCallback(() => {
+		generateNewQuestion();
+		grouping.resetGroups();
+		setPhase("fill");
+	}, [generateNewQuestion, grouping.resetGroups]);
+
+	const handleContinueToGrouping = useCallback(() => {
+		setPhase("group");
+	}, []);
+
+	// Keyboard shortcuts
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && phase === "group") {
+				grouping.cancelSelection();
+				return;
+			}
 			if (e.key === "Enter") {
 				e.preventDefault();
-				if (isAnswered) {
-					generateNewQuestion();
+				if (phase === "fill") {
+					if (isAnswered) {
+						if (isCorrect) {
+							handleContinueToGrouping();
+						} else {
+							handleNewQuestion();
+						}
+					} else {
+						checkAnswer();
+					}
 				} else {
-					checkAnswer();
+					if (grouping.isChecked) {
+						handleNewQuestion();
+					} else {
+						grouping.checkGroups();
+					}
 				}
 			}
 		};
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [isAnswered, checkAnswer, generateNewQuestion]);
+	}, [
+		phase,
+		isAnswered,
+		isCorrect,
+		checkAnswer,
+		grouping.isChecked,
+		grouping.checkGroups,
+		grouping.cancelSelection,
+		handleNewQuestion,
+		handleContinueToGrouping,
+	]);
 
 	const displayExpression = convertToNotation(currentExpression, notationType);
 
@@ -126,7 +200,11 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 			<ControlPanel
 				difficulty={{
 					value: currentLevel,
-					onChange: (level) => setLevel(level as KMapDifficulty),
+					onChange: (level) => {
+						setLevel(level as KMapDifficulty);
+						grouping.resetGroups();
+						setPhase("fill");
+					},
 					options: Object.entries(DIFFICULTY_LABELS).map(([value, label]) => [
 						Number(value),
 						label,
@@ -136,14 +214,32 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 					value: notationType,
 					onChange: handleNotationToggle,
 				}}
-				onShuffle={generateNewQuestion}
+				onShuffle={handleNewQuestion}
+				additionalControls={
+					<div className="flex items-center gap-3">
+						<span className="text-sm font-medium text-stats-label">Gray</span>
+						<Switch
+							checked={headingMode === "variables"}
+							onCheckedChange={(checked) =>
+								setHeadingMode(checked ? "variables" : "graycode")
+							}
+							aria-label="Toggle between Gray code and variable headings"
+							className="data-[state=checked]:bg-stats-points data-[state=unchecked]:bg-checkbox-label-border"
+						/>
+						<span className="text-sm font-medium text-stats-label">
+							Variables
+						</span>
+					</div>
+				}
 			/>
 
 			{/* Expression display */}
 			<div className="border-2 rounded-lg bg-stats-card-bg">
 				<div className="flex flex-col items-center gap-2 px-4 py-5">
 					<p className="text-sm font-medium text-stats-label">
-						Fill in all the 1s on the K-Map for this expression:
+						{phase === "fill"
+							? "Fill in all the 1s on the K-Map for this expression:"
+							: "Draw rectangular groups around the 1s to simplify:"}
 					</p>
 					<p className="font-mono text-xl font-bold text-foreground text-center">
 						{displayExpression}
@@ -160,172 +256,418 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 			{/* K-Map Grid */}
 			<div className="flex justify-center overflow-x-auto">
 				<div className="inline-block">
-					{/* Column variable label */}
-					<div
-						className="flex justify-end mb-1 pr-1"
-						style={{
-							paddingLeft: `calc(3.5rem + 1px)`, // offset for row-header column
-						}}
+					{/* Table */}
+					<table
+						className="border-collapse border-2 border-checkbox-label-border"
+						aria-label="K-Map grid"
 					>
-						<span className="font-bold text-base text-foreground tracking-widest">
-							{colVarLabel}
-						</span>
-					</div>
-
-					<div className="flex">
-						{/* Row variable label — rotated, sits to the left of the grid */}
-						<div className="flex items-center justify-center pr-1">
-							<span
-								className="font-bold text-base text-foreground"
-								style={{
-									writingMode: "vertical-rl",
-									transform: "rotate(180deg)",
-									whiteSpace: "nowrap",
-								}}
-							>
-								{rowVarLabel}
-							</span>
-						</div>
-
-						{/* Table */}
-						<table
-							className="border-collapse border-2 border-checkbox-label-border"
-							aria-label="K-Map grid"
-						>
-							<thead>
-								<tr>
-									{/* Top-left corner — diagonal split showing AB / CD axes */}
-									<th
-										className="relative w-14 h-12 sm:w-16 sm:h-14 border border-checkbox-label-border bg-muted"
+						<thead>
+							<tr>
+								{/* Top-left corner — diagonal split showing AB / CD axes */}
+								<th className="relative w-14 h-12 sm:w-16 sm:h-14 border border-checkbox-label-border bg-muted">
+									{/* Diagonal line using SVG */}
+									<svg
+										className="absolute inset-0 w-full h-full"
+										preserveAspectRatio="none"
 										aria-hidden="true"
 									>
-										{/* Diagonal line using SVG */}
-										<svg
-											className="absolute inset-0 w-full h-full"
-											preserveAspectRatio="none"
-										>
-											<line
-												x1="0"
-												y1="0"
-												x2="100%"
-												y2="100%"
-												stroke="currentColor"
-												strokeWidth="1"
-												className="text-checkbox-label-border"
-											/>
-										</svg>
-										{/* Row-var label bottom-left, col-var label top-right */}
-										<span className="absolute bottom-0.5 left-1 text-xs font-semibold text-muted-foreground leading-none">
-											{rowVarLabel}
-										</span>
-										<span className="absolute top-0.5 right-1 text-xs font-semibold text-muted-foreground leading-none">
-											{colVarLabel}
-										</span>
+										<line
+											x1="0"
+											y1="0"
+											x2="100%"
+											y2="100%"
+											stroke="currentColor"
+											strokeWidth="1"
+											className="text-checkbox-label-border"
+										/>
+									</svg>
+									{/* Row-var label bottom-left, col-var label top-right */}
+									<span className="absolute bottom-0.5 left-1 text-xs font-semibold text-muted-foreground leading-none">
+										{rowVarLabel}
+									</span>
+									<span className="absolute top-0.5 right-1 text-xs font-semibold text-muted-foreground leading-none">
+										{colVarLabel}
+									</span>
+								</th>
+
+								{/* Column headers */}
+								{layout.colLabels.map((label) => (
+									<th
+										key={label}
+										className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text font-mono font-semibold text-center text-sm"
+									>
+										{headingMode === "variables"
+											? grayCodeToVarLabel(label, layout.colVars)
+											: label}
+									</th>
+								))}
+							</tr>
+						</thead>
+						<tbody>
+							{layout.rowLabels.map((rowLabel, rowIndex) => (
+								<tr key={rowLabel}>
+									{/* Row header */}
+									<th
+										scope="row"
+										className="w-14 sm:w-16 border border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text font-mono font-semibold text-center text-sm"
+									>
+										{headingMode === "variables"
+											? grayCodeToVarLabel(rowLabel, layout.rowVars)
+											: rowLabel}
 									</th>
 
-									{/* Column headers */}
-									{layout.colLabels.map((label) => (
-										<th
-											key={label}
-											className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text font-mono font-semibold text-center text-sm"
-										>
-											{label}
-										</th>
-									))}
-								</tr>
-							</thead>
-							<tbody>
-								{layout.rowLabels.map((rowLabel, rowIndex) => (
-									<tr key={rowLabel}>
-										{/* Row header */}
-										<th
-											scope="row"
-											className="w-14 sm:w-16 border border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text font-mono font-semibold text-center text-sm"
-										>
-											{rowLabel}
-										</th>
-
-										{/* Data cells */}
-										{layout.colLabels.map((_, colIndex) => {
-											const status = getCellStatus(rowIndex, colIndex);
-											const content = cellContent(status, isAnswered);
-											const classes = cellClasses(status, isAnswered);
+									{/* Data cells */}
+									{layout.colLabels.map((_, colIndex) => {
+										if (phase === "group") {
+											const value = solution[rowIndex][colIndex];
+											const isStart =
+												grouping.groupStart?.[0] === rowIndex &&
+												grouping.groupStart?.[1] === colIndex;
+											const cellGroups = grouping.groups.filter((g) =>
+												isCellInGroup(rowIndex, colIndex, g),
+											);
 											return (
 												<td
 													// biome-ignore lint/suspicious/noArrayIndexKey: grid positions are stable
 													key={colIndex}
-													className={classes}
-													onClick={() => toggleCell(rowIndex, colIndex)}
+													className={`relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border border-checkbox-label-border font-mono font-bold text-lg select-none transition-colors ${
+														grouping.isChecked
+															? "bg-background"
+															: "bg-background cursor-pointer hover:bg-muted"
+													}`}
+													onClick={() =>
+														grouping.handleCellClick(rowIndex, colIndex)
+													}
 													onKeyDown={(e) => {
 														if (e.key === " " || e.key === "Enter") {
 															e.preventDefault();
-															toggleCell(rowIndex, colIndex);
+															grouping.handleCellClick(rowIndex, colIndex);
 														}
 													}}
-													role="button"
-													tabIndex={isAnswered ? -1 : 0}
-													aria-pressed={status === "selected"}
+													tabIndex={grouping.isChecked ? -1 : 0}
 													aria-label={`Cell row ${rowLabel} column ${layout.colLabels[colIndex]}`}
 												>
-													<span className="absolute inset-0 flex items-center justify-center">
-														{content}
+													{/* Group overlays */}
+													{cellGroups.map((group) => {
+														const borderColor =
+															GROUP_BORDER_COLORS[
+																group.colorIndex % GROUP_BORDER_COLORS.length
+															];
+														const bgColor =
+															GROUP_COLORS[
+																group.colorIndex % GROUP_COLORS.length
+															];
+														// Check visual adjacency for borders
+														const aboveRow =
+															(rowIndex - 1 + layout.rowCount) %
+															layout.rowCount;
+														const belowRow = (rowIndex + 1) % layout.rowCount;
+														const leftCol =
+															(colIndex - 1 + layout.colCount) %
+															layout.colCount;
+														const rightCol = (colIndex + 1) % layout.colCount;
+														// Show border if the adjacent cell is NOT in this group
+														// OR if the adjacent cell is not visually adjacent (wrap-around boundary)
+														const isTop =
+															!isCellInGroup(aboveRow, colIndex, group) ||
+															rowIndex === 0;
+														const isBottom =
+															!isCellInGroup(belowRow, colIndex, group) ||
+															rowIndex === layout.rowCount - 1;
+														const isLeft =
+															!isCellInGroup(rowIndex, leftCol, group) ||
+															colIndex === 0;
+														const isRight =
+															!isCellInGroup(rowIndex, rightCol, group) ||
+															colIndex === layout.colCount - 1;
+														return (
+															<div
+																key={group.id}
+																className="absolute inset-0 pointer-events-none"
+																style={{
+																	backgroundColor: bgColor,
+																	borderStyle: "solid",
+																	borderColor,
+																	borderTopWidth: isTop ? "3px" : "0",
+																	borderBottomWidth: isBottom ? "3px" : "0",
+																	borderLeftWidth: isLeft ? "3px" : "0",
+																	borderRightWidth: isRight ? "3px" : "0",
+																	borderTopLeftRadius:
+																		isTop && isLeft ? "6px" : "0",
+																	borderTopRightRadius:
+																		isTop && isRight ? "6px" : "0",
+																	borderBottomLeftRadius:
+																		isBottom && isLeft ? "6px" : "0",
+																	borderBottomRightRadius:
+																		isBottom && isRight ? "6px" : "0",
+																	zIndex: 10,
+																}}
+															/>
+														);
+													})}
+													{/* Start cell indicator */}
+													{isStart && (
+														<div
+															className="absolute inset-0 border-2 border-dashed border-foreground pointer-events-none rounded"
+															style={{ zIndex: 20 }}
+														/>
+													)}
+													{/* Cell value */}
+													<span
+														className="absolute inset-0 flex items-center justify-center"
+														style={{ zIndex: 30 }}
+													>
+														{value ? "1" : ""}
 													</span>
 												</td>
 											);
-										})}
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+										}
+
+										const status = getCellStatus(rowIndex, colIndex);
+										const content = cellContent(status, isAnswered);
+										const classes = cellClasses(status, isAnswered);
+										return (
+											<td
+												// biome-ignore lint/suspicious/noArrayIndexKey: grid positions are stable
+												key={colIndex}
+												className={classes}
+												onClick={() => toggleCell(rowIndex, colIndex)}
+												onKeyDown={(e) => {
+													if (e.key === " " || e.key === "Enter") {
+														e.preventDefault();
+														toggleCell(rowIndex, colIndex);
+													}
+												}}
+												tabIndex={isAnswered ? -1 : 0}
+												aria-label={`Cell row ${rowLabel} column ${layout.colLabels[colIndex]}`}
+											>
+												<span className="absolute inset-0 flex items-center justify-center">
+													{content}
+												</span>
+											</td>
+										);
+									})}
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 			</div>
 
-			{/* Submit / Next button */}
-			{!isAnswered ? (
-				<div className="w-full max-w-md mx-auto">
-					<Button
-						onClick={checkAnswer}
-						size="lg"
-						className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
-					>
-						Mark My Answer
-					</Button>
-				</div>
+			{phase === "fill" ? (
+				<>
+					{/* Submit / Next button */}
+					{!isAnswered ? (
+						<div className="w-full max-w-md mx-auto">
+							<Button
+								onClick={checkAnswer}
+								size="lg"
+								className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+							>
+								Mark My Answer
+							</Button>
+						</div>
+					) : (
+						<>
+							{/* Feedback */}
+							<div
+								className={`p-4 rounded-lg text-center font-semibold border-2 ${
+									isCorrect
+										? "bg-feedback-success-bg text-feedback-success-text border-stats-streak"
+										: "bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low"
+								}`}
+							>
+								{isCorrect
+									? "✓ Correct! All cells filled in properly."
+									: "✗ Not quite — incorrect cells are highlighted in red."}
+							</div>
+
+							{isCorrect ? (
+								<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+									<Button
+										onClick={handleContinueToGrouping}
+										size="lg"
+										className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+									>
+										Continue to Grouping →
+									</Button>
+									<Button
+										onClick={handleNewQuestion}
+										variant="outline"
+										size="lg"
+										className="w-full py-4 text-base"
+									>
+										Skip to Next Question
+									</Button>
+								</div>
+							) : (
+								<div className="w-full max-w-md mx-auto">
+									<Button
+										onClick={handleNewQuestion}
+										size="lg"
+										className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+									>
+										Next Question →
+									</Button>
+								</div>
+							)}
+						</>
+					)}
+
+					{/* Help text */}
+					<div className="py-2 text-sm text-center text-stats-label">
+						💡 Click cells to place a 1. Click again to remove.
+						{isAnswered
+							? isCorrect
+								? " • Press Enter to continue to grouping"
+								: " • Press Enter for next question"
+							: " • Press Enter to check answer"}
+					</div>
+				</>
 			) : (
 				<>
-					{/* Feedback */}
-					<div
-						className={`p-4 rounded-lg text-center font-semibold border-2 ${
-							isCorrect
-								? "bg-feedback-success-bg text-feedback-success-text border-stats-streak"
-								: "bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low"
-						}`}
-					>
-						{isCorrect
-							? "✓ Correct! All cells filled in properly."
-							: "✗ Not quite — incorrect cells are highlighted in red."}
-					</div>
+					{/* Grouping phase status */}
+					{grouping.groupStart && (
+						<div className="p-3 rounded-lg bg-muted text-foreground text-center text-sm border border-checkbox-label-border">
+							Click another cell to complete the group. Press Escape to cancel.
+						</div>
+					)}
 
-					<div className="w-full max-w-md mx-auto">
-						<Button
-							onClick={generateNewQuestion}
-							size="lg"
-							className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
-						>
-							Next Question →
-						</Button>
+					{/* Grouping error */}
+					{grouping.error && (
+						<div className="p-3 rounded-lg bg-feedback-error-bg text-feedback-error-text text-center text-sm border border-stats-accuracy-low">
+							{grouping.error}
+						</div>
+					)}
+
+					{/* Group list */}
+					{grouping.groups.length > 0 && (
+						<div className="space-y-2">
+							<h3 className="text-sm font-semibold text-stats-label">
+								Groups:
+							</h3>
+							{grouping.groups.map((group) => (
+								<div
+									key={group.id}
+									className="flex items-center gap-2 px-3 py-2 rounded border border-checkbox-label-border bg-stats-card-bg"
+								>
+									<div
+										className="w-4 h-4 rounded shrink-0"
+										style={{
+											backgroundColor:
+												GROUP_BORDER_COLORS[
+													group.colorIndex % GROUP_BORDER_COLORS.length
+												],
+										}}
+									/>
+									<span className="font-mono text-sm flex-1 text-foreground">
+										{convertToNotation(
+											getSimplifiedTermForGroup(group, layout),
+											notationType,
+										)}
+									</span>
+									{!grouping.isChecked && (
+										<button
+											type="button"
+											onClick={() => grouping.removeGroup(group.id)}
+											className="text-muted-foreground hover:text-foreground text-lg leading-none px-1"
+											aria-label="Remove group"
+										>
+											×
+										</button>
+									)}
+								</div>
+							))}
+
+							{/* Simplified expression preview */}
+							{grouping.simplifiedExpression && (
+								<div className="pt-1 pb-2 px-3">
+									<p className="text-xs text-stats-label">Simplified:</p>
+									<p className="font-mono text-sm font-semibold text-foreground">
+										{convertToNotation(
+											grouping.simplifiedExpression,
+											notationType,
+										)}
+									</p>
+								</div>
+							)}
+						</div>
+					)}
+
+					{/* Check / Next buttons */}
+					{!grouping.isChecked ? (
+						<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+							<Button
+								onClick={grouping.checkGroups}
+								size="lg"
+								className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+							>
+								Check Groups
+							</Button>
+							<Button
+								onClick={handleNewQuestion}
+								variant="outline"
+								size="lg"
+								className="w-full py-4 text-base"
+							>
+								Skip to Next Question
+							</Button>
+						</div>
+					) : (
+						<>
+							{/* Grouping feedback */}
+							<div
+								className={`p-4 rounded-lg text-center font-semibold border-2 ${
+									!grouping.isAllCovered
+										? "bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low"
+										: grouping.isOptimal
+											? "bg-feedback-success-bg text-feedback-success-text border-stats-streak"
+											: "bg-amber-50 text-amber-800 border-amber-400 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-600"
+								}`}
+							>
+								{!grouping.isAllCovered
+									? "✗ Some 1s are not covered by any group."
+									: grouping.isOptimal
+										? "✓ Optimal grouping! Your groups are the fewest and largest possible."
+										: `⚠ ${grouping.checkFeedback}`}
+							</div>
+
+							<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+								{!grouping.isAllCovered || !grouping.isOptimal ? (
+									<Button
+										onClick={grouping.resetGroups}
+										size="lg"
+										className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+									>
+										Try Again
+									</Button>
+								) : null}
+								<Button
+									onClick={handleNewQuestion}
+									size="lg"
+									variant={
+										!grouping.isAllCovered || !grouping.isOptimal
+											? "outline"
+											: "default"
+									}
+									className={`w-full py-${!grouping.isAllCovered || !grouping.isOptimal ? "4 text-base" : "6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"}`}
+								>
+									Next Question →
+								</Button>
+							</div>
+						</>
+					)}
+
+					{/* Help text */}
+					<div className="py-2 text-sm text-center text-stats-label">
+						💡 Click a cell to start a group, then click another cell to
+						complete it.
+						{grouping.isChecked
+							? " • Press Enter for next question"
+							: " • Press Enter to check groups • Press Escape to cancel selection"}
 					</div>
 				</>
 			)}
-
-			{/* Help text */}
-			<div className="py-2 text-sm text-center text-stats-label">
-				💡 Click cells to place a 1. Click again to remove.
-				{isAnswered
-					? " • Press Enter for next question"
-					: " • Press Enter to check answer"}
-			</div>
 		</div>
 	);
 }

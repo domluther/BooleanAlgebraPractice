@@ -119,7 +119,7 @@ describe("KMap Component", () => {
 		render(<KMap />);
 
 		// Target KMap grid cells specifically (aria-label starts with "Cell row")
-		const cells = screen.getAllByRole("button", { name: /cell row/i });
+		const cells = screen.getAllByLabelText(/cell row/i);
 		fireEvent.click(cells[0]);
 		expect(toggleCell).toHaveBeenCalledTimes(1);
 	});
@@ -228,13 +228,26 @@ describe("KMap Component", () => {
 		expect(checkAnswer).toHaveBeenCalledTimes(1);
 	});
 
-	it("calls generateNewQuestion when Enter is pressed after answering", () => {
-		const generateNewQuestion = vi.fn();
+	it("advances to grouping phase when Enter is pressed after correct answer", () => {
 		vi.mocked(useKMapModule.useKMap).mockReturnValue({
 			...baseHookReturn,
 			isAnswered: true,
 			isCorrect: true,
 			getCellStatus: makeCellStatus(() => "correct-zero"),
+		});
+		render(<KMap />);
+		fireEvent.keyDown(window, { key: "Enter" });
+		// Should transition to grouping phase — the instruction text changes
+		expect(screen.getByText(/draw rectangular groups/i)).toBeInTheDocument();
+	});
+
+	it("calls generateNewQuestion when Enter is pressed after incorrect answer", () => {
+		const generateNewQuestion = vi.fn();
+		vi.mocked(useKMapModule.useKMap).mockReturnValue({
+			...baseHookReturn,
+			isAnswered: true,
+			isCorrect: false,
+			getCellStatus: makeCellStatus(() => "incorrect-missed"),
 			generateNewQuestion,
 		});
 		render(<KMap />);

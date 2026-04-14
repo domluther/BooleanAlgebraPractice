@@ -22,20 +22,20 @@ describe("K-Map Expression Database", () => {
 		expect(kmapDatabase.level4.length).toBeGreaterThan(0);
 	});
 
-	it("level1 has exactly 8 expressions", () => {
-		expect(kmapDatabase.level1).toHaveLength(8);
+	it("level1 has exactly 10 expressions", () => {
+		expect(kmapDatabase.level1).toHaveLength(10);
 	});
 
-	it("level2 has exactly 12 expressions", () => {
-		expect(kmapDatabase.level2).toHaveLength(12);
+	it("level2 has exactly 18 expressions", () => {
+		expect(kmapDatabase.level2).toHaveLength(18);
 	});
 
-	it("level3 has exactly 10 expressions", () => {
-		expect(kmapDatabase.level3).toHaveLength(10);
+	it("level3 has exactly 16 expressions", () => {
+		expect(kmapDatabase.level3).toHaveLength(16);
 	});
 
-	it("level4 has exactly 8 expressions", () => {
-		expect(kmapDatabase.level4).toHaveLength(8);
+	it("level4 has exactly 13 expressions", () => {
+		expect(kmapDatabase.level4).toHaveLength(13);
 	});
 
 	// ---------------------------------------------------------------------------

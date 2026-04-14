@@ -9,6 +9,8 @@ export { DrawCircuit } from "./DrawCircuit";
 export { ExpressionWriting } from "./ExpressionWriting";
 export { Footer } from "./Footer";
 export { Header } from "./Header";
+// Modal Components
+export { KMap } from "./KMap";
 // Game Mode Components
 export { NameThat } from "./NameThat";
 export type {
@@ -24,7 +26,5 @@ export { SharedLayout, useSharedLayout } from "./SharedLayout";
 // Layout Components
 export { SiteLayout } from "./SiteLayout";
 export { SiteNavigation } from "./SiteNavigation";
-// Modal Components
 export { StatsModal } from "./StatsModal";
 export { TruthTable } from "./TruthTable";
-export { KMap } from "./KMap";
