@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ControlPanel } from "@/components/ControlPanel";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -12,7 +12,6 @@ import {
 import {
 	GROUP_BORDER_COLORS,
 	GROUP_COLORS,
-	getSimplifiedTermForGroup,
 	isCellInGroup,
 } from "@/lib/kmapUtils";
 import { type KMapDifficulty, useKMap } from "@/lib/useKMap";
@@ -52,6 +51,12 @@ const DIFFICULTY_LABELS: Record<KMapDifficulty, string> = {
 	3: "Hard",
 	4: "Expert",
 };
+
+const SYMBOL_BUTTONS = [
+	{ word: "AND", symbol: "∧", shortcut: "^" },
+	{ word: "OR", symbol: "∨", shortcut: "v" },
+	{ word: "NOT", symbol: "¬", shortcut: "!" },
+];
 
 /**
  * Returns the CSS classes for a K-Map cell based on its status.
@@ -146,6 +151,59 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 		setPhase("group");
 	}, []);
 
+	// Refs for term input fields to support cursor-position insertion
+	const termInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+	const finalInputRef = useRef<HTMLInputElement>(null);
+	const lastFocusedInputRef = useRef<{
+		el: HTMLInputElement;
+		groupId?: string;
+	} | null>(null);
+
+	const insertSymbolAtCursor = useCallback(
+		(input: HTMLInputElement, symbol: string, groupId?: string) => {
+			const cursorPos = input.selectionStart ?? 0;
+			const currentValue = groupId
+				? (grouping.groupTermInputs[groupId] ?? "")
+				: grouping.finalExpressionInput;
+			const newValue = `${currentValue.slice(0, cursorPos)} ${symbol} ${currentValue.slice(cursorPos)}`;
+
+			if (groupId) {
+				grouping.setGroupTermInput(groupId, newValue);
+			} else {
+				grouping.setFinalExpression(newValue);
+			}
+
+			setTimeout(() => {
+				const newCursorPos = cursorPos + symbol.length + 2;
+				input.setSelectionRange(newCursorPos, newCursorPos);
+				input.focus();
+			}, 0);
+		},
+		[
+			grouping.groupTermInputs,
+			grouping.finalExpressionInput,
+			grouping.setGroupTermInput,
+			grouping.setFinalExpression,
+		],
+	);
+
+	const handleSymbolKeyDown = useCallback(
+		(e: React.KeyboardEvent<HTMLInputElement>, groupId?: string) => {
+			if (notationType !== "symbol") return;
+			const shortcutMap: Record<string, string> = {
+				"^": "∧",
+				v: "∨",
+				"!": "¬",
+			};
+			const symbol = shortcutMap[e.key];
+			if (symbol) {
+				e.preventDefault();
+				insertSymbolAtCursor(e.currentTarget, symbol, groupId);
+			}
+		},
+		[notationType, insertSymbolAtCursor],
+	);
+
 	// Keyboard shortcuts
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -154,6 +212,13 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 				return;
 			}
 			if (e.key === "Enter") {
+				// Don't handle Enter if user is typing in an input field
+				if (
+					e.target instanceof HTMLInputElement ||
+					e.target instanceof HTMLTextAreaElement
+				) {
+					return;
+				}
 				e.preventDefault();
 				if (phase === "fill") {
 					if (isAnswered) {
@@ -165,12 +230,17 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 					} else {
 						checkAnswer();
 					}
-				} else {
-					if (grouping.isChecked) {
-						handleNewQuestion();
-					} else {
-						grouping.checkGroups();
-					}
+				} else if (!grouping.isChecked) {
+					grouping.checkGroups();
+				} else if (grouping.isOptimal && !grouping.areTermsChecked) {
+					grouping.checkTerms();
+				} else if (
+					grouping.areTermsChecked &&
+					grouping.finalExpressionResult &&
+					grouping.termResults &&
+					!Object.values(grouping.termResults).some((r) => !r)
+				) {
+					handleNewQuestion();
 				}
 			}
 		};
@@ -182,7 +252,12 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 		isCorrect,
 		checkAnswer,
 		grouping.isChecked,
+		grouping.isOptimal,
+		grouping.areTermsChecked,
+		grouping.finalExpressionResult,
+		grouping.termResults,
 		grouping.checkGroups,
+		grouping.checkTerms,
 		grouping.cancelSelection,
 		handleNewQuestion,
 		handleContinueToGrouping,
@@ -546,53 +621,179 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 							<h3 className="text-sm font-semibold text-stats-label">
 								Groups:
 							</h3>
-							{grouping.groups.map((group) => (
-								<div
-									key={group.id}
-									className="flex items-center gap-2 px-3 py-2 rounded border border-checkbox-label-border bg-stats-card-bg"
-								>
+							{grouping.groups.map((group) => {
+								const borderColor =
+									GROUP_BORDER_COLORS[
+										group.colorIndex % GROUP_BORDER_COLORS.length
+									];
+								const termResult = grouping.termResults?.[group.id];
+								const showResult =
+									grouping.areTermsChecked && termResult !== undefined;
+								return (
 									<div
-										className="w-4 h-4 rounded shrink-0"
-										style={{
-											backgroundColor:
-												GROUP_BORDER_COLORS[
-													group.colorIndex % GROUP_BORDER_COLORS.length
-												],
-										}}
-									/>
-									<span className="font-mono text-sm flex-1 text-foreground">
-										{convertToNotation(
-											getSimplifiedTermForGroup(group, layout),
-											notationType,
+										key={group.id}
+										className={`flex items-center gap-2 px-3 py-2 rounded border ${
+											showResult
+												? termResult
+													? "border-stats-streak bg-feedback-success-bg"
+													: "border-stats-accuracy-low bg-feedback-error-bg"
+												: "border-checkbox-label-border bg-stats-card-bg"
+										}`}
+									>
+										<div
+											className="w-4 h-4 rounded shrink-0"
+											style={{ backgroundColor: borderColor }}
+										/>
+										{grouping.isChecked && grouping.isOptimal ? (
+											<input
+												ref={(el) => {
+													termInputRefs.current[group.id] = el;
+												}}
+												data-kmap-term-input=""
+												data-group-id={group.id}
+												type="text"
+												value={grouping.groupTermInputs[group.id] ?? ""}
+												onChange={(e) =>
+													grouping.setGroupTermInput(group.id, e.target.value)
+												}
+												onFocus={(e) => {
+													lastFocusedInputRef.current = {
+														el: e.currentTarget,
+														groupId: group.id,
+													};
+												}}
+												onKeyDown={(e) => handleSymbolKeyDown(e, group.id)}
+												placeholder={
+													notationType === "symbol"
+														? "e.g. A ∧ B"
+														: "e.g. A AND B"
+												}
+												className="font-mono text-sm flex-1 bg-transparent border-b border-muted-foreground/30 focus:border-foreground outline-none py-0.5 text-foreground placeholder:text-muted-foreground/50"
+												disabled={
+													grouping.areTermsChecked && termResult === true
+												}
+											/>
+										) : (
+											<span className="font-mono text-sm flex-1 text-muted-foreground italic">
+												Group {grouping.groups.indexOf(group) + 1}
+											</span>
 										)}
-									</span>
-									{!grouping.isChecked && (
-										<button
-											type="button"
-											onClick={() => grouping.removeGroup(group.id)}
-											className="text-muted-foreground hover:text-foreground text-lg leading-none px-1"
-											aria-label="Remove group"
-										>
-											×
-										</button>
-									)}
-								</div>
-							))}
+										{!grouping.isChecked && (
+											<button
+												type="button"
+												onClick={() => grouping.removeGroup(group.id)}
+												className="text-muted-foreground hover:text-foreground text-lg leading-none px-1"
+												aria-label="Remove group"
+											>
+												×
+											</button>
+										)}
+										{showResult && (
+											<span className="text-lg leading-none">
+												{termResult ? "✓" : "✗"}
+											</span>
+										)}
+									</div>
+								);
+							})}
 
-							{/* Simplified expression preview */}
-							{grouping.simplifiedExpression && (
-								<div className="pt-1 pb-2 px-3">
-									<p className="text-xs text-stats-label">Simplified:</p>
-									<p className="font-mono text-sm font-semibold text-foreground">
-										{convertToNotation(
-											grouping.simplifiedExpression,
-											notationType,
+							{/* Final simplified expression input */}
+							{grouping.isChecked && grouping.isOptimal && (
+								<div className="pt-2 space-y-1">
+									<label
+										htmlFor="final-expression"
+										className="text-xs font-semibold text-stats-label"
+									>
+										Simplified expression:
+									</label>
+									<div
+										className={`flex items-center gap-2 px-3 py-2 rounded border ${
+											grouping.areTermsChecked
+												? grouping.finalExpressionResult
+													? "border-stats-streak bg-feedback-success-bg"
+													: "border-stats-accuracy-low bg-feedback-error-bg"
+												: "border-checkbox-label-border bg-stats-card-bg"
+										}`}
+									>
+										<span className="font-mono text-sm text-foreground shrink-0">
+											Q =
+										</span>
+										<input
+											ref={finalInputRef}
+											data-kmap-term-input=""
+											id="final-expression"
+											type="text"
+											value={grouping.finalExpressionInput}
+											onChange={(e) =>
+												grouping.setFinalExpression(e.target.value)
+											}
+											onFocus={(e) => {
+												lastFocusedInputRef.current = {
+													el: e.currentTarget,
+												};
+											}}
+											onKeyDown={(e) => handleSymbolKeyDown(e)}
+											placeholder={
+												notationType === "symbol"
+													? "e.g. A ∨ (B ∧ C)"
+													: "e.g. A OR (B AND C)"
+											}
+											className="font-mono text-sm flex-1 bg-transparent border-b border-muted-foreground/30 focus:border-foreground outline-none py-0.5 text-foreground placeholder:text-muted-foreground/50"
+											disabled={
+												grouping.areTermsChecked &&
+												grouping.finalExpressionResult === true
+											}
+										/>
+										{grouping.areTermsChecked && (
+											<span className="text-lg leading-none">
+												{grouping.finalExpressionResult ? "✓" : "✗"}
+											</span>
 										)}
-									</p>
+									</div>
 								</div>
 							)}
 						</div>
 					)}
+
+					{/* Symbol helper buttons */}
+					{notationType === "symbol" &&
+						grouping.isChecked &&
+						grouping.isOptimal && (
+							<div className="space-y-1">
+								<div className="flex flex-wrap justify-center gap-2">
+									{SYMBOL_BUTTONS.map((btn) => (
+										<Button
+											key={btn.word}
+											variant="outline"
+											size="sm"
+											onClick={() => {
+												const last = lastFocusedInputRef.current;
+												if (last) {
+													insertSymbolAtCursor(
+														last.el,
+														btn.symbol,
+														last.groupId,
+													);
+												}
+											}}
+											disabled={
+												grouping.areTermsChecked &&
+												grouping.finalExpressionResult === true &&
+												grouping.termResults !== null &&
+												!Object.values(grouping.termResults).some((r) => !r)
+											}
+											className="px-4 border-2 border-checkbox-label-border hover:bg-checkbox-label-bg-hover hover:border-checkbox-label-border-hover"
+											title={`${btn.word} (${btn.symbol}) - Press ${btn.shortcut}`}
+										>
+											<span className="text-lg font-bold">{btn.symbol}</span>
+										</Button>
+									))}
+								</div>
+								<div className="text-xs text-center text-stats-label">
+									Keyboard: ^ (AND), v (OR), ! (NOT)
+								</div>
+							</div>
+						)}
 
 					{/* Check / Next buttons */}
 					{!grouping.isChecked ? (
@@ -613,44 +814,84 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 								Skip to Next Question
 							</Button>
 						</div>
-					) : (
+					) : !grouping.isAllCovered || !grouping.isOptimal ? (
 						<>
-							{/* Grouping feedback */}
+							{/* Grouping feedback — not covered or not optimal */}
 							<div
 								className={`p-4 rounded-lg text-center font-semibold border-2 ${
 									!grouping.isAllCovered
 										? "bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low"
-										: grouping.isOptimal
-											? "bg-feedback-success-bg text-feedback-success-text border-stats-streak"
-											: "bg-amber-50 text-amber-800 border-amber-400 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-600"
+										: "bg-amber-50 text-amber-800 border-amber-400 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-600"
 								}`}
 							>
 								{!grouping.isAllCovered
 									? "✗ Some 1s are not covered by any group."
-									: grouping.isOptimal
-										? "✓ Optimal grouping! Your groups are the fewest and largest possible."
-										: `⚠ ${grouping.checkFeedback}`}
+									: `⚠ ${grouping.checkFeedback}`}
+							</div>
+							<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+								<Button
+									onClick={grouping.resetGroups}
+									size="lg"
+									className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+								>
+									Try Again
+								</Button>
+								<Button
+									onClick={handleNewQuestion}
+									variant="outline"
+									size="lg"
+									className="w-full py-4 text-base"
+								>
+									Next Question →
+								</Button>
+							</div>
+						</>
+					) : !grouping.areTermsChecked ||
+						!grouping.finalExpressionResult ||
+						(grouping.termResults &&
+							Object.values(grouping.termResults).some((r) => !r)) ? (
+						<>
+							{/* Optimal groups — now enter terms */}
+							<div className="p-4 rounded-lg text-center font-semibold border-2 bg-feedback-success-bg text-feedback-success-text border-stats-streak">
+								✓ Optimal grouping! Now enter what each group simplifies to.
 							</div>
 
+							{grouping.areTermsChecked && (
+								<div className="p-3 rounded-lg text-center text-sm border-2 bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low">
+									Some answers are incorrect. Check the marked fields and try
+									again.
+								</div>
+							)}
+
 							<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
-								{!grouping.isAllCovered || !grouping.isOptimal ? (
-									<Button
-										onClick={grouping.resetGroups}
-										size="lg"
-										className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
-									>
-										Try Again
-									</Button>
-								) : null}
+								<Button
+									onClick={grouping.checkTerms}
+									size="lg"
+									className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+								>
+									Check Answers
+								</Button>
+								<Button
+									onClick={handleNewQuestion}
+									variant="outline"
+									size="lg"
+									className="w-full py-4 text-base"
+								>
+									Skip to Next Question
+								</Button>
+							</div>
+						</>
+					) : (
+						<>
+							{/* All correct */}
+							<div className="p-4 rounded-lg text-center font-semibold border-2 bg-feedback-success-bg text-feedback-success-text border-stats-streak">
+								✓ All correct! Expression fully simplified.
+							</div>
+							<div className="w-full max-w-md mx-auto">
 								<Button
 									onClick={handleNewQuestion}
 									size="lg"
-									variant={
-										!grouping.isAllCovered || !grouping.isOptimal
-											? "outline"
-											: "default"
-									}
-									className={`w-full py-${!grouping.isAllCovered || !grouping.isOptimal ? "4 text-base" : "6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"}`}
+									className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
 								>
 									Next Question →
 								</Button>
@@ -660,11 +901,18 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 
 					{/* Help text */}
 					<div className="py-2 text-sm text-center text-stats-label">
-						💡 Click a cell to start a group, then click another cell to
-						complete it.
-						{grouping.isChecked
-							? " • Press Enter for next question"
-							: " • Press Enter to check groups • Press Escape to cancel selection"}
+						💡
+						{!grouping.isChecked
+							? " Click cells to draw groups • Press Escape to cancel selection"
+							: grouping.isOptimal &&
+									(!grouping.areTermsChecked ||
+										(grouping.termResults &&
+											Object.values(grouping.termResults).some((r) => !r)) ||
+										!grouping.finalExpressionResult)
+								? " Type what each group simplifies to, then the final expression"
+								: grouping.areTermsChecked && grouping.finalExpressionResult
+									? " All correct! Press Next Question to continue"
+									: " Fix your groups and try again"}
 					</div>
 				</>
 			)}

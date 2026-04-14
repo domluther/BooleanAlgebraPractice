@@ -1,4 +1,6 @@
 import { useCallback, useState } from "react";
+import { convertToWordNotation } from "./config";
+import { areExpressionsLogicallyEquivalent } from "./expressionUtils";
 import {
 	areAllOnesCovered,
 	findExpandableGroups,
@@ -6,6 +8,7 @@ import {
 	GROUP_COLORS,
 	getGroupDimensions,
 	getSimplifiedExpression,
+	getSimplifiedTermForGroup,
 	type KMapGroup,
 	type KMapLayout,
 	validateGroup,
@@ -193,7 +196,76 @@ export function useKMapGrouping({ solution, layout }: UseKMapGroupingProps) {
 		setIsAllCovered(false);
 		setIsOptimal(false);
 		setCheckFeedback(null);
+		setGroupTermInputs({});
+		setFinalExpressionInput("");
+		setTermResults(null);
+		setFinalExpressionResult(null);
+		setAreTermsChecked(false);
 	}, []);
+
+	// --- Term input and validation ---
+	const [groupTermInputs, setGroupTermInputs] = useState<
+		Record<string, string>
+	>({});
+	const [finalExpressionInput, setFinalExpressionInput] = useState("");
+	const [termResults, setTermResults] = useState<Record<
+		string,
+		boolean
+	> | null>(null);
+	const [finalExpressionResult, setFinalExpressionResult] = useState<
+		boolean | null
+	>(null);
+	const [areTermsChecked, setAreTermsChecked] = useState(false);
+
+	const setGroupTermInput = useCallback((groupId: string, value: string) => {
+		setGroupTermInputs((prev) => ({ ...prev, [groupId]: value }));
+		setAreTermsChecked(false);
+		setTermResults(null);
+		setFinalExpressionResult(null);
+	}, []);
+
+	const setFinalExpression = useCallback((value: string) => {
+		setFinalExpressionInput(value);
+		setAreTermsChecked(false);
+		setFinalExpressionResult(null);
+	}, []);
+
+	const checkTerms = useCallback(() => {
+		const results: Record<string, boolean> = {};
+		for (const group of groups) {
+			const userInput = convertToWordNotation(
+				(groupTermInputs[group.id] ?? "").trim(),
+			).toUpperCase();
+			if (!userInput) {
+				results[group.id] = false;
+				continue;
+			}
+			const expected = getSimplifiedTermForGroup(group, layout);
+			// Compare as full expressions: "Q = term"
+			results[group.id] = areExpressionsLogicallyEquivalent(
+				`Q = ${userInput}`,
+				`Q = ${expected}`,
+			);
+		}
+		setTermResults(results);
+
+		// Check final expression
+		const userFinal = convertToWordNotation(
+			finalExpressionInput.trim(),
+		).toUpperCase();
+		if (userFinal) {
+			const expectedFull = getSimplifiedExpression(groups, layout);
+			// User may or may not include "Q = " prefix
+			const userExpr = userFinal.includes("=") ? userFinal : `Q = ${userFinal}`;
+			setFinalExpressionResult(
+				areExpressionsLogicallyEquivalent(userExpr, expectedFull),
+			);
+		} else {
+			setFinalExpressionResult(false);
+		}
+
+		setAreTermsChecked(true);
+	}, [groups, groupTermInputs, finalExpressionInput, layout]);
 
 	const simplifiedExpression = getSimplifiedExpression(groups, layout);
 
@@ -211,5 +283,14 @@ export function useKMapGrouping({ solution, layout }: UseKMapGroupingProps) {
 		cancelSelection,
 		checkGroups,
 		resetGroups,
+		// Term input
+		groupTermInputs,
+		finalExpressionInput,
+		termResults,
+		finalExpressionResult,
+		areTermsChecked,
+		setGroupTermInput,
+		setFinalExpression,
+		checkTerms,
 	};
 }
