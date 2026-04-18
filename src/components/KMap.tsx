@@ -193,6 +193,8 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 			const shortcutMap: Record<string, string> = {
 				"^": "∧",
 				v: "∨",
+				V: "∨",
+				"¬": "¬",
 				"!": "¬",
 			};
 			const symbol = shortcutMap[e.key];
