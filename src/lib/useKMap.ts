@@ -74,6 +74,7 @@ export interface UseKMapReturn {
 	toggleCell: (row: number, col: number) => void;
 	checkAnswer: () => void;
 	generateNewQuestion: () => void;
+	retryAnswer: () => void;
 	getCellStatus: (row: number, col: number) => KMapCellStatus;
 }
 
@@ -107,6 +108,12 @@ export function useKMap({ onScoreUpdate }: UseKMapProps = {}): UseKMapReturn {
 		setIsAnswered(false);
 		setIsCorrect(false);
 	}, [currentLevel]);
+
+	const retryAnswer = useCallback(() => {
+		setSelectedCells(new Set());
+		setIsAnswered(false);
+		setIsCorrect(false);
+	}, []);
 
 	const toggleCell = useCallback(
 		(row: number, col: number) => {
@@ -178,6 +185,7 @@ export function useKMap({ onScoreUpdate }: UseKMapProps = {}): UseKMapReturn {
 		toggleCell,
 		checkAnswer,
 		generateNewQuestion,
+		retryAnswer,
 		getCellStatus,
 	};
 }

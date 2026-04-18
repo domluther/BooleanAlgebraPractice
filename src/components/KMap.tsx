@@ -123,6 +123,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 		toggleCell,
 		checkAnswer,
 		generateNewQuestion,
+		retryAnswer,
 		getCellStatus,
 	} = useKMap({ onScoreUpdate });
 
@@ -227,7 +228,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 						if (isCorrect) {
 							handleContinueToGrouping();
 						} else {
-							handleNewQuestion();
+							retryAnswer();
 						}
 					} else {
 						checkAnswer();
@@ -253,6 +254,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 		isAnswered,
 		isCorrect,
 		checkAnswer,
+		retryAnswer,
 		grouping.isChecked,
 		grouping.isOptimal,
 		grouping.areTermsChecked,
@@ -578,11 +580,19 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 									</Button>
 								</div>
 							) : (
-								<div className="w-full max-w-md mx-auto">
+								<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
 									<Button
-										onClick={handleNewQuestion}
+										onClick={retryAnswer}
 										size="lg"
 										className="w-full py-6 text-lg bg-action-button-bg hover:bg-action-button-bg-hover text-action-button-text"
+									>
+										Try Again
+									</Button>
+									<Button
+										onClick={handleNewQuestion}
+										variant="outline"
+										size="lg"
+										className="w-full py-4 text-base"
 									>
 										Next Question →
 									</Button>
@@ -597,7 +607,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 						{isAnswered
 							? isCorrect
 								? " • Press Enter to continue to grouping"
-								: " • Press Enter for next question"
+								: " • Press Enter to try again"
 							: " • Press Enter to check answer"}
 					</div>
 				</>

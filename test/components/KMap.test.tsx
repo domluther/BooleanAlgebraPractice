@@ -48,6 +48,7 @@ const baseHookReturn: ReturnType<typeof useKMapModule.useKMap> = {
 	toggleCell: vi.fn(),
 	checkAnswer: vi.fn(),
 	generateNewQuestion: vi.fn(),
+	retryAnswer: vi.fn(),
 	getCellStatus: makeCellStatus(),
 };
 
@@ -241,18 +242,18 @@ describe("KMap Component", () => {
 		expect(screen.getByText(/draw rectangular groups/i)).toBeInTheDocument();
 	});
 
-	it("calls generateNewQuestion when Enter is pressed after incorrect answer", () => {
-		const generateNewQuestion = vi.fn();
+	it("calls retryAnswer when Enter is pressed after incorrect answer", () => {
+		const retryAnswer = vi.fn();
 		vi.mocked(useKMapModule.useKMap).mockReturnValue({
 			...baseHookReturn,
 			isAnswered: true,
 			isCorrect: false,
 			getCellStatus: makeCellStatus(() => "incorrect-missed"),
-			generateNewQuestion,
+			retryAnswer,
 		});
 		render(<KMap />);
 		fireEvent.keyDown(window, { key: "Enter" });
-		expect(generateNewQuestion).toHaveBeenCalledTimes(1);
+		expect(retryAnswer).toHaveBeenCalledTimes(1);
 	});
 
 	// -------------------------------------------------------------------------
