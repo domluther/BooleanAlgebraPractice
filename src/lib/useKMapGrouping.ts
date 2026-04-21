@@ -28,6 +28,19 @@ export function useKMapGrouping({ solution, layout }: UseKMapGroupingProps) {
 	const [isOptimal, setIsOptimal] = useState(false);
 	const [checkFeedback, setCheckFeedback] = useState<string | null>(null);
 
+	const getNextColorIndex = useCallback(() => {
+		const usedColorIndexes = new Set(groups.map((group) => group.colorIndex));
+
+		for (let i = 0; i < GROUP_COLORS.length; i++) {
+			if (!usedColorIndexes.has(i)) {
+				return i;
+			}
+		}
+
+		// If all palette colors are in use, fall back to cyclic assignment.
+		return groups.length % GROUP_COLORS.length;
+	}, [groups]);
+
 	const handleCellClick = useCallback(
 		(row: number, col: number) => {
 			if (isChecked) return;
@@ -129,14 +142,14 @@ export function useKMapGrouping({ solution, layout }: UseKMapGroupingProps) {
 					startCol: bsc,
 					endRow: ber,
 					endCol: bec,
-					colorIndex: groups.length % GROUP_COLORS.length,
+					colorIndex: getNextColorIndex(),
 				};
 
 				setGroups((prev) => [...prev, newGroup]);
 				setGroupStart(null);
 			}
 		},
-		[groupStart, groups.length, solution, layout, isChecked],
+		[groupStart, solution, layout, isChecked, getNextColorIndex],
 	);
 
 	const removeGroup = useCallback((id: string) => {
