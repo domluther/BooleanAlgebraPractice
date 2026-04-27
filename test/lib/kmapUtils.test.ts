@@ -18,10 +18,10 @@ describe("getKMapLayout", () => {
 			expect(layout.rowCount).toBe(2);
 		});
 
-		it("assigns the second sorted variable to columns and first to rows", () => {
+		it("assigns the first sorted variable to columns and second to rows", () => {
 			const layout = getKMapLayout(["A", "B"]);
-			expect(layout.colVars).toEqual(["B"]);
-			expect(layout.rowVars).toEqual(["A"]);
+			expect(layout.colVars).toEqual(["A"]);
+			expect(layout.rowVars).toEqual(["B"]);
 		});
 
 		it("uses single-bit labels [0, 1] for both axes", () => {
@@ -95,14 +95,14 @@ describe("getCellVarValues", () => {
 			expect(getCellVarValues(0, 0, layout)).toEqual({ A: false, B: false });
 		});
 
-		it("cell (0,1) → A=false, B=true", () => {
+		it("cell (0,1) → A=true, B=false", () => {
 			const layout = getKMapLayout(["A", "B"]);
-			expect(getCellVarValues(0, 1, layout)).toEqual({ A: false, B: true });
+			expect(getCellVarValues(0, 1, layout)).toEqual({ A: true, B: false });
 		});
 
-		it("cell (1,0) → A=true, B=false", () => {
+		it("cell (1,0) → A=false, B=true", () => {
 			const layout = getKMapLayout(["A", "B"]);
-			expect(getCellVarValues(1, 0, layout)).toEqual({ A: true, B: false });
+			expect(getCellVarValues(1, 0, layout)).toEqual({ A: false, B: true });
 		});
 
 		it("cell (1,1) → A=true, B=true", () => {

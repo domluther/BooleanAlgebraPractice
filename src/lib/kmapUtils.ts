@@ -41,7 +41,7 @@ export interface KMapLayout {
 
 /**
  * Derives the K-Map layout from the given sorted variable list.
- * - 2 vars → 2×2  (A rows, B cols)
+ * - 2 vars → 2×2  (A cols, B rows)
  * - 3 vars → 2×4  (AB cols Gray-coded, C rows)
  * - 4 vars → 4×4  (AB cols Gray-coded, CD rows Gray-coded)
  */
@@ -51,8 +51,8 @@ export function getKMapLayout(variables: string[]): KMapLayout {
 	switch (vars.length) {
 		case 2:
 			return {
-				colVars: [vars[1]], // B
-				rowVars: [vars[0]], // A
+				colVars: [vars[0]], // A
+				rowVars: [vars[1]], // B
 				colLabels: GRAY_1BIT_LABELS,
 				rowLabels: GRAY_1BIT_LABELS,
 				colCount: 2,
