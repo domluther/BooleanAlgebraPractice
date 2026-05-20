@@ -314,13 +314,13 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 
 			{/* Expression display */}
 			<div className="border-2 rounded-lg bg-stats-card-bg">
-				<div className="flex flex-col items-center gap-2 px-4 py-5">
+				<div className="flex flex-col items-center px-4 py-5 gap-2">
 					<p className="text-sm font-medium text-stats-label">
 						{phase === "fill"
 							? "Fill in all the 1s on the K-Map for this expression:"
 							: "Draw rectangular groups around the 1s to simplify:"}
 					</p>
-					<p className="font-mono text-xl font-bold text-foreground text-center">
+					<p className="font-mono text-xl font-bold text-center text-foreground">
 						{displayExpression}
 					</p>
 					{/* Also show symbol notation below if in word mode for clarity */}
@@ -337,13 +337,13 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 				<div className="inline-block">
 					{/* Table */}
 					<table
-						className="border-collapse border-2 border-checkbox-label-border"
+						className="border-2 border-collapse border-checkbox-label-border"
 						aria-label="K-Map grid"
 					>
 						<thead>
 							<tr>
 								{/* Top-left corner — diagonal split showing AB / CD axes */}
-								<th className="relative w-14 h-12 sm:w-16 sm:h-14 border border-checkbox-label-border bg-muted">
+								<th className="relative h-12 border w-14 sm:w-16 sm:h-14 border-checkbox-label-border bg-muted">
 									{/* Diagonal line using SVG */}
 									<svg
 										className="absolute inset-0 w-full h-full"
@@ -373,7 +373,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 								{layout.colLabels.map((label) => (
 									<th
 										key={label}
-										className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text font-mono font-semibold text-center text-sm"
+										className="w-12 h-12 font-mono text-sm font-semibold text-center border sm:w-14 sm:h-14 md:w-16 md:h-16 border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text"
 									>
 										{headingMode === "variables"
 											? grayCodeToVarLabel(label, layout.colVars)
@@ -388,7 +388,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 									{/* Row header */}
 									<th
 										scope="row"
-										className="w-14 sm:w-16 border border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text font-mono font-semibold text-center text-sm"
+										className="font-mono text-sm font-semibold text-center border w-14 sm:w-16 border-checkbox-label-border bg-truth-table-input-header-bg text-truth-table-input-header-text"
 									>
 										{headingMode === "variables"
 											? grayCodeToVarLabel(rowLabel, layout.rowVars)
@@ -487,7 +487,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 													{/* Start cell indicator */}
 													{isStart && (
 														<div
-															className="absolute inset-0 border-2 border-dashed border-foreground pointer-events-none rounded"
+															className="absolute inset-0 border-2 border-dashed rounded pointer-events-none border-foreground"
 															style={{ zIndex: 20 }}
 														/>
 													)}
@@ -562,7 +562,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 							</div>
 
 							{isCorrect ? (
-								<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+								<div className="flex flex-col w-full max-w-md mx-auto gap-2">
 									<Button
 										onClick={handleContinueToGrouping}
 										size="lg"
@@ -580,7 +580,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 									</Button>
 								</div>
 							) : (
-								<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+								<div className="flex flex-col w-full max-w-md mx-auto gap-2">
 									<Button
 										onClick={retryAnswer}
 										size="lg"
@@ -615,14 +615,14 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 				<>
 					{/* Grouping phase status */}
 					{grouping.groupStart && (
-						<div className="p-3 rounded-lg bg-muted text-foreground text-center text-sm border border-checkbox-label-border">
+						<div className="p-3 text-sm text-center border rounded-lg bg-muted text-foreground border-checkbox-label-border">
 							Click another cell to complete the group. Press Escape to cancel.
 						</div>
 					)}
 
 					{/* Grouping error */}
 					{grouping.error && (
-						<div className="p-3 rounded-lg bg-feedback-error-bg text-feedback-error-text text-center text-sm border border-stats-accuracy-low">
+						<div className="p-3 text-sm text-center border rounded-lg bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low">
 							{grouping.error}
 						</div>
 					)}
@@ -686,7 +686,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 												}
 											/>
 										) : (
-											<span className="font-mono text-sm flex-1 text-muted-foreground italic">
+											<span className="flex-1 font-mono text-sm italic text-muted-foreground">
 												Group {grouping.groups.indexOf(group) + 1}
 											</span>
 										)}
@@ -694,7 +694,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 											<button
 												type="button"
 												onClick={() => grouping.removeGroup(group.id)}
-												className="text-muted-foreground hover:text-foreground text-lg leading-none px-1"
+												className="px-1 text-lg leading-none text-muted-foreground hover:text-foreground"
 												aria-label="Remove group"
 											>
 												×
@@ -809,7 +809,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 
 					{/* Check / Next buttons */}
 					{!grouping.isChecked ? (
-						<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+						<div className="flex flex-col w-full max-w-md mx-auto gap-2">
 							<Button
 								onClick={grouping.checkGroups}
 								size="lg"
@@ -840,7 +840,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 									? "✗ Some 1s are not covered by any group."
 									: `⚠ ${grouping.checkFeedback}`}
 							</div>
-							<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+							<div className="flex flex-col w-full max-w-md mx-auto gap-2">
 								<Button
 									onClick={grouping.resetGroups}
 									size="lg"
@@ -864,18 +864,18 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 							Object.values(grouping.termResults).some((r) => !r)) ? (
 						<>
 							{/* Optimal groups — now enter terms */}
-							<div className="p-4 rounded-lg text-center font-semibold border-2 bg-feedback-success-bg text-feedback-success-text border-stats-streak">
+							<div className="p-4 font-semibold text-center border-2 rounded-lg bg-feedback-success-bg text-feedback-success-text border-stats-streak">
 								✓ Optimal grouping! Now enter what each group simplifies to.
 							</div>
 
 							{grouping.areTermsChecked && (
-								<div className="p-3 rounded-lg text-center text-sm border-2 bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low">
+								<div className="p-3 text-sm text-center border-2 rounded-lg bg-feedback-error-bg text-feedback-error-text border-stats-accuracy-low">
 									Some answers are incorrect. Check the marked fields and try
 									again.
 								</div>
 							)}
 
-							<div className="flex flex-col gap-2 w-full max-w-md mx-auto">
+							<div className="flex flex-col w-full max-w-md mx-auto gap-2">
 								<Button
 									onClick={grouping.checkTerms}
 									size="lg"
@@ -896,7 +896,7 @@ export function KMap({ onScoreUpdate }: KMapProps) {
 					) : (
 						<>
 							{/* All correct */}
-							<div className="p-4 rounded-lg text-center font-semibold border-2 bg-feedback-success-bg text-feedback-success-text border-stats-streak">
+							<div className="p-4 font-semibold text-center border-2 rounded-lg bg-feedback-success-bg text-feedback-success-text border-stats-streak">
 								✓ All correct! Expression fully simplified.
 							</div>
 							<div className="w-full max-w-md mx-auto">

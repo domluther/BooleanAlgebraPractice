@@ -32,7 +32,9 @@ export function Header({ scoreButton, title, subtitle }: HeaderProps) {
 				{title}
 			</h1>
 			<p className="px-4 text-sm text-header-subtitle sm:text-base xl:text-lg">
-				{subtitle}
+				<a href='/kmap' className="hover:text-link-hover">
+					{subtitle}
+				</a>
 			</p>
 		</header>
 	);
