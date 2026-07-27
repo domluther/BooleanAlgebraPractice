@@ -56,6 +56,7 @@ function generateDifficultyDropdown(gameManager, gameMode) {
     const select = document.createElement('select');
     select.className = appSettings.cssClasses.difficultySelect;
     select.id = `${gameMode}-difficulty-select`;
+    select.style.cursor = 'pointer';
 
     for (let i = 1; i <= config.levels; i++) {
         const option = document.createElement('option');

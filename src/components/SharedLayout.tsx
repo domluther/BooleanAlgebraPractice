@@ -20,8 +20,9 @@ interface SharedLayoutProps {
 
 export function useSharedLayout() {
 	const [showStatsModal, setShowStatsModal] = useState(false);
-	// Score update trigger to force re-renders when score changes
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// ScoreManager is mutable, so this intentionally unread version state schedules
+	// a render after score mutations. Derive stats directly during that render;
+	// useMemo cannot depend on a value the calculation does not read.
 	const [_scoreUpdateTrigger, setScoreUpdateTrigger] = useState(0);
 
 	const siteConfig = SITE_CONFIG;

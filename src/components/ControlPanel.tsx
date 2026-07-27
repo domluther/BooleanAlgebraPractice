@@ -85,7 +85,7 @@ export function ControlPanel({
 
 	return (
 		<div className="p-4 border-2 rounded-lg bg-stats-card-bg">
-			<div className="flex flex-col items-center justify-between sm:flex-row gap-4">
+			<div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
 				{/* Difficulty Selector */}
 				<div className="flex items-center gap-3">
 					<label
@@ -100,7 +100,7 @@ export function ControlPanel({
 						onChange={(e) =>
 							difficulty.onChange(Number.parseInt(e.target.value, 10))
 						}
-						className="px-3 py-1.5 rounded-md border-2 bg-background border-checkbox-label-border hover:border-checkbox-label-border-hover text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-checkbox-label-border-hover"
+						className="px-3 py-1.5 rounded-md border-2 bg-background border-checkbox-label-border hover:border-checkbox-label-border-hover text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-checkbox-label-border-hover cursor-pointer"
 					>
 						{difficulty.options.map(([value, label]) => (
 							<option key={value} value={value}>

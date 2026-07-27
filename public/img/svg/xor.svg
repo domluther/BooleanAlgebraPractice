@@ -1,4 +1,5 @@
 <svg viewBox="30 34 120 52" xmlns="http://www.w3.org/2000/svg">
+  <title>XOR Gate</title>
   <!-- Main gate body -->
   <path d="M 60 35 Q 85 35 115 60 Q 85 85 60 85 Q 75 60 60 34" fill="none" stroke="#333" stroke-width="2"></path>
   <!-- Additional left curve for XOR -->

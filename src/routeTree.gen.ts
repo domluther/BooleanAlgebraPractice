@@ -9,37 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WriteexpressionRouteImport } from './routes/writeexpression'
-import { Route as TruthtableRouteImport } from './routes/truthtable'
-import { Route as ScenarioRouteImport } from './routes/scenario'
-import { Route as NamethatRouteImport } from './routes/namethat'
-import { Route as KmapRouteImport } from './routes/kmap'
-import { Route as DrawcircuitRouteImport } from './routes/drawcircuit'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DrawcircuitRouteImport } from './routes/drawcircuit'
+import { Route as KmapRouteImport } from './routes/kmap'
+import { Route as NamethatRouteImport } from './routes/namethat'
+import { Route as ScenarioRouteImport } from './routes/scenario'
+import { Route as TruthtableRouteImport } from './routes/truthtable'
+import { Route as WriteexpressionRouteImport } from './routes/writeexpression'
 
-const WriteexpressionRoute = WriteexpressionRouteImport.update({
-  id: '/writeexpression',
-  path: '/writeexpression',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TruthtableRoute = TruthtableRouteImport.update({
-  id: '/truthtable',
-  path: '/truthtable',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ScenarioRoute = ScenarioRouteImport.update({
-  id: '/scenario',
-  path: '/scenario',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NamethatRoute = NamethatRouteImport.update({
-  id: '/namethat',
-  path: '/namethat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KmapRoute = KmapRouteImport.update({
-  id: '/kmap',
-  path: '/kmap',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DrawcircuitRoute = DrawcircuitRouteImport.update({
@@ -47,9 +27,29 @@ const DrawcircuitRoute = DrawcircuitRouteImport.update({
   path: '/drawcircuit',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const KmapRoute = KmapRouteImport.update({
+  id: '/kmap',
+  path: '/kmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NamethatRoute = NamethatRouteImport.update({
+  id: '/namethat',
+  path: '/namethat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScenarioRoute = ScenarioRouteImport.update({
+  id: '/scenario',
+  path: '/scenario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TruthtableRoute = TruthtableRouteImport.update({
+  id: '/truthtable',
+  path: '/truthtable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WriteexpressionRoute = WriteexpressionRouteImport.update({
+  id: '/writeexpression',
+  path: '/writeexpression',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -123,39 +123,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/writeexpression': {
-      id: '/writeexpression'
-      path: '/writeexpression'
-      fullPath: '/writeexpression'
-      preLoaderRoute: typeof WriteexpressionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/truthtable': {
-      id: '/truthtable'
-      path: '/truthtable'
-      fullPath: '/truthtable'
-      preLoaderRoute: typeof TruthtableRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/scenario': {
-      id: '/scenario'
-      path: '/scenario'
-      fullPath: '/scenario'
-      preLoaderRoute: typeof ScenarioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/namethat': {
-      id: '/namethat'
-      path: '/namethat'
-      fullPath: '/namethat'
-      preLoaderRoute: typeof NamethatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/kmap': {
-      id: '/kmap'
-      path: '/kmap'
-      fullPath: '/kmap'
-      preLoaderRoute: typeof KmapRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/drawcircuit': {
@@ -165,11 +137,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DrawcircuitRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/kmap': {
+      id: '/kmap'
+      path: '/kmap'
+      fullPath: '/kmap'
+      preLoaderRoute: typeof KmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/namethat': {
+      id: '/namethat'
+      path: '/namethat'
+      fullPath: '/namethat'
+      preLoaderRoute: typeof NamethatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scenario': {
+      id: '/scenario'
+      path: '/scenario'
+      fullPath: '/scenario'
+      preLoaderRoute: typeof ScenarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/truthtable': {
+      id: '/truthtable'
+      path: '/truthtable'
+      fullPath: '/truthtable'
+      preLoaderRoute: typeof TruthtableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/writeexpression': {
+      id: '/writeexpression'
+      path: '/writeexpression'
+      fullPath: '/writeexpression'
+      preLoaderRoute: typeof WriteexpressionRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

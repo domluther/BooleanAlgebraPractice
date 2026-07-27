@@ -385,7 +385,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 						</>
 					) : questionType === "draw-circuit" ? (
 						<div className="flex items-center gap-2">
-							<label className="flex items-center text-sm cursor-pointer gap-2 text-stats-label whitespace-nowrap">
+							<label className="flex items-center gap-2 text-sm cursor-pointer text-stats-label whitespace-nowrap">
 								<input
 									type="checkbox"
 									checked={helpEnabled}
@@ -544,7 +544,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 										{inputs.map((input) => (
 											<td
 												key={input}
-												className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-input-cell-bg group-hover:bg-truth-table-input-cell-hover transition-colors"
+												className="px-4 py-2 text-center transition-colors border border-checkbox-label-border bg-truth-table-input-cell-bg group-hover:bg-truth-table-input-cell-hover"
 											>
 												{expertMode ? (
 													<select
@@ -558,7 +558,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 														}
 														disabled={isAnswered}
 														className={getCellClassName(
-															"w-16 px-2 py-1 rounded border bg-background text-center",
+															"w-16 px-2 py-1 rounded border bg-background text-center cursor-pointer",
 															rowIndex,
 															input,
 														)}
@@ -582,7 +582,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 												return (
 													<td
 														key={columnName}
-														className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-intermediate-cell-bg group-hover:bg-truth-table-intermediate-cell-hover transition-colors"
+														className="px-4 py-2 text-center transition-colors border border-checkbox-label-border bg-truth-table-intermediate-cell-bg group-hover:bg-truth-table-intermediate-cell-hover"
 													>
 														<select
 															value={getCellValue(rowIndex, columnName)}
@@ -595,7 +595,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 															}
 															disabled={isAnswered}
 															className={getCellClassName(
-																"w-16 px-2 py-1 rounded border bg-background text-center",
+																"w-16 px-2 py-1 rounded border bg-background text-center cursor-pointer",
 																rowIndex,
 																columnName,
 															)}
@@ -609,7 +609,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 											})}
 
 										{/* Output Cell */}
-										<td className="px-4 py-2 text-center border border-checkbox-label-border bg-truth-table-output-cell-bg group-hover:bg-truth-table-output-cell-hover transition-colors">
+										<td className="px-4 py-2 text-center transition-colors border border-checkbox-label-border bg-truth-table-output-cell-bg group-hover:bg-truth-table-output-cell-hover">
 											<select
 												value={getCellValue(rowIndex, outputVariable)}
 												onChange={(e) =>
@@ -621,7 +621,7 @@ export function Scenario({ onScoreUpdate }: ScenarioProps) {
 												}
 												disabled={isAnswered}
 												className={getCellClassName(
-													"w-16 px-2 py-1 rounded border bg-background text-center font-semibold",
+													"w-16 px-2 py-1 rounded border bg-background text-center font-semibold cursor-pointer",
 													rowIndex,
 													outputVariable,
 												)}
