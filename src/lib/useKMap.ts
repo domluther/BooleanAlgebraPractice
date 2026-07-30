@@ -6,6 +6,8 @@
  */
 
 import { useCallback, useState } from "react";
+import { logEvent } from "./analytics";
+import { difficultyLabels } from "./config";
 import { getInputVariables, shuffleExpression } from "./expressionUtils";
 import { kmapDatabase } from "./kmapData";
 import { buildKMapSolution, getKMapLayout, type KMapLayout } from "./kmapUtils";
@@ -153,6 +155,12 @@ export function useKMap({ onScoreUpdate }: UseKMapProps = {}): UseKMapReturn {
 		setIsAnswered(true);
 		setIsCorrect(allCorrect);
 		onScoreUpdate?.(allCorrect, "kmap", "kmap", currentLevel);
+		logEvent({
+			site: "boolean-algebra-practice",
+			game: "kmap",
+			correct: allCorrect,
+			difficulty: difficultyLabels[currentLevel],
+		});
 	}, [isAnswered, question, selectedCells, currentLevel, onScoreUpdate]);
 
 	const getCellStatus = useCallback(

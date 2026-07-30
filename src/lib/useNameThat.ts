@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { logEvent } from "./analytics";
+import { difficultyLabels } from "./config";
 import { expressionDatabase } from "./data";
 import {
 	areExpressionsLogicallyEquivalent,
@@ -426,6 +428,12 @@ export function useNameThat(options?: UseNameThatOptions): UseNameThatReturn {
 					false, // NameThat doesn't have expert mode
 				);
 			}
+			logEvent({
+				site: "boolean-algebra-practice",
+				game: "name-that",
+				correct,
+				difficulty: difficultyLabels[currentLevel as 1 | 2 | 3 | 4 | 5],
+			});
 
 			// Generate feedback message
 			let message: string;

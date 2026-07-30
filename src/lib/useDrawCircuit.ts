@@ -3,6 +3,8 @@
 // Ported from legacy/js/draw-circuit.js
 
 import { useCallback, useEffect, useState } from "react";
+import { logEvent } from "./analytics";
+import { type DifficultyLevel, difficultyLabels } from "./config";
 import { expressionDatabase } from "./data";
 import {
 	areExpressionsLogicallyEquivalent,
@@ -10,19 +12,17 @@ import {
 	shuffleExpression,
 } from "./expressionUtils";
 
-export type DrawCircuitDifficulty = 1 | 2 | 3 | 4 | 5;
-
 const STORAGE_KEY = "drawCircuitDifficulty";
 
 // Helper to get initial difficulty from localStorage
-const getInitialDifficulty = (): DrawCircuitDifficulty => {
+const getInitialDifficulty = (): DifficultyLevel => {
 	if (typeof window === "undefined") return 1;
 	try {
 		const stored = localStorage.getItem(STORAGE_KEY);
 		if (stored) {
 			const parsed = parseInt(stored, 10);
 			if (parsed >= 1 && parsed <= 5) {
-				return parsed as DrawCircuitDifficulty;
+				return parsed as DifficultyLevel;
 			}
 		}
 	} catch (e) {
@@ -32,7 +32,7 @@ const getInitialDifficulty = (): DrawCircuitDifficulty => {
 };
 
 // Helper to generate initial question based on difficulty
-const generateInitialQuestion = (level: DrawCircuitDifficulty): string => {
+const generateInitialQuestion = (level: DifficultyLevel): string => {
 	const levelKey = `level${level}` as keyof typeof expressionDatabase;
 	const expressions = expressionDatabase[levelKey];
 	let expression = expressions[Math.floor(Math.random() * expressions.length)];
@@ -47,7 +47,7 @@ const generateInitialQuestion = (level: DrawCircuitDifficulty): string => {
 
 interface UseDrawCircuitReturn {
 	// State
-	currentLevel: DrawCircuitDifficulty;
+	currentLevel: DifficultyLevel;
 	currentExpression: string;
 	questionId: number; // Unique ID that increments with each new question
 	isAnswered: boolean;
@@ -56,7 +56,7 @@ interface UseDrawCircuitReturn {
 	helpEnabled: boolean;
 
 	// Methods
-	setDifficulty: (level: DrawCircuitDifficulty) => void;
+	setDifficulty: (level: DifficultyLevel) => void;
 	generateQuestion: () => void;
 	checkAnswer: (userExpression: string) => void;
 	nextQuestion: () => void;
@@ -80,7 +80,7 @@ export function useDrawCircuit(
 	) => void,
 ): UseDrawCircuitReturn {
 	const [currentLevel, setCurrentLevel] =
-		useState<DrawCircuitDifficulty>(getInitialDifficulty);
+		useState<DifficultyLevel>(getInitialDifficulty);
 	const [currentExpression, setCurrentExpression] = useState(() => {
 		// Generate initial question based on saved difficulty
 		const initialLevel = getInitialDifficulty();
@@ -120,6 +120,12 @@ export function useDrawCircuit(
 			onScoreUpdate
 		) {
 			onScoreUpdate(false, "Draw Circuit", "drawCircuit", currentLevel, false);
+			logEvent({
+				site: "boolean-algebra-practice",
+				game: "draw-circuit",
+				correct: false,
+				difficulty: difficultyLabels[currentLevel],
+			});
 		}
 
 		const levelKey = `level${currentLevel}` as keyof typeof expressionDatabase;
@@ -152,7 +158,7 @@ export function useDrawCircuit(
 	 * Sets the difficulty level and generates a new question
 	 */
 	const setDifficulty = useCallback(
-		(level: DrawCircuitDifficulty) => {
+		(level: DifficultyLevel) => {
 			// If moving away from current question and it was attempted but not answered correctly,
 			// record it as an incorrect attempt
 			if (
@@ -168,6 +174,12 @@ export function useDrawCircuit(
 					currentLevel,
 					false,
 				);
+				logEvent({
+					site: "boolean-algebra-practice",
+					game: "draw-circuit",
+					correct: false,
+					difficulty: difficultyLabels[currentLevel],
+				});
 			}
 
 			setCurrentLevel(level);
@@ -251,6 +263,12 @@ export function useDrawCircuit(
 						false,
 					);
 				}
+				logEvent({
+					site: "boolean-algebra-practice",
+					game: "draw-circuit",
+					correct: true,
+					difficulty: difficultyLabels[currentLevel],
+				});
 				setQuestionWasAnsweredCorrectly(true);
 				setFeedbackMessage("Correct! The circuit matches the expression.");
 				setIsCorrect(true);

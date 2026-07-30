@@ -3,6 +3,7 @@
 // Orchestrates expression/truth-table/draw-circuit question types with real-world scenarios
 
 import { useCallback, useEffect, useState } from "react";
+import { logEvent } from "./analytics";
 import {
 	areExpressionsLogicallyEquivalent,
 	checkExpressionAnswer as checkExpression,
@@ -109,6 +110,13 @@ function generateInitialQuestion(
 /**
  * Randomly select a question type
  */
+const SCENARIO_DIFFICULTY_LABELS: Record<ScenarioDifficulty, string> = {
+	1: "Easy",
+	2: "Medium",
+	3: "Hard",
+	4: "A-Level",
+};
+
 function selectRandomQuestionType(): QuestionType {
 	const types: QuestionType[] = ["expression", "truth-table", "draw-circuit"];
 	return types[Math.floor(Math.random() * types.length)];
@@ -197,6 +205,12 @@ export function useScenario({
 				onScoreUpdate
 			) {
 				onScoreUpdate(false, "Scenario", "scenario", currentLevel, false);
+				logEvent({
+					site: "boolean-algebra-practice",
+					game: "scenarios",
+					correct: false,
+					difficulty: SCENARIO_DIFFICULTY_LABELS[currentLevel],
+				});
 			}
 
 			setCurrentLevel(level);
@@ -239,6 +253,12 @@ export function useScenario({
 			onScoreUpdate
 		) {
 			onScoreUpdate(false, "Scenario", "scenario", currentLevel, false);
+			logEvent({
+				site: "boolean-algebra-practice",
+				game: "scenarios",
+				correct: false,
+				difficulty: SCENARIO_DIFFICULTY_LABELS[currentLevel],
+			});
 		}
 
 		const newScenario = getRandomScenario(currentLevel);
@@ -300,6 +320,12 @@ export function useScenario({
 					false,
 				);
 			}
+			logEvent({
+				site: "boolean-algebra-practice",
+				game: "scenarios",
+				correct: result.isCorrect,
+				difficulty: SCENARIO_DIFFICULTY_LABELS[currentLevel],
+			});
 		},
 		[currentScenario, userAnswer, currentLevel, onScoreUpdate],
 	);
@@ -379,6 +405,12 @@ export function useScenario({
 				expertMode,
 			);
 		}
+		logEvent({
+			site: "boolean-algebra-practice",
+			game: "scenarios",
+			correct: allCorrect,
+			difficulty: SCENARIO_DIFFICULTY_LABELS[currentLevel],
+		});
 	}, [
 		currentScenario,
 		truthTableData,
@@ -423,6 +455,12 @@ export function useScenario({
 				if (onScoreUpdate) {
 					onScoreUpdate(true, "Scenario", "scenario", currentLevel, false);
 				}
+				logEvent({
+					site: "boolean-algebra-practice",
+					game: "scenarios",
+					correct: true,
+					difficulty: SCENARIO_DIFFICULTY_LABELS[currentLevel],
+				});
 				setQuestionWasAnsweredCorrectly(true);
 				setFeedbackMessage("✅ Correct! The circuit matches the expression.");
 				setIsCorrect(true);

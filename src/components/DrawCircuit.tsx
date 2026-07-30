@@ -5,14 +5,12 @@ import { useTheme } from "@/contexts/theme-provider";
 import { CircuitDrawer } from "@/lib/CircuitDrawer";
 import {
 	convertToNotation,
+	type DifficultyLevel,
 	getNotationType,
 	type NotationType,
 	setNotationType,
 } from "@/lib/config";
-import {
-	type DrawCircuitDifficulty,
-	useDrawCircuit,
-} from "@/lib/useDrawCircuit";
+import { useDrawCircuit } from "@/lib/useDrawCircuit";
 
 /**
  * DrawCircuit Component - Interactive Circuit Drawing Game
@@ -145,7 +143,7 @@ export function DrawCircuit({ onScoreUpdate }: DrawCircuitProps) {
 		const newDifficulty = Number.parseInt(
 			event.target.value,
 			10,
-		) as DrawCircuitDifficulty;
+		) as DifficultyLevel;
 		setDifficulty(newDifficulty);
 		// setDifficulty now generates a new question automatically
 	};

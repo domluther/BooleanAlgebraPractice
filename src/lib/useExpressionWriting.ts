@@ -1,19 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
+import { logEvent } from "./analytics";
 import type { NotationType } from "./config";
+import { type DifficultyLevel, difficultyLabels } from "./config";
 import { expressionDatabase } from "./data";
 import { checkExpressionAnswer, shuffleExpression } from "./expressionUtils";
 
 const STORAGE_KEY = "expressionWritingDifficulty";
 
 // Helper to get initial difficulty from localStorage
-const getInitialDifficulty = (): number => {
+const getInitialDifficulty = (): DifficultyLevel => {
 	if (typeof window === "undefined") return 1;
 	try {
 		const stored = localStorage.getItem(STORAGE_KEY);
 		if (stored) {
 			const parsed = parseInt(stored, 10);
 			if (parsed >= 1 && parsed <= 5) {
-				return parsed;
+				return parsed as DifficultyLevel;
 			}
 		}
 	} catch (e) {
@@ -40,7 +42,7 @@ interface Question {
 }
 
 interface UseExpressionWritingReturn {
-	currentLevel: number;
+	currentLevel: DifficultyLevel;
 	currentQuestion: Question;
 	userAnswer: string;
 	isAnswered: boolean;
@@ -50,7 +52,7 @@ interface UseExpressionWritingReturn {
 	checkAnswer: (notationType: NotationType) => void;
 	generateNewQuestion: () => void;
 	reset: () => void;
-	setLevel: (level: number) => void;
+	setLevel: (level: DifficultyLevel) => void;
 }
 
 interface UseExpressionWritingOptions {
@@ -149,6 +151,12 @@ export function useExpressionWriting(
 					false, // Expression Writing doesn't have expert mode yet
 				);
 			}
+			logEvent({
+				site: "boolean-algebra-practice",
+				game: "expression-writing",
+				correct: result.isCorrect,
+				difficulty: difficultyLabels[currentLevel],
+			});
 		},
 		[
 			isAnswered,
@@ -183,7 +191,7 @@ export function useExpressionWriting(
 	/**
 	 * Change the difficulty level
 	 */
-	const setLevel = useCallback((level: number) => {
+	const setLevel = useCallback((level: DifficultyLevel) => {
 		setCurrentLevel(level);
 		setIsAnswered(false);
 		setIsCorrect(null);
